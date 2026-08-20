@@ -138,17 +138,18 @@ export class Pass14Reviews implements PipelinePass {
       }
     });
 
-    // 4. Student Experience Simulation Check (9 critical student questions)
+    // 4. Student Experience Simulation Check (10-question master test suite from §2)
     const studentSimulationQuestions = [
-      { q: "Can I understand what this lecture topic is about?", pass: !!ctx.title && ctx.title.length > 5 },
-      { q: "Can I see why this concept matters?", pass: blocks.some((b) => b.stageCategory === "DISCOVER") },
-      { q: "Can I visualize the mechanism or structure?", pass: (ctx.visuals || []).length > 0 },
-      { q: "Can I interact actively rather than just read?", pass: (ctx.activities || []).length > 0 },
-      { q: "Is the feedback explaining WHY an answer is right/wrong?", pass: (ctx.assessments || []).every((a) => !!a.instructorRationale) },
-      { q: "Is there a realistic misconception addressed?", pass: blocks.some((b) => b.misconceptionAlert && b.misconceptionAlert.length > 10) },
-      { q: "Am I guided step-by-step through difficult calculations?", pass: true },
-      { q: "Is the learning sequence moving from basic to advanced?", pass: blocks.length >= 7 },
-      { q: "Are equations formatted cleanly without raw code?", pass: true },
+      { q: "1. What am I learning?", pass: !!ctx.title && ctx.title.length > 5 },
+      { q: "2. Why does it matter?", pass: blocks.some((b) => b.stageCategory === "DISCOVER" || b.stageCategory === "UNDERSTAND") },
+      { q: "3. What is the central concept?", pass: blocks.some((b) => !!b.academicTruth && b.academicTruth.length > 15) },
+      { q: "4. Can I visualize it?", pass: (ctx.visuals || []).length > 0 },
+      { q: "5. Can I explain how it works?", pass: blocks.some((b) => !!b.mechanismExplanation && b.mechanismExplanation.length > 15) },
+      { q: "6. Can I try something myself?", pass: (ctx.activities || []).length > 0 },
+      { q: "7. Can I understand why my answer is right or wrong?", pass: (ctx.assessments || []).every((a) => !!a.instructorRationale) },
+      { q: "8. Can I solve a new example?", pass: blocks.some((b) => b.stageCategory === "PRACTICE") },
+      { q: "9. Can I apply the concept to a different situation?", pass: blocks.some((b) => b.stageCategory === "APPLY" && !!b.realWorldTransfer) },
+      { q: "10. Can I pass a final readiness challenge?", pass: (ctx.assessments || []).some((a) => a.assessmentType === "TRANSFER_CHALLENGE" || a.difficulty === "hard") },
     ];
 
     studentSimulationQuestions.forEach((sim, idx) => {

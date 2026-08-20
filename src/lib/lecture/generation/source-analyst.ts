@@ -286,3 +286,22 @@ export function scopeBlocksForSlide(
   // Fallback: all critical blocks (capped to avoid context overflow)
   return analysed.filter((b) => b.importance === "critical").slice(0, 8);
 }
+
+/**
+ * Section 9: Source Availability Gate.
+ * Verifies that source documents and text blocks exist before generation begins.
+ */
+export async function checkSourceAvailability(projectId: string): Promise<{ available: boolean; reason?: string }> {
+  const docs = await db.lectureSourceDocument.findMany({
+    where: { projectId },
+    select: { id: true, originalName: true, type: true, parseStatus: true },
+  });
+  if (docs.length === 0) {
+    return { available: false, reason: "SOURCE_MATERIAL_UNAVAILABLE: No source documents uploaded for project." };
+  }
+  const blocks = await db.lectureSourceBlock.count({ where: { projectId } });
+  if (blocks === 0) {
+    return { available: false, reason: "SOURCE_MATERIAL_UNAVAILABLE: Source files present but zero text blocks extracted." };
+  }
+  return { available: true };
+}
