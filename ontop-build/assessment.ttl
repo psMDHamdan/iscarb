@@ -1,0 +1,597 @@
+@prefix : <https://iscarb.edu/ontology/assessment/> .
+@prefix iscarb-assessment: <https://iscarb.edu/ontology/assessment/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+### Ontology Version 1.0.0 ###
+
+### Class: AssessmentModule
+iscarb-assessment:AssessmentModule a owl:Class ;
+  rdfs:label "AssessmentModule" .
+
+iscarb-assessment:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentModule .
+
+iscarb-assessment:code a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentModule .
+
+iscarb-assessment:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentModule .
+
+iscarb-assessment:dimension a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentModule .
+
+iscarb-assessment:specialization a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentModule .
+
+iscarb-assessment:level a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentModule .
+
+iscarb-assessment:framework a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentModule .
+
+iscarb-assessment:generated a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentModule .
+
+iscarb-assessment:rubricJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentModule .
+
+iscarb-assessment:version a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentModule .
+
+iscarb-assessment:signOffState a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentModule .
+
+iscarb-assessment:authorId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentModule .
+
+iscarb-assessment:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentModule .
+
+### Class: AssessmentResponse
+iscarb-assessment:AssessmentResponse a owl:Class ;
+  rdfs:label "AssessmentResponse" .
+
+iscarb-assessment:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:moduleCode a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:dimension a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:specialization a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:score a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:band a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:passed a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:perCriterionJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:feedback a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:strengthsJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:improvementsJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:validationPassed a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:model a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:source a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:rawResponse a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:latencyMs a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:tokensInput a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:tokensOutput a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:costUsd a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:processingStatus a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+iscarb-assessment:validationReview a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+iscarb-assessment:calibrationReviews a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentResponse .
+
+### Class: AssessmentSnapshot
+iscarb-assessment:AssessmentSnapshot a owl:Class ;
+  rdfs:label "AssessmentSnapshot" .
+
+iscarb-assessment:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSnapshot .
+
+iscarb-assessment:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSnapshot .
+
+iscarb-assessment:dataJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSnapshot .
+
+iscarb-assessment:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSnapshot .
+
+iscarb-assessment:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSnapshot ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: AssessmentValidationReview
+iscarb-assessment:AssessmentValidationReview a owl:Class ;
+  rdfs:label "AssessmentValidationReview" .
+
+iscarb-assessment:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentValidationReview .
+
+iscarb-assessment:responseId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentValidationReview .
+
+iscarb-assessment:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentValidationReview .
+
+iscarb-assessment:originalScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentValidationReview .
+
+iscarb-assessment:originalBand a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentValidationReview .
+
+iscarb-assessment:overriddenScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentValidationReview .
+
+iscarb-assessment:overriddenBand a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentValidationReview .
+
+iscarb-assessment:facultyId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentValidationReview .
+
+iscarb-assessment:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentValidationReview .
+
+iscarb-assessment:resolvedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentValidationReview .
+
+iscarb-assessment:response a owl:ObjectProperty ;
+  rdfs:domain iscarb-assessment:AssessmentValidationReview ;
+  rdfs:range <https://iscarb.edu/ontology/core/AssessmentResponse> .
+
+### Class: AssessmentCalibrationReview
+iscarb-assessment:AssessmentCalibrationReview a owl:Class ;
+  rdfs:label "AssessmentCalibrationReview" .
+
+iscarb-assessment:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentCalibrationReview .
+
+iscarb-assessment:responseId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentCalibrationReview .
+
+iscarb-assessment:facultyId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentCalibrationReview .
+
+iscarb-assessment:aiScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentCalibrationReview .
+
+iscarb-assessment:facultyScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentCalibrationReview .
+
+iscarb-assessment:absoluteError a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentCalibrationReview .
+
+iscarb-assessment:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentCalibrationReview .
+
+iscarb-assessment:response a owl:ObjectProperty ;
+  rdfs:domain iscarb-assessment:AssessmentCalibrationReview ;
+  rdfs:range <https://iscarb.edu/ontology/core/AssessmentResponse> .
+
+### Class: Assessment
+iscarb-assessment:Assessment a owl:Class ;
+  rdfs:label "Assessment" .
+
+iscarb-assessment:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Assessment .
+
+iscarb-assessment:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Assessment .
+
+iscarb-assessment:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Assessment .
+
+iscarb-assessment:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Assessment .
+
+iscarb-assessment:instructions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Assessment .
+
+iscarb-assessment:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Assessment .
+
+iscarb-assessment:timeLimit a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Assessment .
+
+iscarb-assessment:randomizeQuestions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Assessment .
+
+iscarb-assessment:randomizeAnswers a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Assessment .
+
+iscarb-assessment:passPercentage a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Assessment .
+
+iscarb-assessment:createdBy a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Assessment .
+
+iscarb-assessment:publishedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Assessment .
+
+iscarb-assessment:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Assessment .
+
+iscarb-assessment:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Assessment .
+
+iscarb-assessment:questions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Assessment .
+
+iscarb-assessment:submissions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Assessment .
+
+iscarb-assessment:rubric a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Assessment .
+
+### Class: AssessmentQuestion
+iscarb-assessment:AssessmentQuestion a owl:Class ;
+  rdfs:label "AssessmentQuestion" .
+
+iscarb-assessment:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestion .
+
+iscarb-assessment:assessmentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestion .
+
+iscarb-assessment:order a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestion .
+
+iscarb-assessment:type a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestion .
+
+iscarb-assessment:prompt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestion .
+
+iscarb-assessment:instructionsJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestion .
+
+iscarb-assessment:pointsPossible a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestion .
+
+iscarb-assessment:rubricCriterionId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestion .
+
+iscarb-assessment:optionsJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestion .
+
+iscarb-assessment:scenarioContext a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestion .
+
+iscarb-assessment:branchingRules a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestion .
+
+iscarb-assessment:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestion .
+
+iscarb-assessment:assessment a owl:ObjectProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestion ;
+  rdfs:range <https://iscarb.edu/ontology/core/Assessment> .
+
+iscarb-assessment:rubricCriterion a owl:ObjectProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestion ;
+  rdfs:range <https://iscarb.edu/ontology/core/RubricCriterion> .
+
+iscarb-assessment:responses a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestion .
+
+### Class: AssessmentSubmission
+iscarb-assessment:AssessmentSubmission a owl:Class ;
+  rdfs:label "AssessmentSubmission" .
+
+iscarb-assessment:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+iscarb-assessment:assessmentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+iscarb-assessment:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+iscarb-assessment:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+iscarb-assessment:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+iscarb-assessment:startedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+iscarb-assessment:submittedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+iscarb-assessment:scoredAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+iscarb-assessment:totalScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+iscarb-assessment:totalPoints a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+iscarb-assessment:percentageScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+iscarb-assessment:submissionToken a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+iscarb-assessment:attemptNumber a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+iscarb-assessment:sessionId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+iscarb-assessment:lastActivityAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+iscarb-assessment:aiGeneratedFeedback a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+iscarb-assessment:keyWeaknesses a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+iscarb-assessment:nextRecommendedAction a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+iscarb-assessment:responses a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+iscarb-assessment:scores a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+iscarb-assessment:assessment a owl:ObjectProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission ;
+  rdfs:range <https://iscarb.edu/ontology/core/Assessment> .
+
+iscarb-assessment:adjustments a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentSubmission .
+
+### Class: AssessmentQuestionResponse
+iscarb-assessment:AssessmentQuestionResponse a owl:Class ;
+  rdfs:label "AssessmentQuestionResponse" .
+
+iscarb-assessment:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestionResponse .
+
+iscarb-assessment:submissionId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestionResponse .
+
+iscarb-assessment:questionId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestionResponse .
+
+iscarb-assessment:responseText a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestionResponse .
+
+iscarb-assessment:selectedAnswer a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestionResponse .
+
+iscarb-assessment:fileUrl a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestionResponse .
+
+iscarb-assessment:sequenceNumber a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestionResponse .
+
+iscarb-assessment:idempotencyKey a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestionResponse .
+
+iscarb-assessment:savedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestionResponse .
+
+iscarb-assessment:submittedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestionResponse .
+
+iscarb-assessment:question a owl:ObjectProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestionResponse ;
+  rdfs:range <https://iscarb.edu/ontology/core/AssessmentQuestion> .
+
+iscarb-assessment:submission a owl:ObjectProperty ;
+  rdfs:domain iscarb-assessment:AssessmentQuestionResponse ;
+  rdfs:range <https://iscarb.edu/ontology/core/AssessmentSubmission> .
+
+### Class: Rubric
+iscarb-assessment:Rubric a owl:Class ;
+  rdfs:label "Rubric" .
+
+iscarb-assessment:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Rubric .
+
+iscarb-assessment:assessmentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Rubric .
+
+iscarb-assessment:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Rubric .
+
+iscarb-assessment:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Rubric .
+
+iscarb-assessment:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Rubric .
+
+iscarb-assessment:assessment a owl:ObjectProperty ;
+  rdfs:domain iscarb-assessment:Rubric ;
+  rdfs:range <https://iscarb.edu/ontology/core/Assessment> .
+
+iscarb-assessment:criteria a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:Rubric .
+
+### Class: RubricCriterion
+iscarb-assessment:RubricCriterion a owl:Class ;
+  rdfs:label "RubricCriterion" .
+
+iscarb-assessment:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:RubricCriterion .
+
+iscarb-assessment:rubricId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:RubricCriterion .
+
+iscarb-assessment:name a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:RubricCriterion .
+
+iscarb-assessment:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:RubricCriterion .
+
+iscarb-assessment:weight a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:RubricCriterion .
+
+iscarb-assessment:maxScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:RubricCriterion .
+
+iscarb-assessment:keywords a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:RubricCriterion .
+
+iscarb-assessment:order a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:RubricCriterion .
+
+iscarb-assessment:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:RubricCriterion .
+
+iscarb-assessment:questions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:RubricCriterion .
+
+iscarb-assessment:scores a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:RubricCriterion .
+
+iscarb-assessment:rubric a owl:ObjectProperty ;
+  rdfs:domain iscarb-assessment:RubricCriterion ;
+  rdfs:range <https://iscarb.edu/ontology/core/Rubric> .
+
+### Class: AssessmentScore
+iscarb-assessment:AssessmentScore a owl:Class ;
+  rdfs:label "AssessmentScore" .
+
+iscarb-assessment:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentScore .
+
+iscarb-assessment:submissionId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentScore .
+
+iscarb-assessment:criterionId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentScore .
+
+iscarb-assessment:score a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentScore .
+
+iscarb-assessment:maxScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentScore .
+
+iscarb-assessment:provider a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentScore .
+
+iscarb-assessment:confidence a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentScore .
+
+iscarb-assessment:feedback a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentScore .
+
+iscarb-assessment:scoredBy a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentScore .
+
+iscarb-assessment:scoredAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AssessmentScore .
+
+iscarb-assessment:criterion a owl:ObjectProperty ;
+  rdfs:domain iscarb-assessment:AssessmentScore ;
+  rdfs:range <https://iscarb.edu/ontology/core/RubricCriterion> .
+
+iscarb-assessment:submission a owl:ObjectProperty ;
+  rdfs:domain iscarb-assessment:AssessmentScore ;
+  rdfs:range <https://iscarb.edu/ontology/core/AssessmentSubmission> .
+
+### Class: AcademicModule
+iscarb-assessment:AcademicModule a owl:Class ;
+  rdfs:label "AcademicModule" .
+
+iscarb-assessment:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AcademicModule .
+
+iscarb-assessment:courseId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AcademicModule .
+
+iscarb-assessment:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AcademicModule .
+
+iscarb-assessment:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AcademicModule .
+
+iscarb-assessment:order a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AcademicModule .
+
+iscarb-assessment:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AcademicModule .
+
+iscarb-assessment:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AcademicModule .
+
+iscarb-assessment:topics a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:AcademicModule .
+
+### Class: ReadinessAssessment
+iscarb-assessment:ReadinessAssessment a owl:Class ;
+  rdfs:label "ReadinessAssessment" .
+
+iscarb-assessment:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:ReadinessAssessment .
+
+iscarb-assessment:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:ReadinessAssessment .
+
+iscarb-assessment:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:ReadinessAssessment .
+
+iscarb-assessment:assessmentType a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:ReadinessAssessment .
+
+iscarb-assessment:categories a owl:DatatypeProperty ;
+  rdfs:domain iscarb-assessment:ReadinessAssessment .
+

@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  postgres:
+    # Must ship pgvector: migration 20260714000000_enable_pgvector runs
+    # CREATE EXTENSION vector, and `migrate deploy` runs before the app starts.
+    image: pgvector/pgvector:pg16
+    container_name: iscarb-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: iscarb_dev_password
+      POSTGRES_DB: iscarb
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+    networks:
+      - iscarb
+
+  redis:
+    image: redis:7-alpine
+    container_name: iscarb-redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+    networks:
+      - iscarb
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: iscarb-app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://postgres:iscarb_dev_password@postgres:5432/iscarb
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+    networks:
+      - iscarb
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: iscarb-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@iscarb.edu
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+    networks:
+      - iscarb
+
+volumes:
+  postgres_data:
+  redis_data:
+  pgadmin_data:
+
+networks:
+  iscarb:
+    driver: bridge

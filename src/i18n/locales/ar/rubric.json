@@ -1,0 +1,455 @@
+{
+  "_meta": {
+    "locale": "ar",
+    "direction": "rtl",
+    "description": "Arabic translations for iSCARB rubric criteria and assessment framework terms",
+    "lastUpdated": "2026-07-11"
+  },
+
+  "dimensions": {
+    "core_professionalism": {
+      "label": "الاحتراف المهني",
+      "labelEn": "Core Professionalism",
+      "weight": 25,
+      "blurb": "التواصل، التفكير النقدي، العمل الجماعي، المرونة، الأخلاق — النضج السلوكي الذي يحتاجه كل خريج."
+    },
+    "business_digital": {
+      "label": "الثقافة الرقمية والأعمال",
+      "labelEn": "Business & Digital Literacy",
+      "weight": 20,
+      "blurb": "إدارة المشاريع، إلمام الذكاء الاصطناعي، الوعي الأمن السيبراني، البيانات وأساسيات الأعمال — وظيفي عبر جميع المجالات."
+    },
+    "job_fit": {
+      "label": "الملاءمة الوظيفية (التقنية)",
+      "labelEn": "Job-Fit (Technical)",
+      "weight": 40,
+      "blurb": "النواة التقنية الخاصة بالتخصص. تُحدد لكل تخصص — مُنتقاة عند التعرف، مُولَّدة بالذكاء الاصطناعي لأي مجال جديد."
+    },
+    "growth_potential": {
+      "label": "إمكانات النمو",
+      "labelEn": "Growth Potential",
+      "weight": 15,
+      "blurb": "التكيف المهني، الرؤية والقدرة بين الثقافات — الجاهزية للمستقبل المستقلة عن المجال المختار."
+    }
+  },
+
+  "bands": {
+    "weak": {
+      "label": "ضعيف",
+      "labelEn": "Weak",
+      "range": "0–39",
+      "pass": false,
+      "description": "النتيجة دون المتوقع لمستوى الخريج. تتطلب تدخلاً فورياً وتطويراً مكثفاً."
+    },
+    "developing": {
+      "label": "قيد التطور",
+      "labelEn": "Developing",
+      "range": "40–59",
+      "pass": false,
+      "description": "أظهر 기본اً لكنه لم يصل بعد إلى مستوى الكفاءة المطلوب. يحتاج إلى تطوير مستمر."
+    },
+    "proficient": {
+      "label": "كفؤ",
+      "labelEn": "Proficient",
+      "range": "60–79",
+      "pass": true,
+      "description": "مستوى كفؤ يلبي التوقعات الأساسية. جاهز للتوظيف مع تطوير مستمر."
+    },
+    "strong": {
+      "label": "متميّز",
+      "labelEn": "Strong",
+      "range": "80–100",
+      "pass": true,
+      "description": "مستوى متميز يتجاوز التوقعات. جاهز للوظائف المتطلبة والقيادة."
+    }
+  },
+
+  "criteria": {
+    "structural_clarity": {
+      "label": "وضوح البنية",
+      "labelEn": "Structural Clarity",
+      "description": "وضوح بنية الرد وتنظيمه: السطر الأساسي أولاً، السياق، الإجراء، الخطوات التالية."
+    },
+    "audience_adaptation": {
+      "label": "التكيّف مع الجمهور",
+      "labelEn": "Audience Adaptation",
+      "description": "مدى ملاءمة الرد للجمهور المستهدف: المصطلحات التقنية مُفسّرة أو مُتجنّبة للقارئ غير التقني."
+    },
+    "emotional_management": {
+      "label": "إدارة المشاعر",
+      "labelEn": "Emotional Management",
+      "description": "النبرة المطمئنة وال proactiveness بدلاً من التوتر أو التهويل."
+    },
+    "pragmatic_effectiveness": {
+      "label": "الفعالية العملية",
+      "labelEn": "Pragmatic Effectiveness",
+      "description": "وضوح الخطوات التالية والجدول الزمني والأثر المطلوب."
+    },
+    "define": {
+      "label": "التعريف",
+      "labelEn": "Define",
+      "description": "دقّة صياغة بيان المشكلة."
+    },
+    "measure": {
+      "label": "القياس",
+      "labelEn": "Measure",
+      "description": "ملاءمة البيانات ومؤشرات الأداء المختارة."
+    },
+    "analyze": {
+      "label": "التحليل",
+      "labelEn": "Analyze",
+      "description": "عمق تحليل الجذر — لا الأعراض فقط."
+    },
+    "improve": {
+      "label": "التحسين",
+      "labelEn": "Improve",
+      "description": "واقعية الحلول المقترحة."
+    },
+    "control": {
+      "label": "المراقبة",
+      "labelEn": "Control",
+      "description": "جدوى خطة المراقبة."
+    },
+    "situational_analysis": {
+      "label": "التحليل الموقفي",
+      "labelEn": "Situational Analysis",
+      "description": "ملاءمة الأسلوب المختار (التعاون / التسوية)."
+    },
+    "practical_application": {
+      "label": "التطبيق العملي",
+      "labelEn": "Practical Application",
+      "description": "فعالية الرسالة في حلحلة المأزق."
+    },
+    "active_listening": {
+      "label": "الاستماع النشط",
+      "labelEn": "Active Listening",
+      "description": "التحقق من مخاوف المطوّر المتعلقة بالجودة."
+    },
+    "problem_diagnosis": {
+      "label": "تشخيص المشكلة",
+      "labelEn": "Problem Diagnosis",
+      "description": "هل قيّموا الأثر قبل التصرف؟"
+    },
+    "proactivity": {
+      "label": "المبادرة",
+      "labelEn": "Proactivity",
+      "description": "التركيز على الحلول بدلاً من الشكوى."
+    },
+    "risk_management": {
+      "label": "إدارة المخاطر",
+      "labelEn": "Risk Management",
+      "description": "واقعية خطة التحوّل."
+    },
+    "communication": {
+      "label": "التواصل",
+      "labelEn": "Communication",
+      "description": "الشفافية مع أصحاب المصلحة."
+    },
+    "mindset": {
+      "label": "العقلية",
+      "labelEn": "Mindset",
+      "description": "العقلية البنّاءة (مرحلة القرار) مقابل الإنكار."
+    },
+    "risk_analysis": {
+      "label": "تحليل المخاطر",
+      "labelEn": "Risk Analysis",
+      "description": "تحديد المخاطر التقنية والسمعة على المدى الطويل."
+    },
+    "courage": {
+      "label": "الشجاعة",
+      "labelEn": "Courage",
+      "description": "الاستعداد لتحدي التوجيه غير الآمن."
+    },
+    "solution_orientation": {
+      "label": "التركيز على الحلول",
+      "labelEn": "Solution Orientation",
+      "description": "اقتراح تسوية جدوة (مثل التسليم المرحلي)."
+    },
+    "structure": {
+      "label": "البنية",
+      "labelEn": "Structure",
+      "description": "فصل واضح بين الوضع والمهمة والفعل والنتيجة."
+    },
+    "action_focus": {
+      "label": "التركيز على الفعل",
+      "labelEn": "Action Focus",
+      "description": "التركيز على ما فعله المرشّح شخصياً."
+    },
+    "result": {
+      "label": "النتيجة",
+      "labelEn": "Result",
+      "description": "نتيجة مقاسة أو مُعلَّنة بوضوح."
+    },
+    "methodology_choice": {
+      "label": "اختيار المنهجية",
+      "labelEn": "Methodology Choice",
+      "description": "الرشيق = 40 نقطة؛ الشلال = 0 نقطة."
+    },
+    "justification_quality": {
+      "label": "جودة التبرير",
+      "labelEn": "Justification Quality",
+      "description": "يبحث عن التكرار، ملاحظات المستخدم، وعدم اليقين."
+    },
+    "ai_literacy": {
+      "label": "إلمام الذكاء الاصطناعي",
+      "labelEn": "AI Literacy",
+      "description": "يحدد قدرة حقيقية ومعلومة محددة (مثل الهلوسة)."
+    },
+    "risk_data_privacy": {
+      "label": "مخاطر خصوصية البيانات",
+      "labelEn": "Risk & Data Privacy",
+      "description": "تحقق من المخرجات؛ لا يلصق بيانات سرية/شخصية في أداة خارجية."
+    },
+    "prompt_quality": {
+      "label": "جودة الطلب",
+      "labelEn": "Prompt Quality",
+      "description": "يطلب نبرة محترمة تراعي الهرمية والمنفعة الجماعية."
+    },
+    "identification": {
+      "label": "التعرّف",
+      "labelEn": "Identification",
+      "description": "يجب أن يعرّف الرسالة كرسالة احتيالية (نافذة عبور/فشل)."
+    },
+    "reasoning": {
+      "label": "التبرير",
+      "labelEn": "Reasoning",
+      "description": "يجب أن يستشهد بالنطاق الخارجي + الاستعجال + الطلب المالي، وخطوة التحقق."
+    },
+    "concern": {
+      "label": "الاهتمام",
+      "labelEn": "Concern",
+      "description": "التخطيط للأمام والوعي."
+    },
+    "control": {
+      "label": "السيطرة",
+      "labelEn": "Control",
+      "description": "القدرة على التأثير وكفاءة الذات في إدارة التغيير."
+    },
+    "curiosity": {
+      "label": "الفضول",
+      "labelEn": "Curiosity",
+      "description": "الاستكشاف النشط للمجال الجديد."
+    },
+    "confidence": {
+      "label": "الثقة",
+      "labelEn": "Confidence",
+      "labelAr": "الثقة",
+      "description": "الإيمان المدروس بالذات وموقف حل المشكلات."
+    },
+    "goal_clarity": {
+      "label": "وضوح الهدف",
+      "labelEn": "Goal Clarity",
+      "description": "هل الهدف محدّد ومُعرَّف جيداً؟"
+    },
+    "process_steps": {
+      "label": "خطوات العملية",
+      "labelEn": "Process Steps",
+      "description": "هل الخطوات لتحقيق الهدف مُحدَّدة؟"
+    },
+    "realistic_outcomes": {
+      "label": "النتائج الواقعية",
+      "labelEn": "Realistic Outcomes",
+      "description": "هل النتائج واقعية ومربوطة بالنمو والمساهمة؟"
+    },
+    "feedback_face": {
+      "label": "الملاحظات وحفظ المظهر",
+      "labelEn": "Feedback & Face-Saving",
+      "description": "ملاحظات خاصة، محددة، بأسلوب ساندويتش تحافظ على الكرامة."
+    },
+    "time_expectations": {
+      "label": "توقعات الوقت",
+      "labelEn": "Time Expectations",
+      "description": "رسالة غير اتهامية تشرح الأثر وتعرض التعاون."
+    },
+    "style_bridging": {
+      "label": "تعميق الأنماط",
+      "labelEn": "Style Bridging",
+      "description": "يتكيّف مع الزملاء الذين يركزون على المهام والذين يركزون على العلاقات."
+    },
+    "correctness": {
+      "label": "الصواب",
+      "labelEn": "Correctness",
+      "description": "هل تعمل الدالة وتُعيد العناصر الصحيحة؟"
+    },
+    "modern_syntax": {
+      "label": "ال نحو الحديث",
+      "labelEn": "Modern Syntax",
+      "description": "استخدام .filter()، const/let، دوال السهم."
+    },
+    "cleanliness": {
+      "label": "النظافة",
+      "labelEn": "Cleanliness",
+      "description": "تسمية المتغيرات وقابلية القراءة."
+    },
+    "issue_identification": {
+      "label": "تحديد المشكلة",
+      "labelEn": "Issue Identification",
+      "description": "يكتشف المحدد غير المحدد وgestione خطأ والربط غير المُرمَّز."
+    },
+    "explanation_quality": {
+      "label": "جودة التفسير",
+      "labelEn": "Explanation Quality",
+      "description": "وضوح التبرير التقني."
+    },
+    "ratio_interpretation": {
+      "label": "تفسير النسب",
+      "labelEn": "Ratio Interpretation",
+      "description": "يقرأ إشارات السيولة والتغطية ورأس المال العامل بشكل صحيح."
+    },
+    "risk_identification": {
+      "label": "تحديد المخاطر",
+      "labelEn": "Risk Identification",
+      "description": "يسمّي الخطر السائد (تغطية رقيقة / جودة الذمم المدينة)."
+    },
+    "decision_quality": {
+      "label": "جودة القرار",
+      "labelEn": "Decision Quality",
+      "description": "قرار قابل للدفاع مع شرط/تخفيف محدد."
+    },
+    "decomposition": {
+      "label": "التعمية",
+      "labelEn": "Decomposition",
+      "description": "يفصل محرّكات الحجم والسعر والمرة الواحدة بدلاً من رقم واحد."
+    },
+    "interpretation": {
+      "label": "التفسير",
+      "labelEn": "Interpretation",
+      "description": "يُميّز بين الانحراف القابل للسيطرة وغير القابل للسيطرة."
+    },
+    "weakness_identification": {
+      "label": "تحديد الضعف",
+      "labelEn": "Weakness Identification",
+      "description": "يسمّي إخفاق الفصل بين الواجبات كسبب جذري."
+    },
+    "risk_explanation": {
+      "label": "تفسير المخاطر",
+      "labelEn": "Risk Explanation",
+      "description": "يشرح التعرّض للاحتيال/الخطأ وليس المدفوعة المزدوجة فقط."
+    },
+    "remediation": {
+      "label": "العلاج",
+      "labelEn": "Remediation",
+      "description": "حل عملي وتناسب مع فريق صغير."
+    },
+    "containment_priority": {
+      "label": "أولوية الاحتواء",
+      "labelEn": "Containment Priority",
+      "description": "يعزل المضيف أولاً؛ لا يُطفئ الجهاز ويُتلف الأدلة القابلة للتطاير."
+    },
+    "investigation": {
+      "label": "التحقيق",
+      "labelEn": "Investigation",
+      "description": "يتحقق من الانتقال الجانبي ويحفظ السجلات/الأدلة."
+    },
+    "communication_reporting": {
+      "label": "التواصل والإبلاغ",
+      "labelEn": "Communication & Reporting",
+      "description": "التصعيد ومسار الإبلاغ المتوائم مع NCA."
+    },
+    "scoping": {
+      "label": "تحديد النطاق",
+      "labelEn": "Scoping",
+      "description": "يعالجها كحملة: يبحث في صناديق البريد ويحدد كل المستلمين/مؤشرات الاختراق."
+    },
+    "credential_response": {
+      "label": "استجابة بيانات الاعتماد",
+      "labelEn": "Credential Response",
+      "description": "يعيد تعيين بيانات الاعتماد المُخترَقة، ويتحقق من سوء تسجيل الدخول، ويفرض المصادقة الثنائية."
+    },
+    "prevention": {
+      "label": "الوقاية",
+      "labelEn": "Prevention",
+      "description": "يحجب النطاق، ويُبلِغ، يتبع التوعية."
+    },
+    "risk_assessment": {
+      "label": "تقييم المخاطر",
+      "labelEn": "Risk Assessment",
+      "description": "يستخدم الاحتمال × الخطورة؛ يrecognized الخطورة الكامنة العالية رغم عدم وجود أذى بعد."
+    },
+    "systemic_thinking": {
+      "label": "التفكير النظامي",
+      "labelEn": "Systemic Thinking",
+      "description": "يستهدف جذر التخزين/العملية، لا لوم الأفراد."
+    },
+    "mitigation_quality": {
+      "label": "جودة التخفيف",
+      "labelEn": "Mitigation Quality",
+      "description": "ضوابط محددة متوائمة مع CBAHI."
+    },
+    "bottleneck_identification": {
+      "label": "تحديد العقدة",
+      "labelEn": "Bottleneck Identification",
+      "description": "يحدد القيود downstream (السرير/الخروج)، لا الفرز."
+    },
+    "improvement": {
+      "label": "التحسين",
+      "labelEn": "Improvement",
+      "description": "تغيير مسار محدد (خروج مبكر، صالة خروج)."
+    },
+    "measurement": {
+      "label": "القياس",
+      "labelEn": "Measurement",
+      "description": "مقياس لتأكيد الإصلاح."
+    },
+    "privacy_identification": {
+      "label": "تحديد الخصوصية",
+      "labelEn": "Privacy Identification",
+      "description": "يُدرك البيانات الصحية الحساسة ومسألة PDPL/الموافقة."
+    },
+    "lawful_basis": {
+      "label": "الأساس القانوني",
+      "labelEn": "Lawful Basis",
+      "description": "يتطلب الموافقة/الأساس القانوني، التقليل، اتفاقية البيانات."
+    },
+    "professional_handling": {
+      "label": "التعامل المهني",
+      "labelEn": "Professional Handling",
+      "description": "يرفض المسار غير الآمن بلباقة ويعرض بديلاً متوائماً."
+    },
+    "metric_understanding": {
+      "label": "فهم المقياس",
+      "labelEn": "Metric Understanding",
+      "description": "يشرح لماذا تُضليل الدقة في حالة عدم التوازن؛ يستشهد بالدقة/الاستدعاء."
+    },
+    "tradeoff_reasoning": {
+      "label": "تبرير المفاضلة",
+      "labelEn": "Trade-off Reasoning",
+      "description": "يربط اختيار المقياس بتكلفة الخطأ السالب مقابل الخطأ الموجب."
+    },
+    "leakage_identification": {
+      "label": "تحديد التسريب",
+      "labelEn": "Leakage Identification",
+      "description": "يكتشف تسريب الهدف والمعالجة قبل التصفية."
+    },
+    "harm_recognition": {
+      "label": "إدراك الأذى",
+      "labelEn": "Harm Recognition",
+      "description": "يُدرك التأثير المختلف كخطر عدالة يمنع النشر."
+    },
+    "mitigation": {
+      "label": "التخفيف",
+      "labelEn": "Mitigation",
+      "description": "يتحقق من السبب، يُصلح البيانات/الميزات/العتبة، ويُعيد الاختبار حسب المجموعة."
+    },
+    "governance": {
+      "label": "الحوكمة",
+      "labelEn": "Governance",
+      "description": "الإشراف البشري، التوثيق، التوافق مع SDAIA/PDPL."
+    }
+  },
+
+  "rubricLabels": {
+    "criterion": "المعيار",
+    "weight": "الوزن",
+    "descriptor": "الوصف",
+    "gate": "بوابة صلبة",
+    "hardGateWarning": "الانتباه: هذا المعيار بوابة صلبة. فشل فيه يُقيّد درجتك بشريحة \"ضعيف\".",
+    "weightMustSumTo100": "أوزان المعايير يجب أن تُجمَّع إلى 100.",
+    "gateCriterion": "معيار بوابة صلبة",
+    "addCriterion": "إضافة معيار",
+    "removeCriterion": "إزالة المعيار",
+    "criterionName": "اسم المعيار",
+    "criterionDescriptor": "وصف المعيار",
+    "criterionWeight": "الوزن (0-100)"
+  }
+}

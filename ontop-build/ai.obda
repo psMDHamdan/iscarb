@@ -1,0 +1,238 @@
+[PrefixDeclaration]
+:		https://iscarb.edu/ontology/ai/
+iscarb-ai:	https://iscarb.edu/ontology/ai/
+xsd:		http://www.w3.org/2001/XMLSchema#
+owl:		http://www.w3.org/2002/07/owl#
+rdf:		http://www.w3.org/1999/02/22-rdf-syntax-ns#
+rdfs:		http://www.w3.org/2000/01/rdf-schema#
+
+[MappingDeclaration] @collection [[
+mappingId	aiprompt-mapping
+target		iscarb-ai:aiprompt/{id} a iscarb-ai:AiPrompt ; iscarb-ai:id {id} ; iscarb-ai:unitId {unitId} ; iscarb-ai:stage {stage} ; iscarb-ai:modelTag {modelTag} ; iscarb-ai:systemPrompt {systemPrompt} ; iscarb-ai:userTemplate {userTemplate} ; iscarb-ai:temperature {temperature} ; iscarb-ai:createdAt {createdAt} .
+source		SELECT "id", "unitId", "stage", "modelTag", "systemPrompt", "userTemplate", "temperature", "createdAt" FROM "AiPrompt"
+
+mappingId	aiprompt-has-unit
+target		iscarb-ai:aiprompt/{id} iscarb-ai:unit <https://iscarb.edu/ontology/core/unit/{unitId}> .
+source		SELECT "id", "unitId" FROM "AiPrompt" WHERE "unitId" IS NOT NULL
+
+mappingId	emailverification-mapping
+target		iscarb-ai:emailverification/{id} a iscarb-ai:EmailVerification ; iscarb-ai:id {id} ; iscarb-ai:userId {userId} ; iscarb-ai:email {email} ; iscarb-ai:tokenHash {tokenHash} ; iscarb-ai:expiresAt {expiresAt} ; iscarb-ai:used {used} ; iscarb-ai:createdAt {createdAt} .
+source		SELECT "id", "userId", "email", "tokenHash", "expiresAt", "used", "createdAt" FROM "EmailVerification"
+
+mappingId	maintenancelog-mapping
+target		iscarb-ai:maintenancelog/{id} a iscarb-ai:MaintenanceLog ; iscarb-ai:id {id} ; iscarb-ai:assetId {assetId} ; iscarb-ai:type {type} ; iscarb-ai:description {description} ; iscarb-ai:cost {cost} ; iscarb-ai:scheduledDate {scheduledDate} ; iscarb-ai:completedDate {completedDate} ; iscarb-ai:status {status} ; iscarb-ai:assignedTo {assignedTo} ; iscarb-ai:createdAt {createdAt} .
+source		SELECT "id", "assetId", "type", "description", "cost", "scheduledDate", "completedDate", "status", "assignedTo", "createdAt" FROM "MaintenanceLog"
+
+mappingId	maintenancelog-has-asset
+target		iscarb-ai:maintenancelog/{id} iscarb-ai:asset <https://iscarb.edu/ontology/core/asset/{assetId}> .
+source		SELECT "id", "assetId" FROM "MaintenanceLog" WHERE "assetId" IS NOT NULL
+
+mappingId	airequestlog-mapping
+target		iscarb-ai:airequestlog/{id} a iscarb-ai:AiRequestLog ; iscarb-ai:id {id} ; iscarb-ai:userId {userId} ; iscarb-ai:modelId {modelId} ; iscarb-ai:prompt {prompt} ; iscarb-ai:response {response} ; iscarb-ai:tokensInput {tokensInput} ; iscarb-ai:tokensOutput {tokensOutput} ; iscarb-ai:cost {cost} ; iscarb-ai:latencyMs {latencyMs} ; iscarb-ai:status {status} ; iscarb-ai:errorMessage {errorMessage} ; iscarb-ai:metadata {metadata} ; iscarb-ai:createdAt {createdAt} .
+source		SELECT "id", "userId", "modelId", "prompt", "response", "tokensInput", "tokensOutput", "cost", "latencyMs", "status", "errorMessage", "metadata", "createdAt" FROM "AiRequestLog"
+
+mappingId	airequestlog-has-model
+target		iscarb-ai:airequestlog/{id} iscarb-ai:model <https://iscarb.edu/ontology/core/aimodel/{modelId}> .
+source		SELECT "id", "modelId" FROM "AiRequestLog" WHERE "modelId" IS NOT NULL
+
+mappingId	aimodel-mapping
+target		iscarb-ai:aimodel/{id} a iscarb-ai:AiModel ; iscarb-ai:id {id} ; iscarb-ai:name {name} ; iscarb-ai:version {version} ; iscarb-ai:provider {provider} ; iscarb-ai:endpoint {endpoint} ; iscarb-ai:apiKeyEncrypted {apiKeyEncrypted} ; iscarb-ai:config {config} ; iscarb-ai:status {status} ; iscarb-ai:health {health} ; iscarb-ai:maxTokens {maxTokens} ; iscarb-ai:costPer1kInput {costPer1kInput} ; iscarb-ai:costPer1kOutput {costPer1kOutput} ; iscarb-ai:createdAt {createdAt} ; iscarb-ai:updatedAt {updatedAt} .
+source		SELECT "id", "name", "version", "provider", "endpoint", "apiKeyEncrypted", "config", "status", "health", "maxTokens", "costPer1kInput", "costPer1kOutput", "createdAt", "updatedAt" FROM "AiModel"
+
+mappingId	aimodelversion-mapping
+target		iscarb-ai:aimodelversion/{id} a iscarb-ai:AiModelVersion ; iscarb-ai:id {id} ; iscarb-ai:modelId {modelId} ; iscarb-ai:version {version} ; iscarb-ai:config {config} ; iscarb-ai:isActive {isActive} ; iscarb-ai:createdAt {createdAt} .
+source		SELECT "id", "modelId", "version", "config", "isActive", "createdAt" FROM "AiModelVersion"
+
+mappingId	aimodelversion-has-model
+target		iscarb-ai:aimodelversion/{id} iscarb-ai:model <https://iscarb.edu/ontology/core/aimodel/{modelId}> .
+source		SELECT "id", "modelId" FROM "AiModelVersion" WHERE "modelId" IS NOT NULL
+
+mappingId	aimodelmetric-mapping
+target		iscarb-ai:aimodelmetric/{id} a iscarb-ai:AiModelMetric ; iscarb-ai:id {id} ; iscarb-ai:modelId {modelId} ; iscarb-ai:metric {metric} ; iscarb-ai:value {value} ; iscarb-ai:timestamp {timestamp} .
+source		SELECT "id", "modelId", "metric", "value", "timestamp" FROM "AiModelMetric"
+
+mappingId	aimodelmetric-has-model
+target		iscarb-ai:aimodelmetric/{id} iscarb-ai:model <https://iscarb.edu/ontology/core/aimodel/{modelId}> .
+source		SELECT "id", "modelId" FROM "AiModelMetric" WHERE "modelId" IS NOT NULL
+
+mappingId	aiagent-mapping
+target		iscarb-ai:aiagent/{id} a iscarb-ai:AiAgent ; iscarb-ai:id {id} ; iscarb-ai:name {name} ; iscarb-ai:description {description} ; iscarb-ai:type {type} ; iscarb-ai:config {config} ; iscarb-ai:tools {tools} ; iscarb-ai:systemPrompt {systemPrompt} ; iscarb-ai:status {status} ; iscarb-ai:organizationId {organizationId} ; iscarb-ai:createdAt {createdAt} ; iscarb-ai:updatedAt {updatedAt} .
+source		SELECT "id", "name", "description", "type", "config", "tools", "systemPrompt", "status", "organizationId", "createdAt", "updatedAt" FROM "AiAgent"
+
+mappingId	aiagentsession-mapping
+target		iscarb-ai:aiagentsession/{id} a iscarb-ai:AiAgentSession ; iscarb-ai:id {id} ; iscarb-ai:agentId {agentId} ; iscarb-ai:userId {userId} ; iscarb-ai:context {context} ; iscarb-ai:status {status} ; iscarb-ai:startedAt {startedAt} ; iscarb-ai:endedAt {endedAt} .
+source		SELECT "id", "agentId", "userId", "context", "status", "startedAt", "endedAt" FROM "AiAgentSession"
+
+mappingId	aiagentsession-has-agent
+target		iscarb-ai:aiagentsession/{id} iscarb-ai:agent <https://iscarb.edu/ontology/core/aiagent/{agentId}> .
+source		SELECT "id", "agentId" FROM "AiAgentSession" WHERE "agentId" IS NOT NULL
+
+mappingId	aiagentmessage-mapping
+target		iscarb-ai:aiagentmessage/{id} a iscarb-ai:AiAgentMessage ; iscarb-ai:id {id} ; iscarb-ai:sessionId {sessionId} ; iscarb-ai:role {role} ; iscarb-ai:content {content} ; iscarb-ai:toolCalls {toolCalls} ; iscarb-ai:toolResults {toolResults} ; iscarb-ai:tokens {tokens} ; iscarb-ai:createdAt {createdAt} .
+source		SELECT "id", "sessionId", "role", "content", "toolCalls", "toolResults", "tokens", "createdAt" FROM "AiAgentMessage"
+
+mappingId	aiagentmessage-has-session
+target		iscarb-ai:aiagentmessage/{id} iscarb-ai:session <https://iscarb.edu/ontology/core/aiagentsession/{sessionId}> .
+source		SELECT "id", "sessionId" FROM "AiAgentMessage" WHERE "sessionId" IS NOT NULL
+
+mappingId	aimemory-mapping
+target		iscarb-ai:aimemory/{id} a iscarb-ai:AiMemory ; iscarb-ai:id {id} ; iscarb-ai:userId {userId} ; iscarb-ai:type {type} ; iscarb-ai:content {content} ; iscarb-ai:summary {summary} ; iscarb-ai:embedding {embedding} ; iscarb-ai:metadata {metadata} ; iscarb-ai:relevance {relevance} ; iscarb-ai:accessCount {accessCount} ; iscarb-ai:lastAccessedAt {lastAccessedAt} ; iscarb-ai:expiresAt {expiresAt} ; iscarb-ai:createdAt {createdAt} ; iscarb-ai:updatedAt {updatedAt} .
+source		SELECT "id", "userId", "type", "content", "summary", "embedding", "metadata", "relevance", "accessCount", "lastAccessedAt", "expiresAt", "createdAt", "updatedAt" FROM "AiMemory"
+
+mappingId	aiplan-mapping
+target		iscarb-ai:aiplan/{id} a iscarb-ai:AiPlan ; iscarb-ai:id {id} ; iscarb-ai:userId {userId} ; iscarb-ai:goal {goal} ; iscarb-ai:description {description} ; iscarb-ai:status {status} ; iscarb-ai:priority {priority} ; iscarb-ai:targetDate {targetDate} ; iscarb-ai:completedAt {completedAt} ; iscarb-ai:metadata {metadata} ; iscarb-ai:createdAt {createdAt} ; iscarb-ai:updatedAt {updatedAt} .
+source		SELECT "id", "userId", "goal", "description", "status", "priority", "targetDate", "completedAt", "metadata", "createdAt", "updatedAt" FROM "AiPlan"
+
+mappingId	aiplanstep-mapping
+target		iscarb-ai:aiplanstep/{id} a iscarb-ai:AiPlanStep ; iscarb-ai:id {id} ; iscarb-ai:planId {planId} ; iscarb-ai:order {order} ; iscarb-ai:description {description} ; iscarb-ai:status {status} ; iscarb-ai:result {result} ; iscarb-ai:dependencies {dependencies} ; iscarb-ai:startedAt {startedAt} ; iscarb-ai:completedAt {completedAt} ; iscarb-ai:createdAt {createdAt} .
+source		SELECT "id", "planId", "order", "description", "status", "result", "dependencies", "startedAt", "completedAt", "createdAt" FROM "AiPlanStep"
+
+mappingId	aiplanstep-has-plan
+target		iscarb-ai:aiplanstep/{id} iscarb-ai:plan <https://iscarb.edu/ontology/core/aiplan/{planId}> .
+source		SELECT "id", "planId" FROM "AiPlanStep" WHERE "planId" IS NOT NULL
+
+mappingId	aireflection-mapping
+target		iscarb-ai:aireflection/{id} a iscarb-ai:AiReflection ; iscarb-ai:id {id} ; iscarb-ai:planId {planId} ; iscarb-ai:userId {userId} ; iscarb-ai:content {content} ; iscarb-ai:insights {insights} ; iscarb-ai:confidence {confidence} ; iscarb-ai:createdAt {createdAt} .
+source		SELECT "id", "planId", "userId", "content", "insights", "confidence", "createdAt" FROM "AiReflection"
+
+mappingId	aireflection-has-plan
+target		iscarb-ai:aireflection/{id} iscarb-ai:plan <https://iscarb.edu/ontology/core/aiplan/{planId}> .
+source		SELECT "id", "planId" FROM "AiReflection" WHERE "planId" IS NOT NULL
+
+mappingId	aitool-mapping
+target		iscarb-ai:aitool/{id} a iscarb-ai:AiTool ; iscarb-ai:id {id} ; iscarb-ai:name {name} ; iscarb-ai:description {description} ; iscarb-ai:parameters {parameters} ; iscarb-ai:category {category} ; iscarb-ai:isActive {isActive} ; iscarb-ai:requiredRole {requiredRole} ; iscarb-ai:createdAt {createdAt} ; iscarb-ai:updatedAt {updatedAt} .
+source		SELECT "id", "name", "description", "parameters", "category", "isActive", "requiredRole", "createdAt", "updatedAt" FROM "AiTool"
+
+mappingId	aitoolexecution-mapping
+target		iscarb-ai:aitoolexecution/{id} a iscarb-ai:AiToolExecution ; iscarb-ai:id {id} ; iscarb-ai:toolId {toolId} ; iscarb-ai:sessionId {sessionId} ; iscarb-ai:userId {userId} ; iscarb-ai:params {params} ; iscarb-ai:result {result} ; iscarb-ai:status {status} ; iscarb-ai:errorMessage {errorMessage} ; iscarb-ai:durationMs {durationMs} ; iscarb-ai:createdAt {createdAt} .
+source		SELECT "id", "toolId", "sessionId", "userId", "params", "result", "status", "errorMessage", "durationMs", "createdAt" FROM "AiToolExecution"
+
+mappingId	aitoolexecution-has-tool
+target		iscarb-ai:aitoolexecution/{id} iscarb-ai:tool <https://iscarb.edu/ontology/core/aitool/{toolId}> .
+source		SELECT "id", "toolId" FROM "AiToolExecution" WHERE "toolId" IS NOT NULL
+
+mappingId	aievaluation-mapping
+target		iscarb-ai:aievaluation/{id} a iscarb-ai:AiEvaluation ; iscarb-ai:id {id} ; iscarb-ai:sessionId {sessionId} ; iscarb-ai:userId {userId} ; iscarb-ai:metric {metric} ; iscarb-ai:value {value} ; iscarb-ai:threshold {threshold} ; iscarb-ai:passed {passed} ; iscarb-ai:details {details} ; iscarb-ai:createdAt {createdAt} .
+source		SELECT "id", "sessionId", "userId", "metric", "value", "threshold", "passed", "details", "createdAt" FROM "AiEvaluation"
+
+mappingId	aifeedback-mapping
+target		iscarb-ai:aifeedback/{id} a iscarb-ai:AiFeedback ; iscarb-ai:id {id} ; iscarb-ai:sessionId {sessionId} ; iscarb-ai:userId {userId} ; iscarb-ai:rating {rating} ; iscarb-ai:comment {comment} ; iscarb-ai:helpful {helpful} ; iscarb-ai:category {category} ; iscarb-ai:createdAt {createdAt} .
+source		SELECT "id", "sessionId", "userId", "rating", "comment", "helpful", "category", "createdAt" FROM "AiFeedback"
+
+mappingId	aialert-mapping
+target		iscarb-ai:aialert/{id} a iscarb-ai:AiAlert ; iscarb-ai:id {id} ; iscarb-ai:type {type} ; iscarb-ai:severity {severity} ; iscarb-ai:title {title} ; iscarb-ai:message {message} ; iscarb-ai:status {status} ; iscarb-ai:metadata {metadata} ; iscarb-ai:createdAt {createdAt} ; iscarb-ai:acknowledgedAt {acknowledgedAt} ; iscarb-ai:resolvedAt {resolvedAt} .
+source		SELECT "id", "type", "severity", "title", "message", "status", "metadata", "createdAt", "acknowledgedAt", "resolvedAt" FROM "AiAlert"
+
+mappingId	aimetric-mapping
+target		iscarb-ai:aimetric/{id} a iscarb-ai:AiMetric ; iscarb-ai:id {id} ; iscarb-ai:metric {metric} ; iscarb-ai:value {value} ; iscarb-ai:dimensions {dimensions} ; iscarb-ai:timestamp {timestamp} .
+source		SELECT "id", "metric", "value", "dimensions", "timestamp" FROM "AiMetric"
+
+mappingId	emailtemplate-mapping
+target		iscarb-ai:emailtemplate/{id} a iscarb-ai:EmailTemplate ; iscarb-ai:id {id} ; iscarb-ai:name {name} ; iscarb-ai:subject {subject} ; iscarb-ai:body {body} ; iscarb-ai:variables {variables} ; iscarb-ai:category {category} ; iscarb-ai:organizationId {organizationId} ; iscarb-ai:isActive {isActive} ; iscarb-ai:createdAt {createdAt} ; iscarb-ai:updatedAt {updatedAt} .
+source		SELECT "id", "name", "subject", "body", "variables", "category", "organizationId", "isActive", "createdAt", "updatedAt" FROM "EmailTemplate"
+
+mappingId	emaillog-mapping
+target		iscarb-ai:emaillog/{id} a iscarb-ai:EmailLog ; iscarb-ai:id {id} ; iscarb-ai:templateId {templateId} ; iscarb-ai:to {to} ; iscarb-ai:subject {subject} ; iscarb-ai:status {status} ; iscarb-ai:sentAt {sentAt} ; iscarb-ai:deliveredAt {deliveredAt} ; iscarb-ai:errorMessage {errorMessage} ; iscarb-ai:metadata {metadata} .
+source		SELECT "id", "templateId", "to", "subject", "status", "sentAt", "deliveredAt", "errorMessage", "metadata" FROM "EmailLog"
+
+mappingId	waitlist-mapping
+target		iscarb-ai:waitlist/{id} a iscarb-ai:Waitlist ; iscarb-ai:id {id} ; iscarb-ai:courseId {courseId} ; iscarb-ai:studentId {studentId} ; iscarb-ai:position {position} ; iscarb-ai:status {status} ; iscarb-ai:createdAt {createdAt} ; iscarb-ai:updatedAt {updatedAt} .
+source		SELECT "id", "courseId", "studentId", "position", "status", "createdAt", "updatedAt" FROM "Waitlist"
+
+mappingId	dailylearninggoal-mapping
+target		iscarb-ai:dailylearninggoal/{id} a iscarb-ai:DailyLearningGoal ; iscarb-ai:id {id} ; iscarb-ai:journeyId {journeyId} ; iscarb-ai:title {title} ; iscarb-ai:targetMinutes {targetMinutes} ; iscarb-ai:actualMinutes {actualMinutes} ; iscarb-ai:date {date} ; iscarb-ai:completed {completed} ; iscarb-ai:createdAt {createdAt} ; iscarb-ai:updatedAt {updatedAt} .
+source		SELECT "id", "journeyId", "title", "targetMinutes", "actualMinutes", "date", "completed", "createdAt", "updatedAt" FROM "DailyLearningGoal"
+
+mappingId	dailylearninggoal-has-journey
+target		iscarb-ai:dailylearninggoal/{id} iscarb-ai:journey <https://iscarb.edu/ontology/core/learningjourney/{journeyId}> .
+source		SELECT "id", "journeyId" FROM "DailyLearningGoal" WHERE "journeyId" IS NOT NULL
+
+mappingId	aiexplainrequest-mapping
+target		iscarb-ai:aiexplainrequest/{id} a iscarb-ai:AIExplainRequest ; iscarb-ai:id {id} ; iscarb-ai:studentId {studentId} ; iscarb-ai:topic {topic} ; iscarb-ai:mode {mode} ; iscarb-ai:language {language} ; iscarb-ai:response {response} ; iscarb-ai:rating {rating} ; iscarb-ai:createdAt {createdAt} ; iscarb-ai:updatedAt {updatedAt} .
+source		SELECT "id", "studentId", "topic", "mode", "language", "response", "rating", "createdAt", "updatedAt" FROM "AIExplainRequest"
+
+mappingId	aiexplainrequest-has-student
+target		iscarb-ai:aiexplainrequest/{id} iscarb-ai:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "AIExplainRequest" WHERE "studentId" IS NOT NULL
+
+mappingId	aigeneratedquiz-mapping
+target		iscarb-ai:aigeneratedquiz/{id} a iscarb-ai:AIGeneratedQuiz ; iscarb-ai:id {id} ; iscarb-ai:studentId {studentId} ; iscarb-ai:courseId {courseId} ; iscarb-ai:topic {topic} ; iscarb-ai:questionCount {questionCount} ; iscarb-ai:difficulty {difficulty} ; iscarb-ai:questions {questions} ; iscarb-ai:score {score} ; iscarb-ai:completedAt {completedAt} ; iscarb-ai:createdAt {createdAt} ; iscarb-ai:updatedAt {updatedAt} .
+source		SELECT "id", "studentId", "courseId", "topic", "questionCount", "difficulty", "questions", "score", "completedAt", "createdAt", "updatedAt" FROM "AIGeneratedQuiz"
+
+mappingId	aigeneratedquiz-has-student
+target		iscarb-ai:aigeneratedquiz/{id} iscarb-ai:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "AIGeneratedQuiz" WHERE "studentId" IS NOT NULL
+
+mappingId	aistudyrecommendation-mapping
+target		iscarb-ai:aistudyrecommendation/{id} a iscarb-ai:AIStudyRecommendation ; iscarb-ai:id {id} ; iscarb-ai:studentId {studentId} ; iscarb-ai:type {type} ; iscarb-ai:title {title} ; iscarb-ai:description {description} ; iscarb-ai:priority {priority} ; iscarb-ai:reasoning {reasoning} ; iscarb-ai:accepted {accepted} ; iscarb-ai:createdAt {createdAt} ; iscarb-ai:updatedAt {updatedAt} .
+source		SELECT "id", "studentId", "type", "title", "description", "priority", "reasoning", "accepted", "createdAt", "updatedAt" FROM "AIStudyRecommendation"
+
+mappingId	aistudyrecommendation-has-student
+target		iscarb-ai:aistudyrecommendation/{id} iscarb-ai:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "AIStudyRecommendation" WHERE "studentId" IS NOT NULL
+
+mappingId	ailearninginsight-mapping
+target		iscarb-ai:ailearninginsight/{id} a iscarb-ai:AILearningInsight ; iscarb-ai:id {id} ; iscarb-ai:studentId {studentId} ; iscarb-ai:insightType {insightType} ; iscarb-ai:title {title} ; iscarb-ai:description {description} ; iscarb-ai:confidence {confidence} ; iscarb-ai:actionable {actionable} ; iscarb-ai:acknowledged {acknowledged} ; iscarb-ai:createdAt {createdAt} ; iscarb-ai:updatedAt {updatedAt} .
+source		SELECT "id", "studentId", "insightType", "title", "description", "confidence", "actionable", "acknowledged", "createdAt", "updatedAt" FROM "AILearningInsight"
+
+mappingId	ailearninginsight-has-student
+target		iscarb-ai:ailearninginsight/{id} iscarb-ai:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "AILearningInsight" WHERE "studentId" IS NOT NULL
+
+mappingId	facultytraining-mapping
+target		iscarb-ai:facultytraining/{id} a iscarb-ai:FacultyTraining ; iscarb-ai:id {id} ; iscarb-ai:facultyId {facultyId} ; iscarb-ai:title {title} ; iscarb-ai:category {category} ; iscarb-ai:provider {provider} ; iscarb-ai:startDate {startDate} ; iscarb-ai:endDate {endDate} ; iscarb-ai:hours {hours} ; iscarb-ai:status {status} ; iscarb-ai:certificate {certificate} ; iscarb-ai:competencyJson {competencyJson} ; iscarb-ai:universityId {universityId} ; iscarb-ai:createdAt {createdAt} ; iscarb-ai:updatedAt {updatedAt} .
+source		SELECT "id", "facultyId", "title", "category", "provider", "startDate", "endDate", "hours", "status", "certificate", "competencyJson", "universityId", "createdAt", "updatedAt" FROM "FacultyTraining"
+
+mappingId	savedprompt-mapping
+target		iscarb-ai:savedprompt/{id} a iscarb-ai:SavedPrompt ; iscarb-ai:id {id} ; iscarb-ai:facultyId {facultyId} ; iscarb-ai:title {title} ; iscarb-ai:prompt {prompt} ; iscarb-ai:category {category} ; iscarb-ai:usageCount {usageCount} ; iscarb-ai:universityId {universityId} ; iscarb-ai:createdAt {createdAt} ; iscarb-ai:updatedAt {updatedAt} .
+source		SELECT "id", "facultyId", "title", "prompt", "category", "usageCount", "universityId", "createdAt", "updatedAt" FROM "SavedPrompt"
+
+mappingId	domainevent-mapping
+target		iscarb-ai:domainevent/{id} a iscarb-ai:DomainEvent ; iscarb-ai:id {id} ; iscarb-ai:type {type} ; iscarb-ai:source {source} ; iscarb-ai:entityId {entityId} ; iscarb-ai:entityType {entityType} ; iscarb-ai:payload {payload} ; iscarb-ai:metadata {metadata} ; iscarb-ai:publishedAt {publishedAt} ; iscarb-ai:processedBy {processedBy} .
+source		SELECT "id", "type", "source", "entityId", "entityType", "payload", "metadata", "publishedAt", "processedBy" FROM "DomainEvent"
+
+mappingId	airecommendation-mapping
+target		iscarb-ai:airecommendation/{id} a iscarb-ai:AIRecommendation ; iscarb-ai:id {id} ; iscarb-ai:studentId {studentId} ; iscarb-ai:type {type} ; iscarb-ai:title {title} ; iscarb-ai:description {description} ; iscarb-ai:reasoning {reasoning} ; iscarb-ai:relatedEntity {relatedEntity} ; iscarb-ai:relatedType {relatedType} ; iscarb-ai:status {status} ; iscarb-ai:acceptedAt {acceptedAt} ; iscarb-ai:completedAt {completedAt} ; iscarb-ai:createdAt {createdAt} .
+source		SELECT "id", "studentId", "type", "title", "description", "reasoning", "relatedEntity", "relatedType", "status", "acceptedAt", "completedAt", "createdAt" FROM "AIRecommendation"
+
+mappingId	airecommendation-has-student
+target		iscarb-ai:airecommendation/{id} iscarb-ai:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "AIRecommendation" WHERE "studentId" IS NOT NULL
+
+mappingId	aitutoringsession-mapping
+target		iscarb-ai:aitutoringsession/{id} a iscarb-ai:AITutoringSession ; iscarb-ai:id {id} ; iscarb-ai:studentId {studentId} ; iscarb-ai:courseId {courseId} ; iscarb-ai:topicId {topicId} ; iscarb-ai:messages {messages} ; iscarb-ai:startedAt {startedAt} ; iscarb-ai:endedAt {endedAt} ; iscarb-ai:totalMinutes {totalMinutes} ; iscarb-ai:feedbackRating {feedbackRating} ; iscarb-ai:summary {summary} ; iscarb-ai:createdAt {createdAt} .
+source		SELECT "id", "studentId", "courseId", "topicId", "messages", "startedAt", "endedAt", "totalMinutes", "feedbackRating", "summary", "createdAt" FROM "AITutoringSession"
+
+mappingId	aitutoringsession-has-course
+target		iscarb-ai:aitutoringsession/{id} iscarb-ai:course <https://iscarb.edu/ontology/core/course/{courseId}> .
+source		SELECT "id", "courseId" FROM "AITutoringSession" WHERE "courseId" IS NOT NULL
+
+mappingId	aitutoringsession-has-student
+target		iscarb-ai:aitutoringsession/{id} iscarb-ai:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "AITutoringSession" WHERE "studentId" IS NOT NULL
+
+mappingId	aicontentgeneration-mapping
+target		iscarb-ai:aicontentgeneration/{id} a iscarb-ai:AIContentGeneration ; iscarb-ai:id {id} ; iscarb-ai:studentId {studentId} ; iscarb-ai:contentType {contentType} ; iscarb-ai:sourceId {sourceId} ; iscarb-ai:sourceType {sourceType} ; iscarb-ai:generatedContent {generatedContent} ; iscarb-ai:rating {rating} ; iscarb-ai:createdAt {createdAt} .
+source		SELECT "id", "studentId", "contentType", "sourceId", "sourceType", "generatedContent", "rating", "createdAt" FROM "AIContentGeneration"
+
+mappingId	aicontentgeneration-has-student
+target		iscarb-ai:aicontentgeneration/{id} iscarb-ai:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "AIContentGeneration" WHERE "studentId" IS NOT NULL
+
+mappingId	aiinterventioncampaign-mapping
+target		iscarb-ai:aiinterventioncampaign/{id} a iscarb-ai:AIInterventionCampaign ; iscarb-ai:id {id} ; iscarb-ai:studentId {studentId} ; iscarb-ai:interventionType {interventionType} ; iscarb-ai:trigger {trigger} ; iscarb-ai:recommendedActions {recommendedActions} ; iscarb-ai:status {status} ; iscarb-ai:sentAt {sentAt} ; iscarb-ai:respondedAt {respondedAt} ; iscarb-ai:outcome {outcome} ; iscarb-ai:createdAt {createdAt} .
+source		SELECT "id", "studentId", "interventionType", "trigger", "recommendedActions", "status", "sentAt", "respondedAt", "outcome", "createdAt" FROM "AIInterventionCampaign"
+
+mappingId	aiinterventioncampaign-has-student
+target		iscarb-ai:aiinterventioncampaign/{id} iscarb-ai:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "AIInterventionCampaign" WHERE "studentId" IS NOT NULL
+
+mappingId	resumeaireview-mapping
+target		iscarb-ai:resumeaireview/{id} a iscarb-ai:ResumeAiReview ; iscarb-ai:id {id} ; iscarb-ai:studentId {studentId} ; iscarb-ai:resumeContent {resumeContent} ; iscarb-ai:strengths {strengths} ; iscarb-ai:improvements {improvements} ; iscarb-ai:suggestedRevisions {suggestedRevisions} ; iscarb-ai:score {score} ; iscarb-ai:reviewedAt {reviewedAt} ; iscarb-ai:studentAccepted {studentAccepted} ; iscarb-ai:createdAt {createdAt} .
+source		SELECT "id", "studentId", "resumeContent", "strengths", "improvements", "suggestedRevisions", "score", "reviewedAt", "studentAccepted", "createdAt" FROM "ResumeAiReview"
+
+mappingId	resumeaireview-has-student
+target		iscarb-ai:resumeaireview/{id} iscarb-ai:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "ResumeAiReview" WHERE "studentId" IS NOT NULL
+
+]]

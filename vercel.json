@@ -1,0 +1,21 @@
+{
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "functions": {
+    "app/api/iscarb/lecture/worker/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/iscarb/lecture/projects/[id]/generate/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/iscarb/lecture/projects/[id]/plan/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/iscarb/lecture/projects/[id]/sources/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/iscarb/lecture/artifacts/[id]/decisions/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}

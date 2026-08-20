@@ -1,0 +1,216 @@
+{
+  "_meta": {
+    "locale": "ar",
+    "direction": "rtl",
+    "description": "Arabic translations for iSCARB Assessment UI strings",
+    "lastUpdated": "2026-07-11"
+  },
+
+  "player": {
+    "title": "التقييم",
+    "loading": "جارٍ تحميل التقييم…",
+    "submitted": "تم تسليم التقييم بنجاح",
+    "submit": "إرسال التقييم",
+    "submitting": "جارٍ الإرسال…",
+    "submittedStatus": "تم الإرسال",
+    "saveDraft": "حفظ المسودة",
+    "draftSaved": "تم حفظ المسودة",
+    "lastSaved": "آخر حفظ: {time}",
+    "autoSave": "الحفظ التلقائي كل 30 ثانية",
+    "questionOf": "السؤال {current} من {total}",
+    "status": "الحالة: {status}",
+    "points": "النقاط: {points}",
+    "required": "هذا السؤال مطلوب",
+    "previous": "السابق",
+    "next": "التالي",
+    "continueEditing": "متابعة التحرير",
+    "reviewAnswers": "مراجعة إجاباتك",
+    "reviewDescription": "يرجى مراجعة جميع إجاباتك قبل الإرسال. الإجابات غير المُجابة ستكون مُعلَّمة.",
+    "onceSubmitted": "بمجرد الإرسال، لا يمكنك تغيير إجاباتك.",
+    "reviewCarefully": "يرجى مراجعة كل سؤال بعناية قبل النقر على إرسال.",
+    "answered": "تمت الإجابة",
+    "unanswered": "لم تُجَب",
+    "totalQuestions": "إجمالي الأسئلة",
+    "backToAssessments": "العودة للتقييمات",
+    "submitConfirmation": "تم تسليم إجاباتك بنجاح. ستتلقى نتائجك بمجرد تقييمها."
+  },
+
+  "review": {
+    "title": "مراجعة التقييم",
+    "score": "الدرجة",
+    "pass": "ناجح",
+    "fail": "راسب",
+    "feedback": "التغذية الراجعة",
+    "strengths": "نقاط القوة",
+    "improvements": "مجالات التحسين",
+    "perCriterion": "تفصيل المعايير",
+    "overallScore": "الدرجة الإجمالية",
+    "band": "الشريحة",
+    "passed": "اجتاز التقييم",
+    "didNotPass": "لم ياجتز التقييم",
+    "viewDetails": "عرض التفاصيل",
+    "hideDetails": "إخفاء التفاصيل"
+  },
+
+  "dimensions": {
+    "core_professionalism": "الاحتراف المهني",
+    "business_digital": "الثقافة الرقمية والأعمال",
+    "job_fit": "الملاءمة الوظيفية (التقنية)",
+    "growth_potential": "إمكانات النمو",
+    "weight": "الوزن النسبي: {weight}%",
+    "score": "الدرجة: {score}",
+    "modulesCompleted": "{count} وحدات مُكتملة",
+    "noModules": "لم تُكتمل أي وحدات بعد"
+  },
+
+  "bands": {
+    "weak": "ضعيف",
+    "developing": "قيد التطور",
+    "proficient": "كفؤ",
+    "strong": "متميّز"
+  },
+
+  "profile": {
+    "title": "ملفّ الجاهزية التوظيفية",
+    "composite": "المؤشر الت composite",
+    "compositeScore": "الدرجة المركّبة",
+    "specialization": "التخصص",
+    "dimensionsBreakdown": "تفصيل الأبعاد الأربعة",
+    "moduleCoverage": "تغطية الوحدات",
+    "noProfile": "لا يوجد ملفّ تقييم بعد",
+    "noProfileDescription": "أكمل التقييمات لتوليد ملفّ جاهزيةك التوظيفية.",
+    "startAssessment": "ابدأ التقييم"
+  },
+
+  "catalog": {
+    "title": "دليل الوحدات",
+    "subtitle": "جميع وحدات التقييم المتاحة حسب البُعد",
+    "allDimensions": "كل الأبعاد",
+    "level": "المستوى",
+    "framework": "الإطار النظري",
+    "focus": "التركيز",
+    "scenario": "السيناريو",
+    "instructions": "التعليمات",
+    "rubric": "المعيار",
+    "estimatedTime": "الوقت المقدّر: {minutes} دقيقة",
+    "startModule": "ابدأ الوحدة",
+    "viewModule": "عرض الوحدة"
+  },
+
+  "submission": {
+    "status": {
+      "draft": "مسودة",
+      "in_progress": "قيد التنفيذ",
+      "submitted": "تم الإرسال",
+      "scored": "تم التقييم",
+      "under_review": "قيد المراجعة",
+      "appealed": "تم الاستئناف"
+    },
+    "history": "سجلّ التسليمات",
+    "previousSubmissions": "التسليمات السابقة",
+    "noSubmissions": "لم تُسَلّم أي تقييمات بعد",
+    "viewSubmission": "عرض التسليم",
+    "resubmit": "إعادة التسليم",
+    "submittedAt": "تم الإرسال في {date}",
+    "scoredAt": "تم التقييم في {date}"
+  },
+
+  "timer": {
+    "remaining": "الوقت المتبقي",
+    "warning": "الوقت ينفد!",
+    "expired": "انتهى الوقت",
+    "minutes": "{n} دقيقة",
+    "seconds": "{n} ثانية",
+    "timeUp": "انتهى الوقت! سيتم تسليم التقييم تلقائياً."
+  },
+
+  "scoring": {
+    "scoring": "جارٍ التقييم…",
+    "evaluationComplete": "اكتمل التقييم",
+    "evaluationFailed": "فشل التقييم. يُرجى المحاولة مرة أخرى.",
+    "aiScored": "تم التقييم بالذكاء الاصطناعي",
+    "fallbackScored": "تم التقييم بالطريقة الاحتياطية",
+    "confidence": "درجة الثقة: {level}",
+    "confidenceHigh": "عالية",
+    "confidenceMedium": "متوسطة",
+    "confidenceLow": "منخفضة",
+    "modelUsed": "النموذج المستخدم: {model}",
+    "latency": "زمن الاستجابة: {ms} مللي ثانية"
+  },
+
+  "faculty": {
+    "createAssessment": "إنشاء تقييم",
+    "editAssessment": "تعديل التقييم",
+    "previewAssessment": "معاينة التقييم",
+    "publishAssessment": "نشر التقييم",
+    "assessmentTitle": "عنوان التقييم",
+    "assessmentDescription": "وصف التقييم",
+    "assessmentType": "نوع التقييم",
+    "maxScore": "الدرجة القصوى",
+    "timeLimit": "حدّ الوقت",
+    "rubricDesign": "تصميم المعيار",
+    "questionBank": "بنك الأسئلة",
+    "itemAnalysis": "تحليل العناصر",
+    "analytics": "التحليلات",
+    "published": "منشور",
+    "draft": "مسودة",
+    "archived": "مؤرشفة"
+  },
+
+  "rubric": {
+    "title": "المعيار",
+    "criterion": "معيار",
+    "weight": "الوزن",
+    "descriptor": "الوصف",
+    "score": "الدرجة",
+    "maxScore": "الدرجة القصوى",
+    "hardGate": "بوابة صلبة",
+    "gateDescription": "إذا حصل الطالب على درجة قريبة من الصفر في هذا المعيار، فإن الدرجة الإجمالية للوحدة تُقيَّد بشريحة \"ضعيف\".",
+    "gateHint": "هذا المعيار يمثل بوابة صلبة — فشل فيه يعني قيد الدرجة الإجمالية",
+    "technicalDepth": "العمق التقني",
+    "regulatoryAlignment": "المواءمة التنظيمية",
+    "decisionQuality": "جودة القرار",
+    "communicationClarity": "وضوح التواصل",
+    "analyticalRigor": "الدقّة التحليلية",
+    "marketRelevance": "ملاءمة السوق",
+    "noRubric": "لم يُصمَّم معيار لهذه الوحدة بعد."
+  },
+
+  "calibration": {
+    "title": "جلسة المعايرة",
+    "fewShotAnchors": "المرجعيات المرجعية القليلة",
+    "weakAnchor": "مرجعية ضعيفة",
+    "strongAnchor": "مرجعية قوية",
+    "anchorScore": "الدرجة: {score}/100",
+    "anchorFeedback": "التغذية الراجعة",
+    "addAnchor": "إضافة مرجعية",
+    "removeAnchor": "إزالة المرجعية"
+  },
+
+  "common": {
+    "loading": "جارٍ التحميل…",
+    "error": "حدث خطأ",
+    "retry": "إعادة المحاولة",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "close": "إغلاق",
+    "back": "رجوع",
+    "search": "بحث",
+    "filter": "تصفية",
+    "sort": "ترتيب",
+    "export": "تصدير",
+    "import": "استيراد",
+    "refresh": "تحديث",
+    "noResults": "لا توجد نتائج",
+    "showMore": "عرض المزيد",
+    "showLess": "عرض أقل",
+    "required": "مطلوب",
+    "optional": "اختياري",
+    "yes": "نعم",
+    "no": "لا",
+    "rtl": true
+  }
+}

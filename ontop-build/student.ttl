@@ -1,0 +1,1014 @@
+@prefix : <https://iscarb.edu/ontology/student/> .
+@prefix iscarb-student: <https://iscarb.edu/ontology/student/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+### Ontology Version 1.0.0 ###
+
+### Class: Student
+iscarb-student:Student a owl:Class ;
+  rdfs:label "Student" .
+
+iscarb-student:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:name a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:email a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:university a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:college a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:program a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:cohort a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:guardianName a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:guardianPhone a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:readinessScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:discoverable a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:scedSpecializationCode a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:educationLevelCode a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:userId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:guardianConsentAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:aiOnboardingComplete a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:targetCareerName a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:targetCareerUri a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:lastAIBriefing a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:totalStudyHours a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:currentStreak a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:aiexplainRequests a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:grades a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:aigeneratedQuizs a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:ailearningInsights a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:aiRecommendations a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:aistudyRecommendations a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:academicTranscripts a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:activeParticipation a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:alumniConnections a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:assessmentResponses a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:assessmentSnapshots a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:attendance a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:capstoneProjects a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:aiInsights a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:Student ;
+  rdfs:range <https://iscarb.edu/ontology/core/CareerAIInsight> .
+
+iscarb-student:careerDevelopmentPlan a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:Student ;
+  rdfs:range <https://iscarb.edu/ontology/core/CareerDevelopmentPlan> .
+
+iscarb-student:careerGoals a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:careerIntelligenceSnapshots a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:careerInterests a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:careerMappings a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:mockInterviews a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:Student ;
+  rdfs:range <https://iscarb.edu/ontology/core/CareerMockInterview> .
+
+iscarb-student:careerPaths a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:careerProfile a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:resourceAccess a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:Student ;
+  rdfs:range <https://iscarb.edu/ontology/core/CareerResourceAccess> .
+
+iscarb-student:challengeTeams a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:competencyEvidence a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:consentRecords a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:digitalCredentials a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:employabilityProfile a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:enrollments a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:equityLedger a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:experiencePoints a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:flashcardDecks a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:fundingApplications a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:Student ;
+  rdfs:range <https://iscarb.edu/ontology/core/FundingApplication> .
+
+iscarb-student:fundingSaves a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:gradeAdjustments a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:graduationChecklist a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:hackathonRegistrations a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:hackathonTeamMembers a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:internships a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:interviewPrep a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:interviewSessions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:issuedCredentials a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:jobAlertSubscriptions a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:Student ;
+  rdfs:range <https://iscarb.edu/ontology/core/JobAlertSubscription> .
+
+iscarb-student:jobApplications a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:Student ;
+  rdfs:range <https://iscarb.edu/ontology/core/JobApplication> .
+
+iscarb-student:jobMatches a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:jobOffers a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:knowledgeGaps a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:learningJourneys a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:learningMemories a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:learningStreak a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:masteryPredictions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:mentorshipSessions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:networkingEvents a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:Student ;
+  rdfs:range <https://iscarb.edu/ontology/core/NetworkingEvent> .
+
+iscarb-student:notifications a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:pipelineStages a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:placement a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:Student ;
+  rdfs:range <https://iscarb.edu/ontology/core/Placement> .
+
+iscarb-student:portfolio a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:portfolioReviews a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:productivitySessions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:professionalNetwork a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:Student ;
+  rdfs:range <https://iscarb.edu/ontology/core/ProfessionalNetwork> .
+
+iscarb-student:projects a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:pushSubscriptions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:r2cArtifacts a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:readinessAssessments a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:recruiterActivities a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:riskIndicators a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:simulationScenarios a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:skillExplorations a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:skillProgress a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:spacedRepetitionItems a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:educationLevel a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:Student ;
+  rdfs:range <https://iscarb.edu/ontology/core/ScedField> .
+
+iscarb-student:scedSpecialization a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:Student ;
+  rdfs:range <https://iscarb.edu/ontology/core/ScedField> .
+
+iscarb-student:universityRef a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:Student ;
+  rdfs:range <https://iscarb.edu/ontology/core/University> .
+
+iscarb-student:authUser a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:Student ;
+  rdfs:range <https://iscarb.edu/ontology/core/User> .
+
+iscarb-student:successAchievements a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:agents a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:studentBadges a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:studentEvents a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:successGoals a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:studentOnboarding a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:successTasks a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:studyPlans a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:studyReminders a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:studySessions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:coachSessions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:successMetrics a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:talentPoolMembers a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:adaptiveDifficultyLevels a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:aiContentGenerations a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:aiInterventionCampaigns a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:aiTutoringSessions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:resumeAiReviews a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+iscarb-student:learningProfile a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Student .
+
+### Class: Enrollment
+iscarb-student:Enrollment a owl:Class ;
+  rdfs:label "Enrollment" .
+
+iscarb-student:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Enrollment .
+
+iscarb-student:courseId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Enrollment .
+
+iscarb-student:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Enrollment .
+
+iscarb-student:facultyId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Enrollment .
+
+iscarb-student:semester a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Enrollment .
+
+iscarb-student:enrolledAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Enrollment .
+
+iscarb-student:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Enrollment .
+
+iscarb-student:course a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:Enrollment ;
+  rdfs:range <https://iscarb.edu/ontology/core/Course> .
+
+iscarb-student:faculty a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:Enrollment ;
+  rdfs:range <https://iscarb.edu/ontology/core/Faculty> .
+
+iscarb-student:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:Enrollment ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+iscarb-student:grade a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Enrollment .
+
+### Class: Grade
+iscarb-student:Grade a owl:Class ;
+  rdfs:label "Grade" .
+
+iscarb-student:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Grade .
+
+iscarb-student:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Grade .
+
+iscarb-student:courseId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Grade .
+
+iscarb-student:enrollmentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Grade .
+
+iscarb-student:semester a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Grade .
+
+iscarb-student:letter a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Grade .
+
+iscarb-student:gpa a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Grade .
+
+iscarb-student:percentage a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Grade .
+
+iscarb-student:credits a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Grade .
+
+iscarb-student:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Grade .
+
+iscarb-student:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:Grade .
+
+iscarb-student:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:Grade ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+iscarb-student:course a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:Grade ;
+  rdfs:range <https://iscarb.edu/ontology/core/Course> .
+
+iscarb-student:enrollment a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:Grade ;
+  rdfs:range <https://iscarb.edu/ontology/core/Enrollment> .
+
+### Class: GradeAdjustment
+iscarb-student:GradeAdjustment a owl:Class ;
+  rdfs:label "GradeAdjustment" .
+
+iscarb-student:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:GradeAdjustment .
+
+iscarb-student:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:GradeAdjustment .
+
+iscarb-student:courseId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:GradeAdjustment .
+
+iscarb-student:facultyId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:GradeAdjustment .
+
+iscarb-student:oldGrade a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:GradeAdjustment .
+
+iscarb-student:newGrade a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:GradeAdjustment .
+
+iscarb-student:justificationReason a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:GradeAdjustment .
+
+iscarb-student:evidence a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:GradeAdjustment .
+
+iscarb-student:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:GradeAdjustment .
+
+iscarb-student:approvedBy a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:GradeAdjustment .
+
+iscarb-student:deanNotified a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:GradeAdjustment .
+
+iscarb-student:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:GradeAdjustment .
+
+iscarb-student:reviewedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:GradeAdjustment .
+
+iscarb-student:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:GradeAdjustment .
+
+iscarb-student:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:GradeAdjustment ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: StudentAgent
+iscarb-student:StudentAgent a owl:Class ;
+  rdfs:label "StudentAgent" .
+
+iscarb-student:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAgent .
+
+iscarb-student:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAgent .
+
+iscarb-student:name a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAgent .
+
+iscarb-student:persona a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAgent .
+
+iscarb-student:state a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAgent .
+
+iscarb-student:lastNudge a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAgent .
+
+iscarb-student:streakDays a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAgent .
+
+iscarb-student:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAgent .
+
+iscarb-student:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAgent .
+
+iscarb-student:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:StudentAgent ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+iscarb-student:messages a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAgent .
+
+### Class: StudentBadge
+iscarb-student:StudentBadge a owl:Class ;
+  rdfs:label "StudentBadge" .
+
+iscarb-student:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentBadge .
+
+iscarb-student:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentBadge .
+
+iscarb-student:badgeCode a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentBadge .
+
+iscarb-student:earnedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentBadge .
+
+iscarb-student:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:StudentBadge ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: StudentOnboarding
+iscarb-student:StudentOnboarding a owl:Class ;
+  rdfs:label "StudentOnboarding" .
+
+iscarb-student:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentOnboarding .
+
+iscarb-student:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentOnboarding .
+
+iscarb-student:academicYear a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentOnboarding .
+
+iscarb-student:interests a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentOnboarding .
+
+iscarb-student:strengths a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentOnboarding .
+
+iscarb-student:completed a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentOnboarding .
+
+iscarb-student:completedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentOnboarding .
+
+iscarb-student:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentOnboarding .
+
+iscarb-student:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentOnboarding .
+
+iscarb-student:tasks a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentOnboarding .
+
+iscarb-student:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:StudentOnboarding ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: StudentAgentMessage
+iscarb-student:StudentAgentMessage a owl:Class ;
+  rdfs:label "StudentAgentMessage" .
+
+iscarb-student:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAgentMessage .
+
+iscarb-student:agentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAgentMessage .
+
+iscarb-student:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAgentMessage .
+
+iscarb-student:role a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAgentMessage .
+
+iscarb-student:content a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAgentMessage .
+
+iscarb-student:metaJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAgentMessage .
+
+### Class: StudentCompetencyGraph
+iscarb-student:StudentCompetencyGraph a owl:Class ;
+  rdfs:label "StudentCompetencyGraph" .
+
+iscarb-student:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentCompetencyGraph .
+
+iscarb-student:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentCompetencyGraph .
+
+iscarb-student:competencyId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentCompetencyGraph .
+
+iscarb-student:currentLevel a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentCompetencyGraph .
+
+iscarb-student:targetLevel a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentCompetencyGraph .
+
+iscarb-student:trend a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentCompetencyGraph .
+
+iscarb-student:lastAssessedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentCompetencyGraph .
+
+iscarb-student:assessmentCount a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentCompetencyGraph .
+
+iscarb-student:evidence a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentCompetencyGraph .
+
+iscarb-student:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentCompetencyGraph .
+
+iscarb-student:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentCompetencyGraph .
+
+iscarb-student:competency a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:StudentCompetencyGraph ;
+  rdfs:range <https://iscarb.edu/ontology/core/CompetencyDefinition> .
+
+### Class: StudentCohort
+iscarb-student:StudentCohort a owl:Class ;
+  rdfs:label "StudentCohort" .
+
+iscarb-student:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentCohort .
+
+iscarb-student:programId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentCohort .
+
+iscarb-student:name a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentCohort .
+
+iscarb-student:year a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentCohort .
+
+iscarb-student:startDate a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentCohort .
+
+iscarb-student:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentCohort .
+
+iscarb-student:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentCohort .
+
+### Class: StudentAlert
+iscarb-student:StudentAlert a owl:Class ;
+  rdfs:label "StudentAlert" .
+
+iscarb-student:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAlert .
+
+iscarb-student:facultyId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAlert .
+
+iscarb-student:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAlert .
+
+iscarb-student:alertType a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAlert .
+
+iscarb-student:severity a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAlert .
+
+iscarb-student:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAlert .
+
+iscarb-student:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAlert .
+
+iscarb-student:source a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAlert .
+
+iscarb-student:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAlert .
+
+iscarb-student:actionTaken a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAlert .
+
+iscarb-student:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAlert .
+
+iscarb-student:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAlert .
+
+iscarb-student:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAlert .
+
+### Class: StudentRecommendation
+iscarb-student:StudentRecommendation a owl:Class ;
+  rdfs:label "StudentRecommendation" .
+
+iscarb-student:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentRecommendation .
+
+iscarb-student:facultyId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentRecommendation .
+
+iscarb-student:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentRecommendation .
+
+iscarb-student:category a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentRecommendation .
+
+iscarb-student:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentRecommendation .
+
+iscarb-student:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentRecommendation .
+
+iscarb-student:priority a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentRecommendation .
+
+iscarb-student:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentRecommendation .
+
+iscarb-student:aiGenerated a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentRecommendation .
+
+iscarb-student:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentRecommendation .
+
+iscarb-student:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentRecommendation .
+
+### Class: BetaEnrollment
+iscarb-student:BetaEnrollment a owl:Class ;
+  rdfs:label "BetaEnrollment" .
+
+iscarb-student:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:BetaEnrollment .
+
+iscarb-student:programId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:BetaEnrollment .
+
+iscarb-student:userId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:BetaEnrollment .
+
+iscarb-student:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:BetaEnrollment .
+
+iscarb-student:feedback a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:BetaEnrollment .
+
+iscarb-student:enrolledAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:BetaEnrollment .
+
+iscarb-student:completedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:BetaEnrollment .
+
+iscarb-student:program a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:BetaEnrollment ;
+  rdfs:range <https://iscarb.edu/ontology/core/BetaProgram> .
+
+### Class: StudentEvent
+iscarb-student:StudentEvent a owl:Class ;
+  rdfs:label "StudentEvent" .
+
+iscarb-student:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentEvent .
+
+iscarb-student:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentEvent .
+
+iscarb-student:eventType a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentEvent .
+
+iscarb-student:entityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentEvent .
+
+iscarb-student:metadata a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentEvent .
+
+iscarb-student:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentEvent .
+
+iscarb-student:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:StudentEvent ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: StudentLearningProfile
+iscarb-student:StudentLearningProfile a owl:Class ;
+  rdfs:label "StudentLearningProfile" .
+
+iscarb-student:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentLearningProfile .
+
+iscarb-student:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentLearningProfile .
+
+iscarb-student:preferredLearningStyle a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentLearningProfile .
+
+iscarb-student:studyPacePreference a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentLearningProfile .
+
+iscarb-student:focusSessionDurationMinutes a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentLearningProfile .
+
+iscarb-student:bestStudyTime a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentLearningProfile .
+
+iscarb-student:avgStudySessionLength a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentLearningProfile .
+
+iscarb-student:preferredResourceTypes a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentLearningProfile .
+
+iscarb-student:adaptiveDifficultyLevel a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentLearningProfile .
+
+iscarb-student:lastUpdatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentLearningProfile .
+
+iscarb-student:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentLearningProfile .
+
+iscarb-student:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:StudentLearningProfile ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: StudentGoal
+iscarb-student:StudentGoal a owl:Class ;
+  rdfs:label "StudentGoal" .
+
+iscarb-student:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentGoal .
+
+iscarb-student:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentGoal .
+
+iscarb-student:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentGoal .
+
+iscarb-student:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentGoal .
+
+iscarb-student:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentGoal .
+
+iscarb-student:category a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentGoal .
+
+iscarb-student:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentGoal .
+
+iscarb-student:priority a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentGoal .
+
+iscarb-student:progress a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentGoal .
+
+iscarb-student:targetDate a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentGoal .
+
+iscarb-student:completedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentGoal .
+
+iscarb-student:milestones a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentGoal .
+
+iscarb-student:relatedCompetencies a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentGoal .
+
+iscarb-student:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentGoal .
+
+iscarb-student:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentGoal .
+
+iscarb-student:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:StudentGoal ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: StudentAchievement
+iscarb-student:StudentAchievement a owl:Class ;
+  rdfs:label "StudentAchievement" .
+
+iscarb-student:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAchievement .
+
+iscarb-student:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAchievement .
+
+iscarb-student:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAchievement .
+
+iscarb-student:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAchievement .
+
+iscarb-student:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAchievement .
+
+iscarb-student:category a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAchievement .
+
+iscarb-student:badgeIcon a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAchievement .
+
+iscarb-student:rarity a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAchievement .
+
+iscarb-student:progress a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAchievement .
+
+iscarb-student:requirement a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentAchievement .
+
+### Class: StudentTask
+iscarb-student:StudentTask a owl:Class ;
+  rdfs:label "StudentTask" .
+
+iscarb-student:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentTask .
+
+iscarb-student:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentTask .
+
+iscarb-student:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentTask .
+
+iscarb-student:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentTask .
+
+iscarb-student:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentTask .
+
+iscarb-student:priority a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentTask .
+
+iscarb-student:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentTask .
+
+iscarb-student:dueDate a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentTask .
+
+iscarb-student:completedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentTask .
+
+iscarb-student:estimatedHours a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentTask .
+
+iscarb-student:actualHours a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentTask .
+
+iscarb-student:tags a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentTask .
+
+iscarb-student:dependencies a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentTask .
+
+iscarb-student:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentTask .
+
+iscarb-student:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-student:StudentTask .
+
+iscarb-student:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-student:StudentTask ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+

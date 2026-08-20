@@ -1,0 +1,684 @@
+{
+  "M01": {
+    "scenario": "You are the chief information officer at a large teaching hospital in Riyadh. The IT security team has discovered a vulnerability in the electronic health records system that could potentially expose patient data. A fix is being prepared and will be implemented within the next 48 hours. Write a clear and reassuring briefing for the senior medical leadership, who have limited technical expertise, that explains the situation, its impact, and the actions you will take.",
+    "instructions": "Compose a concise, clear briefing for senior medical leaders that explains the issue, its implications, and the planned actions, using language suitable for a non-technical audience.",
+    "questionType": "mcq",
+    "choices": [
+      "Brief senior medical leaders in plain language: what was found, why it matters for patient data, that a fix will be applied within 48 hours, and which interim safeguards are in place — without dumping technical jargon.",
+      "Send the raw vulnerability scan logs and CVE identifiers to senior medical leadership and ask them to decide the technical remediation path.",
+      "Delay any briefing until the patch is fully deployed so leadership is not alarmed about a risk that may already be fixed.",
+      "Issue a public press statement about the EHR vulnerability before informing internal medical leadership."
+    ]
+  },
+  "M02": {
+    "scenario": "As the head of the Student Retention Office at King Saud University, you have been tasked with addressing a 15% surge in first-year student attrition during the current academic year. The university’s leadership has received numerous complaints from students about delayed academic advising appointments, insufficient information on course prerequisites, and limited access to tutoring services. Preliminary data shows that average advising wait time has risen from 3 days to 9 days, while the number of students missing key course milestones increased by 12%. The upcoming semester will begin in two weeks, creating operational pressure to implement immediate corrective actions while ensuring long-term sustainability. Your mission is to lead a cross-functional team to apply the Six Sigma DMAIC process and construct an Ishikawa diagram to pinpoint underlying causes, evaluate data-driven solutions, and design a monitoring system that will track the effectiveness of the interventions.",
+    "instructions": "Apply the DMAIC framework together with an Ishikawa diagram to diagnose the root causes of the increased attrition and design a realistic, data-driven improvement plan with a monitoring system.",
+    "questionType": "mcq",
+    "choices": [
+      "Run DMAIC: Define attrition and advising wait-time problem, Measure advising delays and missed milestones, Analyze root causes with an Ishikawa (process, people, systems, information), Improve with near-term advising capacity and tutoring fixes before term start, Control with a dashboard of wait time and milestone completion.",
+      "Skip root-cause analysis and immediately hire more advisors without measuring wait times or linking interventions to the 15% attrition surge.",
+      "Attribute attrition solely to student motivation and send a motivational email campaign, ignoring advising delays and tutoring gaps in the data.",
+      "Wait until next academic year to study the problem so the current semester launch is undisturbed."
+    ]
+  },
+  "M03": {
+    "scenario": "You are a senior engineer at a renewable energy startup developing an IoT grid management system. The lead hardware engineer has identified that the newly proposed sensor firmware update would exceed the power budget of the devices already deployed in the field, recommending a complete redesign of the firmware before the planned rollout next month. The project manager, under pressure to meet a government grant deadline, argues that a temporary work‑around should be implemented to keep the release on schedule, even though it may not fully resolve the power issue. Your organization uses the Thomas‑Kilmann Conflict Mode Instrument as its conflict‑resolution framework, and you have been asked to facilitate a resolution as the team becomes divided and discussions turn heated.",
+    "instructions": "Write a detailed plan for addressing the disagreement and achieving a balanced solution that satisfies both technical integrity and project timelines.",
+    "questionType": "mcq",
+    "choices": [
+      "Facilitate a Thomas–Kilmann collaborating path: restate both positions (power budget vs grant deadline), surface shared goals, and negotiate a time-boxed workaround that does not permanently exceed field power limits, with a dated redesign track for the firmware.",
+      "Side with the project manager and ship the temporary workaround without documenting power-budget risk or a redesign commitment.",
+      "Side with the hardware engineer and refuse any release-path compromise, accepting the grant deadline miss without exploring mitigations.",
+      "Escalate immediately to the CEO for a binary decision without facilitating a structured conflict resolution among the parties."
+    ]
+  },
+  "M04": {
+    "scenario": "You are leading the development of an integrated e‑learning solution for a consortium of Saudi universities, scheduled to go live at the start of the next academic term. Two weeks before the launch, the Ministry of Education issues an urgent directive that all courses must migrate to a newly mandated Learning Management System that uses a completely different technology stack and data architecture. Your current platform cannot be delayed, and the university partners expect uninterrupted access for their students. Outline the actions you would take to respond to this abrupt scope change, assess the impact on the project timeline and resources, communicate transparently with internal and external stakeholders, and devise a pragmatic plan to transition the system while maintaining confidence and morale.",
+    "instructions": "Provide a thorough narrative of the steps you would take to address the unexpected shift, evaluate its implications, communicate with stakeholders, and implement a realistic adaptation plan while preserving team morale.",
+    "questionType": "mcq",
+    "choices": [
+      "Assess impact of the mandated LMS on timeline and resources, communicate transparently with consortium partners and MoE constraints, and execute a phased dual-run / migration plan that protects student access for the upcoming term while the new stack is stood up.",
+      "Ignore the Ministry directive and continue launching the current platform unchanged because partners already expect it.",
+      "Halt the entire program until a full rewrite on the new LMS is finished, leaving students without access at term start.",
+      "Promise uninterrupted access without assessing technical feasibility or communicating risk to university partners."
+    ]
+  },
+  "M05": {
+    "scenario": "You are a site supervisor for a major infrastructure project in Riyadh. During a safety briefing, you notice that the foreman, Jamal, has a tense posture, avoids eye contact, and his voice cracks when a minor safety lapse is mentioned. He also failed to submit the daily equipment inspection log, which is unusual for him. After the briefing, you have a private one‑on‑one meeting scheduled to discuss his performance and wellbeing.",
+    "instructions": "Describe how you would approach the one‑on‑one meeting to recognize and address Jamal's distress, demonstrating empathic leadership and constructive support.",
+    "questionType": "mcq",
+    "choices": [
+      "In the private 1:1, open with observed cues (tense posture, avoided eye contact, missed inspection log), ask open questions about wellbeing and workload, listen without judgment, and agree concrete support and a follow-up — treating safety compliance and care as linked.",
+      "Confront Jamal publicly in the next safety briefing about the missing log to set an example for the crew.",
+      "Ignore the emotional cues and only discuss the missing inspection log as a disciplinary matter.",
+      "Cancel the 1:1 and email him a written warning to avoid an awkward conversation."
+    ]
+  },
+  "M06": {
+    "scenario": "You are a junior compliance officer at a Saudi-based fintech firm that provides payment gateway services to local merchants. While reconciling transaction logs for the upcoming client audit by a major bank, you notice that a batch of transactions from last week was recorded with an incorrect transaction status, indicating that a few payments were marked as settled when, in fact, they are still pending verification. This error, though limited to a small number of transactions, could lead to a breach of the bank's regulatory reporting requirements and damage the firm's reputation for reliability. The audit is scheduled to begin tomorrow morning.",
+    "instructions": "Describe how you would address the transaction status error, outlining the risks, the ethical justification, and a practical, time-sensitive action plan.",
+    "questionType": "mcq",
+    "choices": [
+      "Before tomorrow’s bank audit: document the mis-statused pending transactions, escalate to compliance/operations leads, correct the records with an audit trail, and disclose the issue and remediation rather than conceal it.",
+      "Quietly change the statuses to settled to match what the bank expects and hope the auditors do not notice.",
+      "Wait until after the audit completes to investigate, so the audit schedule is not disrupted.",
+      "Delete the affected transaction rows from the logs so the batch looks clean for the auditors."
+    ]
+  },
+  "M07": {
+    "scenario": "In a leading Saudi aerospace manufacturing firm, the senior Vice President of Engineering, Dr. Youssef Al-Mansour, and the senior Director of Supply Chain, Aisha Al-Harbi, have become locked in a dispute over the choice of a new composite material supplier for the upcoming next‑generation jet engine program. Dr. Al-Mansour insists on a cutting‑edge supplier that promises a 15 % performance gain but carries higher cost and longer lead times, while Ms. Al-Harbi argues for a proven supplier with a reliable delivery record to meet the tight production schedule and budget constraints. Their respective teams have begun to publicly endorse the positions of their leaders, resulting in duplicated testing efforts, missed milestones, and growing tension across the organization. The Chief Operating Officer has asked you, a senior program integration manager, to step in and help resolve the disagreement without involving formal disciplinary channels, aiming to preserve the project timeline and maintain a collaborative culture.",
+    "instructions": "Write a comprehensive plan to de‑escalate the conflict, manage your own emotional response, and re‑establish constructive collaboration between the senior stakeholders.",
+    "questionType": "mcq",
+    "choices": [
+      "Regulate your own reaction, hold a structured joint session for Al-Mansour and Al-Harbi to restate interests (performance vs schedule/cost), stop duplicated testing, and agree a decision matrix with a time-boxed evaluation of the new supplier against delivery risk — without formal discipline.",
+      "Pick the cutting-edge supplier immediately to back the VP of Engineering and end the dispute by authority.",
+      "Pick the proven supplier immediately to back Supply Chain and instruct Engineering to drop performance claims.",
+      "Send both leaders written warnings for public disagreement and remove them from the program."
+    ]
+  },
+  "M08": {
+    "scenario": "You are a senior quality engineer at a leading aerospace parts supplier. The company has secured a contract to deliver a batch of turbine blades to a major airline for a scheduled fleet upgrade, with a delivery deadline in two weeks. The production line is behind schedule due to unexpected material defects, and your plant manager instructs you to bypass the final non‑destructive testing verification step for a portion of the batch, arguing that the parts have already passed earlier inspections and that the client will accept them with a note for post‑delivery testing. Skipping the NDT could reduce the likelihood of detecting hidden cracks that may cause catastrophic failure in flight, but adhering to the full testing protocol would delay shipment and risk losing the contract and associated revenue.",
+    "instructions": "Write a comprehensive response describing how you would handle the manager's request, including the risks you would identify, how you would address the directive, and any alternative plan you would propose to balance deadline pressure with safety and quality standards.",
+    "questionType": "mcq",
+    "choices": [
+      "Refuse to skip final NDT: explain flight-safety risk of hidden cracks, document the directive, escalate per quality/ethics channels, and propose alternatives (partial shipment of fully tested parts, overtime NDT, client negotiation on schedule) that keep the contract without bypassing safety verification.",
+      "Bypass NDT for the delayed portion as the plant manager instructed, noting that earlier inspections already passed.",
+      "Resign immediately without proposing an alternative path to meet the airline delivery need.",
+      "Quietly skip NDT but do not record that the step was omitted so the client remains confident."
+    ]
+  },
+  "M09": {
+    "scenario": "You are a 2025 Saudi graduate with a bachelor’s degree in Electrical Engineering, specializing in Power Systems. In the past six weeks you have been applying to posted vacancies on the HRSD portal, LinkedIn, and Jadarat, yet you have only received generic acknowledgment emails. A career advisor explains that the hidden job market accounts for a large share of hires in the Kingdom’s utilities, renewable energy, and smart grid projects, with many roles filled through referrals, alumni contacts, and sector conferences before any public posting. You have eight weeks to develop a structured job‑search strategy that integrates push‑based networking and pull‑based direct applications, selects a realistic mix of channels including online platforms, sector events, and alumni networks, and respects Saudi professional etiquette.",
+    "instructions": "Write an eight‑week action plan describing your push and pull search tactics, the specific job‑search channels you will use, and a culturally appropriate networking approach to access the hidden job market in Saudi utilities and renewable energy.",
+    "questionType": "mcq",
+    "choices": [
+      "Build an 8-week plan mixing pull applications (HRSD, Jadarat, LinkedIn) with push networking: alumni, sector conferences, and polite referral asks in utilities/renewables — measuring weekly outreach and applications while respecting Saudi professional etiquette.",
+      "Only submit online applications every few days and wait for portals to respond, without networking.",
+      "Message senior utility executives daily asking directly for a job in the first sentence.",
+      "Attend one conference in week 8 only, with no earlier outreach or application cadence."
+    ]
+  },
+  "M10": {
+    "scenario": "You have recently graduated from a Saudi university with a Bachelor’s degree in Mechanical Engineering. You are interested in the 'Solar Power Plant Maintenance Engineer' position advertised by the renewable energy firm 'Al‑Masdar Energy' in Riyadh. The posting highlights the need for hands‑on experience with photovoltaic system diagnostics, familiarity with O&M standards, a proven track record of improving plant availability, and strong Arabic and English communication skills. In your portfolio you completed a six‑month internship at a leading solar farm where you reduced downtime by fifteen percent through systematic troubleshooting, earned a certification in O&M best practices, and have been mentoring junior technicians in bilingual technical documentation, including writing maintenance manuals in both languages.",
+    "instructions": "Write a cover letter paragraph of approximately 150 to 200 words that captures attention, shows interest in the role, creates desire by linking your background to the job requirements, and ends with a confident call to action.",
+    "questionType": "mcq",
+    "choices": [
+      "Write an AIDA cover paragraph: attention on Al-Masdar’s Solar Power Plant Maintenance Engineer role, interest in PV O&M, desire via the internship that cut downtime 15% plus O&M certification and bilingual manuals, and a clear call to action for an interview.",
+      "Paste a generic cover letter about teamwork and leadership with no link to PV diagnostics or Al-Masdar.",
+      "List only salary expectations and start date, skipping evidence of plant availability improvement.",
+      "Criticize Al-Masdar’s current O&M practices to show you know more than the hiring team."
+    ]
+  },
+  "M11": {
+    "scenario": "During a high‑visibility product launch at a leading Saudi e‑commerce platform, your team experienced a sudden system outage that prevented customers from completing purchases, and you were tasked with leading the response effort to restore service, coordinate cross‑functional teams, and minimize revenue loss.",
+    "instructions": "Provide a detailed answer describing the situation, the task you were assigned, the actions you took, and the measurable result of your effort, using the STAR framework.",
+    "questionType": "mcq",
+    "choices": [
+      "Answer with STAR: Situation — checkout outage at Saudi e-commerce launch; Task — lead restoration and cross-functional coordination; Action — triage, communicate, restore path, reduce further loss; Result — service restored with a measurable recovery time / revenue protected figure.",
+      "Say you were present during the outage but cannot recall specific actions or results.",
+      "Blame another team for the outage and refuse to describe your own contribution.",
+      "Describe only the technical root cause in deep jargon with no task, actions, or measurable result."
+    ]
+  },
+  "M12": {
+    "scenario": "You are a recent graduate in civil engineering from a Saudi university, eager to start a career in large-scale infrastructure projects such as highways and bridges. Your LinkedIn profile currently includes only a profile photo, your degree, and a brief mention of a summer internship at a small local contractor, lacking a compelling headline, detailed summary, specific skill endorsements, and evidence of project work. You have identified a senior infrastructure manager at the leading Saudi construction firm Saudi Binladin Group, known for guiding junior engineers, and you wish to initiate an informational conversation to learn about professional pathways and to signal your readiness for future roles. Explain the specific enhancements you would make to your LinkedIn profile to build a coherent personal brand and draft a personalized, concise outreach message that introduces you, references your relevant experience, and asks for career advice without opening with a job request.",
+    "instructions": "Outline the LinkedIn profile improvements and craft the outreach message in a single, detailed free‑text response.",
+    "questionType": "mcq",
+    "choices": [
+      "Upgrade LinkedIn (headline, summary, skills, project evidence from the internship) then send a short personalized note to the Saudi Binladin infrastructure manager asking for career advice — not an immediate job ask.",
+      "Leave the profile unchanged and send a mass InMail to dozens of managers asking who is hiring.",
+      "Open the message by demanding a job referral and salary range before introducing yourself.",
+      "Invent senior project leadership experience on the profile to impress Binladin Group."
+    ]
+  },
+  "M13": {
+    "scenario": "You have just received your first full‑time job offer to join a leading Saudi e‑commerce platform as a Junior Backend Developer. The offer provides a base salary of SAR 8,500 per month, a three‑month probation period, and no provisions for remote work or a professional development budget. Your market research indicates that comparable junior backend positions in Riyadh typically command salaries between SAR 9,500 and 10,500 per month and often include a training allowance or flexible work arrangements. You have a best alternative: a part‑time freelance project with a local startup that would generate SAR 5,000 per month, and you are awaiting a final interview decision from another company that could offer around SAR 9,000. While you are enthusiastic about the role, you would like to negotiate a higher salary and secure at least one of the key contractual benefits you consider essential for your professional growth.",
+    "instructions": "Provide a comprehensive negotiation strategy to secure a higher salary and desired contract benefits, referencing your BATNA and market research to achieve a win‑win outcome.",
+    "questionType": "mcq",
+    "choices": [
+      "Negotiate using BATNA and market data (SAR 9.5–10.5k): request a salary closer to market and one growth benefit (training budget or flexible work), stay within a win-win tone, and be ready to walk to the freelance/other offer if needed.",
+      "Accept SAR 8,500 immediately without raising market evidence or benefits.",
+      "Demand SAR 15,000 and fully remote work with no BATNA reference, threatening to sue if refused.",
+      "Ignore the offer and ghost the employer while waiting on the other interview."
+    ]
+  },
+  "M14": {
+    "scenario": "You are a final‑year business analytics student at King Saud University, participating in a multidisciplinary capstone project to build a predictive model for retail sales. As part of the iterative peer‑review process, each group member provides written feedback on the others' contributions. Your peers indicate that you frequently miss self‑set deadlines for delivering data subsets, the code you submit lacks proper comments, and your weekly progress summaries are irregular, which points to low Conscientiousness.",
+    "instructions": "Choose the response that best demonstrates an OCEAN‑informed plan to improve Conscientiousness based on peer feedback.",
+    "questionType": "mcq",
+    "choices": [
+      "I appreciate the points raised. I will dedicate a set 20‑minute block each morning to finalize the data subset and update code comments before moving on, and I will post a brief progress note in the shared Slack channel every Friday.",
+      "I think the feedback is harsh; I work well under pressure and will just try to finish faster next time.",
+      "I understand the concerns. I will aim to be more organized by using a to‑do list, though I haven't identified exact steps yet.",
+      "I will ask my supervisor to reassign the data preparation tasks to another teammate, so my workload is lighter."
+    ]
+  },
+  "M15": {
+    "scenario": "You are a junior data analyst at a Saudi healthcare research institute preparing a public health report when you discover that a portion of the dataset includes information from individuals who did not provide consent, raising potential privacy and regulatory concerns. Your immediate task is to assess the impact, report the issue to the project lead, and ensure the final report complies with ethical standards and data protection laws.",
+    "instructions": "Describe how you would handle the privacy breach, including the actions you would take, the communication you would have with stakeholders, and the preventive measures you would put in place.",
+    "questionType": "mcq",
+    "choices": [
+      "Stop using the non-consented records, notify the project lead, segregate/quarantine the affected data, assess PDPL/ethics impact, and only proceed with consented/approved data plus preventive access controls.",
+      "Leave the non-consented data in the public report because removing it would delay publication.",
+      "Quietly delete the rows without telling the project lead so there is no formal incident.",
+      "Publish the full dataset including identifiers to maximize research transparency."
+    ]
+  },
+  "M16": {
+    "scenario": "Al-Mawarid Transport, a leading Saudi logistics firm, is developing a fleet management system to optimize delivery routes for perishable goods across the Kingdom. The project must handle fluid client contracts, evolving regional traffic regulations, and frequent input from drivers and customers to refine routing algorithms. Management seeks to launch a functional pilot within four months for a key client network and then iterate the system based on real‑world performance and stakeholder feedback.",
+    "instructions": "Select the project management methodology that most effectively addresses the described project's requirements and constraints.",
+    "questionType": "mcq",
+    "choices": [
+      "Choose Scrum/Agile: short sprints to ship a usable pilot in four months, then iterate using driver and customer feedback as contracts and regulations keep changing.",
+      "Choose classic Waterfall: freeze all routing requirements on day one and deliver a single release after four months with no interim feedback loops.",
+      "Cancel stakeholder feedback channels and optimize only for internal documentation completeness before any pilot.",
+      "Adopt a multi-year big-bang deployment with no pilot, locking scope until every regional regulation variant is fully specified."
+    ]
+  },
+  "M17": {
+    "scenario": "You have been asked to brief the senior manager of a Saudi online marketplace on a recent performance chart. The line chart displays the monthly cart abandonment rate over the past six months for two channels: mobile devices and desktop computers. Mobile abandonment increased from 65% to 73% (an 8‑point rise), while desktop abandonment decreased from 58% to 52% (a 6‑point drop). Your manager, who is not data‑literate, says: “What does this chart tell us and what should we do?”",
+    "instructions": "Choose the answer that accurately summarizes the trend directions and magnitudes, explains the business implication, and offers a diplomatic, optimisation‑focused recommendation.",
+    "questionType": "mcq",
+    "choices": [
+      "Mobile abandonment rose by 8 points and desktop fell by 6 points; we should redesign the mobile checkout to lower abandonment as a performance improvement.",
+      "Desktop abandonment increased while mobile decreased, suggesting we need to double‑down on desktop advertising.",
+      "Both mobile and desktop abandonment are stable; no action is required.",
+      "The chart shows a 15‑point gap between channels; we should halt mobile sales entirely."
+    ]
+  },
+  "M18": {
+    "scenario": "You are a senior analyst at a renewable energy consulting firm operating in Saudi Arabia. Your director has asked you to produce a concise briefing memo for the executive board outlining recent market trends and to create a client‑facing slide deck that highlights projected cost savings. The firm's policy mandates the use of its internally hosted AI platform for all work‑related content to comply with the Saudi Personal Data Protection Law, which prohibits transmitting confidential or personal data to foreign servers. The internal AI tool can rapidly synthesize information but is known to occasionally generate confident yet inaccurate figures. You have access to a confidential internal report containing proprietary cost estimates that must remain within the organization.",
+    "instructions": "Choose the option that best demonstrates a responsible and effective use of generative AI for this request.",
+    "questionType": "mcq",
+    "choices": [
+      "Use the approved internal AI platform to draft the memo, verify all numerical data by cross-checking with the confidential internal report, retain proprietary cost information within the secure system, and prompt the AI for a professional, hierarchy-aware tone suitable for senior executives.",
+      "Copy the confidential cost estimates into a public AI chatbot to generate polished client presentation slides.",
+      "Rely on the AI's output for market trends without verifying the figures, assuming its confidence indicates accuracy.",
+      "Ask the AI to write the briefing memo in an informal, casual tone that disregards the audience's senior leadership status."
+    ]
+  },
+  "M19": {
+    "scenario": "You are a junior accountant at Al-Majd Financial Services, a Saudi fintech firm. You receive an email from payments@fast-transfers.xyz claiming to be from the Finance Director, stating that due to an urgent system upgrade you must immediately transfer 5,000 SAR to a new vendor account to avoid service disruption.",
+    "instructions": "Select the most appropriate response to the suspicious email.",
+    "questionType": "mcq",
+    "choices": [
+      "Report the email to the IT security team and confirm the request through the official finance phone number.",
+      "Reply with the requested financial details and complete the transfer.",
+      "Click the link in the email to verify the new account and submit the payment.",
+      "Transfer the funds first to avoid service disruption, then mention it in the next weekly standup."
+    ]
+  },
+  "M20": {
+    "scenario": "A Saudi industrial equipment manufacturer, Al‑Madina Machines, operates a plant with 10 production lines. Unplanned downtime currently costs the plant SAR 500,000 per year. The company piloted IoT predictive‑maintenance sensors on two lines, spending SAR 200,000 and saving SAR 150,000 annually through a 30% downtime reduction. Management now wants to roll out the sensor system to all 10 lines, which would require a total investment of SAR 1,000,000 (double the pilot cost). The full rollout is projected to cut overall downtime costs by SAR 750,000 per year and increase production capacity to add SAR 300,000 in revenue annually. Evaluate the decision using a SWOT analysis and a simple ROI calculation (Net Annual Benefit ÷ Investment).",
+    "instructions": "Select the most appropriate recommendation based on the SWOT analysis and ROI calculation.",
+    "questionType": "mcq",
+    "choices": [
+      "Proceed with full 10-line rollout: SWOT shows opportunity from proven pilot; ROI = (750k+300k)/1,000k = 105% (>100%), so benefits outweigh investment risk with managed execution.",
+      "Reject the rollout because doubling investment always destroys value, without calculating ROI from the given figures.",
+      "Approve only if ROI is computed as Investment ÷ Benefit (1,000k/1,050k), which you treat as failure below 70%.",
+      "Postpone indefinitely until pilot savings exceed SAR 500k/year on two lines alone, ignoring the stated full-rollout projections."
+    ]
+  },
+  "M21": {
+    "scenario": "You are an SEO specialist for a Saudi heritage tourism company that operates luxury desert camps in AlUla. The landing page for \"luxury desert camp AlUla\" currently appears on page 2 of the search results, receiving 800 monthly impressions but only 8 clicks (CTR 1%). The title tag, meta description, and H1 are generic, and the page lacks detailed itinerary information and internal links from related tour pages. You have been tasked with improving the page’s organic performance within the next quarter.",
+    "instructions": "Select the most effective organic search improvement strategy for the given landing page.",
+    "questionType": "mcq",
+    "choices": [
+      "Add a large banner image of the camp and publish a weekly blog post about desert experiences without changing on‑page SEO elements.",
+      "Conduct a keyword audit to incorporate long‑tail, location‑specific terms such as “AlUla heritage desert camp packages 2024”, rewrite the title tag, meta description, and H1 to match user intent, enrich the content with detailed itineraries, and create internal links from related tour pages; measure CTR improvement over three months.",
+      "Switch the focus to paid search campaigns and allocate the entire budget to PPC ads for the same query.",
+      "Duplicate the existing landing page content for a new URL and submit the new page to search engines for indexing."
+    ]
+  },
+  "M22": {
+    "scenario": "On 20 July, the analytics dashboard for SoukExpress, a Riyadh-based grocery delivery service, showed a one-day traffic surge of 420% in total sessions. GA4 indicated that organic search traffic jumped by 1,300%, while direct and paid traffic remained unchanged. No new campaigns were launched, and the spike coincided with a trending TikTok video featuring the brand.",
+    "instructions": "Choose the single most effective action to confirm the source of the traffic spike.",
+    "questionType": "mcq",
+    "choices": [
+      "Open GA4's referral traffic report and confirm whether TikTok is the primary source of sessions for that day.",
+      "Review Search Console for a sudden rise in impressions for a specific keyword on the spike day.",
+      "Search for any news articles published about SoukExpress on 20 July to see if media coverage generated the traffic.",
+      "Increase the paid acquisition budget to keep the traffic level high."
+    ]
+  },
+  "M23": {
+    "scenario": "AlNour Sports Nutrition, a Saudi-owned company, is preparing the launch of its new high-protein snack bar, \"AlNour Boost\", targeting health-focused millennials in the Kingdom. The product will be sold primarily through the company’s e-commerce site and selected online grocery partners. Management has allocated SAR 120,000 for a digital-only launch over the next 90 days and aims to achieve 5,000 active purchasers who make at least one repeat purchase within that period.",
+    "instructions": "Submit a detailed 90‑day digital launch plan, including budget allocation, phased milestones, and three measurable KPIs aligned with the 5,000 active purchaser target.",
+    "questionType": "mcq",
+    "choices": [
+      "Propose a 90-day digital launch: allocate the SAR 120k across awareness, conversion, and retention phases; milestones for launch, first 2.5k purchasers, then repeat-purchase push; KPIs such as active purchasers, repeat-purchase rate, and CAC toward the 5,000 target.",
+      "Spend the entire SAR 120k on a single celebrity post in week 1 with no milestones or KPIs.",
+      "Ignore digital channels and allocate the budget to unmeasured billboard advertising outside the brief.",
+      "Set no purchaser target and optimize only for social vanity metrics (likes/followers)."
+    ]
+  },
+  "M24": {
+    "scenario": "A senior procurement officer from a mid-sized Saudi automotive parts manufacturer calls your company offering industrial robot automation solutions. The officer mentions that their current assembly line processes are causing bottlenecks, and they are considering an automation upgrade within the next fiscal year. You have 12 minutes for the call.",
+    "instructions": "Choose the statement that best qualifies the lead across the four BANT dimensions of budget, authority, need, and timeline.",
+    "questionType": "mcq",
+    "choices": [
+      "Could you outline the budget you plan to assign for the automation upgrade, the decision-making hierarchy, the primary problem you aim to solve, and the target go-live date?",
+      "What is your department's budget limit for this project?",
+      "Who will sign off on the final purchase decision?",
+      "What production bottlenecks are you trying to eliminate?"
+    ]
+  },
+  "M25": {
+    "scenario": "You have just completed a discovery call with Faisal Al-Muqati, Procurement Director at Al-Mansour Construction. He showed interest in the project management platform you offer, but indicated that his team must evaluate the budget internally and asked you to call back in two weeks. Your CRM pipeline consists of Prospect, Qualified, Proposal, Negotiation, Closed-Won/Lost.",
+    "instructions": "Select the option that correctly records the call outcome and manages the follow‑up in the CRM.",
+    "questionType": "mcq",
+    "choices": [
+      "Log the call details, record his contact information, note the need for internal budget review, schedule a value‑add touchpoint this week and a confirmation call for two weeks later, then move the opportunity to Qualified.",
+      "Log the call, move the opportunity directly to Proposal, and schedule a call next week.",
+      "Record only his email address and plan a follow‑up three weeks from now.",
+      "Mark the lead as Lost without adding any notes."
+    ]
+  },
+  "M26": {
+    "scenario": "You are a senior account manager for a Riyadh-based ERP software provider. An existing Saudi retail chain is renewing its annual support and enhancement contract. The client has received a competitor’s quote that is 12% lower and is demanding a comparable price reduction, threatening to switch vendors if you cannot meet their request. Your solution has generated a documented annual efficiency gain of SAR 180,000 for the client, and your company’s policy caps any discount at 8%. Prepare to handle the client’s price objection by focusing on the value delivered, acknowledging the competitor’s offer, and outlining a realistic path to agreement.",
+    "instructions": "Write a full dialogue where you address the client’s price objection, emphasize the value of your solution, and propose a mutually acceptable agreement within the discount limit.",
+    "questionType": "mcq",
+    "choices": [
+      "Acknowledge the 12% competitor quote, reframe to documented SAR 180k annual efficiency value, and offer at most the 8% policy-capped discount plus a scoped value-add — not matching 12%.",
+      "Match the competitor’s full 12% discount immediately despite the 8% policy cap.",
+      "Refuse any discussion, tell the client to leave if they want a lower price, and cite no value delivered.",
+      "Offer a 20% discount to win the renewal, exceeding both policy and the competitor ask."
+    ]
+  },
+  "M27": {
+    "scenario": "On day 5 of a two‑week sprint, a renewable‑energy SaaS team is 58 % complete with the integration of a wind‑farm monitoring API and the data pipeline for real‑time alerts. The Chief Operations Officer emails the Scrum Master, requesting that a quick‑launch dashboard for solar‑panel performance be added to the current sprint because a high‑priority client demo is scheduled next week.",
+    "instructions": "Select the reply that best safeguards the sprint goal while appropriately addressing the senior leader’s request.",
+    "questionType": "mcq",
+    "choices": [
+      "Thank the COO for raising the priority, explain that the sprint goal is already committed, and propose to assess the dashboard’s value for inclusion in the next sprint after reviewing its estimate and impact on velocity.",
+      "Immediately add the solar‑panel dashboard to the sprint backlog, re‑assign team members, and inform the team that the demo deadline must be met.",
+      "Politely decline the request, stating that the sprint is full and no changes can be made, without offering any alternative timeline.",
+      "Ask the COO to replace one of the current sprint items with the dashboard, arguing that the client demo is more important than the wind‑farm integration."
+    ]
+  },
+  "M28": {
+    "scenario": "A regional airline’s IT team is launching a new mobile check‑in application. The project is broken into four sequential phases represented in a network diagram: Phase A (Requirements analysis) takes 3 days. Phase A must finish before Phase B (User interface design, 2 days) and Phase C (Backend integration, 4 days) can begin. Both Phase B and Phase C must be completed before Phase D (System testing, 3 days) starts.",
+    "instructions": "Select the option that correctly identifies the critical path, the project’s minimum duration, and the amount of float for Phase B.",
+    "questionType": "mcq",
+    "choices": [
+      "Critical path is A → B → D, project duration 8 days.",
+      "Critical path is A → C → D, 10 days; Phase B has 2 days of float.",
+      "Critical path is B → D, project duration 5 days.",
+      "Critical path is A → B → C → D, project duration 12 days."
+    ]
+  },
+  "M29": {
+    "scenario": "Your organization is gearing up to deliver a state-of-the-art solar microgrid system to the Ministry of Energy for a pilot project in Riyadh, scheduled for rollout in 14 days. The critical power inverter units are supplied by a single approved vendor in the UAE, who has just been placed under a sudden government-imposed export embargo due to a diplomatic dispute, preventing any further shipments. The vendor has no inventory on hand, and there are no other inverter manufacturers on your approved supplier list. The contract stipulates a daily penalty of SAR 250,000 for any delay beyond the agreed launch date, and the Ministry has already announced the project to the public. Senior leadership expects immediate action, and the procurement team has limited authority to add new vendors without a formal risk assessment.",
+    "instructions": "Provide a comprehensive crisis response outlining how you would evaluate the impact, communicate with internal leadership, the client, and the supplier, and suggest a viable solution to meet the launch deadline.",
+    "questionType": "mcq",
+    "choices": [
+      "Quantify delay/penalty exposure, brief leadership and the Ministry with options, engage the UAE vendor on partial mitigation, and run an emergency risk assessment to qualify an alternate inverter source while pursuing contract relief — not silent hope.",
+      "Do nothing for two weeks hoping the embargo lifts before the launch date.",
+      "Ship without inverters and claim the microgrid is complete to avoid the SAR 250k/day penalty.",
+      "Publicly blame the Ministry for announcing the project before procurement was ready."
+    ]
+  },
+  "M30": {
+    "scenario": "A logistics company operates a fleet of delivery trucks recorded in the Vehicles table (VehicleID, Type, MaxLoad) and logs each trip in the Trips table (TripID, VehicleID, Distance, FuelUsed). The sustainability analyst needs a report that lists every vehicle, including those that have never been assigned to a trip, with total distance and average fuel consumption shown for vehicles that have trips and NULL values for those without.",
+    "instructions": "Choose the SQL join that will keep all rows from the Vehicles table while placing NULLs for missing trip information.",
+    "questionType": "mcq",
+    "choices": [
+      "Use an INNER JOIN between Vehicles and Trips.",
+      "Use a LEFT JOIN from Vehicles to Trips.",
+      "Use a RIGHT JOIN from Vehicles to Trips.",
+      "Use a FULL OUTER JOIN between Vehicles and Trips."
+    ]
+  },
+  "M31": {
+    "scenario": "The operations team at a Saudi-based logistics firm maintains a master sheet named 'Shipments' that records each delivery with columns Shipment_Number, Origin_City, Destination_City, and Scheduled_Date. In addition, they have a separate sheet called 'Carriers' which lists Carrier_ID, Shipment_Number, Carrier_Name, and Contact_Email for every shipment that has been assigned to a carrier. Since Shipment_Number uniquely identifies a delivery in both sheets, the team requires a method to automatically add Carrier_Name to the 'Shipments' sheet for quick reference without manual updates.",
+    "instructions": "Provide a lookup formula that returns Carrier_Name from the Carriers sheet into the Shipments sheet, describe how the formula works, and suggest a viable alternative approach.",
+    "questionType": "mcq",
+    "choices": [
+      "Use XLOOKUP/VLOOKUP (or INDEX/MATCH) on Shipment_Number to pull Carrier_Name from Carriers into Shipments; explain key match; alternative: Power Query merge on Shipment_Number.",
+      "Copy Carrier_Name by hand each day from Carriers into Shipments.",
+      "Use a random number function to fill Carrier_Name because shipment IDs look numeric.",
+      "Delete the Carriers sheet so only Shipments remains and no lookup is needed."
+    ]
+  },
+  "M32": {
+    "scenario": "You are a data analyst at a leading digital health platform that sells subscription-based tele-health services to corporate clients. The sales team has compiled a 30-day dataset of subscription sales, with columns for Date, Client_ID, Service_Package, Number_of_Users, Revenue, Discount_Percent, Sales_Channel (direct or partner), and Geographic_Region. The Chief Revenue Officer asks you to examine the data and provide a data-driven suggestion that could increase revenue in the upcoming quarter.",
+    "instructions": "Outline a three-step analytical plan that defines the objective, describes how you will prepare and explore the 30-day subscription sales data, and ends with a specific recommendation for the sales strategy.",
+    "questionType": "mcq",
+    "choices": [
+      "Three-step plan: (1) objective — lift next-quarter revenue, (2) cleanse/explore 30-day sales by package, channel, region, discount, (3) recommend a specific strategy change (e.g., shift mix toward higher-margin package/channel) backed by the patterns found.",
+      "Recommend doubling all discounts immediately without analyzing the 30-day dataset.",
+      "Report only the total revenue sum with no exploration by channel, package, or region.",
+      "Delete outlier high-revenue days so the dataset looks smoother before any recommendation."
+    ]
+  },
+  "M33": {
+    "scenario": "A Riyadh‑based electronics manufacturing firm, Al‑Hadeed Tech, currently employs 80 workers: 45 Saudi nationals and 35 expatriates. Its current Saudization rate of 56.3% places the company in the \"Medium\" Nitaqat band for its sector. The firm has received a contract that requires 12 additional expatriate technicians. HR has asked you to evaluate the compliance implications of this expansion and to propose a course of action.",
+    "instructions": "Select the recommendation that fully complies with Saudi labor law while meeting the company's staffing needs.",
+    "questionType": "mcq",
+    "choices": [
+      "Re‑calculate the Saudization rate after adding 12 expatriates—45 Saudi out of 92 employees gives 48.9%, which puts the firm into the \"Low\" band. To stay in the \"Medium\" band, register all new hires with GOSI and Qiwa, and hire at least 9 Saudi nationals to raise the ratio to 60%.",
+      "Ignore the Nitaqat band change because the company already meets the minimum Saudization requirement; just register the expatriates with GOSI and Qiwa.",
+      "Reduce the number of Saudi employees by offering voluntary termination to bring the ratio back to 55% while registering the new expatriates. This will keep the firm in the \"Medium\" band.",
+      "Delay hiring expatriates until the next Nitaqat cycle and then add them without any Saudi hires, assuming the band will not be affected."
+    ]
+  },
+  "M34": {
+    "scenario": "Talal Logistics, a Saudi‑owned freight forwarder, must fill a Supply Chain Coordinator role to manage inbound customs clearance for its new regional hub. The firm currently operates in a low Nitaqat band and is under pressure to increase its Saudi workforce to avoid penalties. Candidate A is a Saudi national with five years of experience in customs documentation, fluent in Arabic and English, but limited exposure to advanced Transportation Management System TMS modules. Candidate B is a non‑Saudi professional with eight years of experience, strong hands‑on expertise with TMS, and a lower salary request of SAR 8,500 compared with Candidate A's SAR 11,000.",
+    "instructions": "Select the option that best reflects a recruitment decision aligned with Saudization requirements and a concrete plan to mitigate skill gaps.",
+    "questionType": "mcq",
+    "choices": [
+      "Select Candidate B for immediate TMS expertise and lower salary, overlooking Nitaqat compliance.",
+      "Hire Candidate A and rely solely on on‑the‑job learning to close the TMS gap, without any formal training plan.",
+      "Choose Candidate A and apply for the Hadaf wage subsidy, but postpone any upskilling until after the first year.",
+      "Choose Candidate A to satisfy Nitaqat, implement a nine‑month upskilling program—three months of TMS fundamentals, six months of mentored application—and apply the Hadaf wage subsidy to offset the salary."
+    ]
+  },
+  "M35": {
+    "scenario": "At Al-Majd Renewable Energy Company, a leading Saudi firm that designs and installs solar power systems, a senior project engineer with eight years of experience and consistently high performance ratings has been denied promotion to senior project manager. Instead, a junior engineer with three years of experience, who is the cousin of the company's chief operating officer, was selected based on a recommendation from the COO's office. The senior project engineer has submitted a formal grievance alleging that the promotion decision was influenced by wasta – personal relationships – and that the standard competency assessment and promotion criteria were not applied. Company policy requires that all promotions be advertised internally, evaluated against a transparent competency matrix, and approved by the HR Promotion Committee. The grievance includes performance appraisal scores, project delivery records, and a timeline showing that the junior engineer's promotion was announced before the required competency review was completed. As the HR Business Partner assigned to the case, you must address the employee's concerns while respecting cultural sensitivities and ensuring compliance with the organization’s promotion procedures.",
+    "instructions": "Please outline the steps you would take to investigate the promotion grievance, how you would document each stage, and what recommendations you would make to address the issue and strengthen future promotion practices.",
+    "questionType": "mcq",
+    "choices": [
+      "Investigate the wasta grievance against policy: pull competency matrix, posting, and committee records; document timeline showing review skipped; interview parties respectfully; recommend holding/reversing the improper promotion and reinforcing transparent HR committee process.",
+      "Dismiss the grievance because wasta is culturally normal and the COO’s cousin should be trusted.",
+      "Immediately fire the junior engineer without investigation to appease the senior engineer.",
+      "Tell the senior engineer to stay quiet to protect leadership relationships."
+    ]
+  },
+  "M36": {
+    "scenario": "A senior front-end engineer at a logistics technology startup is guiding a newly hired developer through web fundamentals. The mentor asks the developer to choose the statement that accurately describes the browser's sequence of actions from the moment a user types the dashboard URL into the address bar and presses Enter until the interactive map UI is rendered.",
+    "instructions": "Select the answer that correctly describes the full sequence of browser actions from URL entry to page rendering.",
+    "questionType": "mcq",
+    "choices": [
+      "The browser resolves the domain via DNS, opens a TLS-encrypted TCP connection, sends an HTTP GET request, receives the HTML response with a 200 status, parses the markup into the DOM, loads CSS, builds the CSSOM, constructs the render tree, performs layout, then paints the page.",
+      "After DNS lookup, the browser skips the TLS handshake and directly renders the cached HTML without a layout step.",
+      "The browser contacts the server over plain HTTP, fetches JSON data, and lets the client-side framework render components directly onto the screen.",
+      "The browser only performs a DNS query, then immediately displays a blank page, assuming the server handles rendering."
+    ]
+  },
+  "M37": {
+    "scenario": "A Saudi government agency is compiling a list of affordable housing units for a subsidy program. Each housing unit is represented by an object with fields such as unitId, location, pricePerMonth, and bedrooms. The operations team requires a reusable function that, given a maximum monthly rent, returns all units whose pricePerMonth is less than or equal to that threshold, preserving each unit as a complete object.",
+    "instructions": "Select the code snippet that correctly filters the housing units by the maximum rent while using modern ES6 syntax.",
+    "questionType": "mcq",
+    "choices": [
+      "Use const with an arrow function to call filter, returning each full unit object when its pricePerMonth <= maxRent.",
+      "Loop through the array with a for loop, push only the pricePerMonth values into a new array, and return that array.",
+      "Map the units to unitId only and then filter, which does not preserve the full unit objects.",
+      "Sort the units by pricePerMonth descending and return the entire unfiltered array."
+    ]
+  },
+  "M38": {
+    "scenario": "AlMosafer, a leading Saudi e‑commerce retailer, is refactoring its legacy checkout page. The old JavaScript function used to retrieve a promotion description and display it is shown below:\nfunction loadPromotion \n var url = 'promo/' + id;\n $.get(url, function \n $('div').html(result.title);\n );",
+    "instructions": "Select the option that correctly identifies at least two critical defects in the code and explains their technical impact.",
+    "questionType": "mcq",
+    "choices": [
+      "The generic `$('div')` selector can corrupt unrelated pages, the concatenated URL may contain unsafe characters causing request errors or injection, and the missing error callback leaves failures unhandled, risking UI freezes and data loss.",
+      "Only the missing error handler is problematic; adding a failure callback would resolve the issue.",
+      "The `$('div')` selector is safe because the promotion title is intended for a div, and the URL concatenation is acceptable as IDs are alphanumeric.",
+      "Switching from `$.get` to `fetch` would modernize the code but does not address the selector or URL encoding problems."
+    ]
+  },
+  "M39": {
+    "scenario": "You have been employed for 20 months as a senior GIS analyst at a renewable-energy consultancy that designs solar-farm projects across the Kingdom of Saudi Arabia. In this role you evaluate the technical feasibility of potential sites, liaise with client executives, and coordinate with equipment suppliers to align project timelines, deciding when to seek guidance from senior engineers.",
+    "instructions": "Select the statement that most accurately reflects your self-assessment of how you operate at SFIA Level 4 in this role.",
+    "questionType": "mcq",
+    "choices": [
+      "I independently lead the technical feasibility analysis for new solar sites, decide when to consult senior engineers, and regularly present recommendations to client executives, influencing contract terms.",
+      "I perform data collection for site assessments according to the senior engineer's detailed instructions and report the results for their review.",
+      "I schedule equipment deliveries with suppliers and obtain my manager's sign-off for any change to the logistics plan.",
+      "I mentor junior GIS analysts on best practices and oversee the creation of standard operating procedures for project documentation."
+    ]
+  },
+  "M40": {
+    "scenario": "A leading Saudi renewable energy firm is launching a new workforce development program for its Junior Marketing Analysts. To design targeted training and career pathways, the HR team needs a clear map of the essential duties and day‑to‑day tasks that define the role. Using the DACUM approach, you have been tasked with identifying the key duty areas and specific observable tasks performed by a Junior Marketing Analyst, and then critically evaluating whether your analysis captures all essential competencies, noting any gaps or assumptions.",
+    "instructions": "Write a comprehensive free‑text response that identifies 3‑4 key duty areas of a Junior Marketing Analyst, lists 2‑3 concrete tasks for each duty, and includes a brief self‑assessment of any gaps or assumptions in the competency coverage.",
+    "questionType": "mcq",
+    "choices": [
+      "Produce a DACUM map for Junior Marketing Analyst with 3–4 duty areas (e.g., research, content/campaign support, reporting, stakeholder coordination), 2–3 observable tasks each, plus a short gap/assumption note on competencies not yet evidenced.",
+      "List only soft traits like “be creative” with no observable tasks or duty areas.",
+      "Copy a senior CMO job description and present it as the junior analyst DACUM.",
+      "Refuse to identify duties because marketing work is too fluid to analyze."
+    ]
+  },
+  "M41": {
+    "scenario": "You are a senior operations officer at a leading Saudi e-commerce logistics company. The business has just announced a strategic pivot to autonomous delivery drones to meet rising demand for rapid urban shipping. Your current responsibilities focus on warehouse coordination, a domain that will be largely replaced by drone fleet management. The rollout will begin in six months, and many of your peers are uncertain about the new technology and the implications for their roles. The leadership expects you to help design the transition plan and to upskill the team for the upcoming drone operations.",
+    "instructions": "Provide a comprehensive description of how you would manage the shift to autonomous drone delivery, including your planning, self-direction, learning approach, and confidence in leading the team.",
+    "questionType": "mcq",
+    "choices": [
+      "Own the drone transition: map warehouse skills to fleet operations, build a 6-month learning plan (self-directed + team upskilling), involve uncertain peers in design, and show confidence with staged milestones before rollout.",
+      "Resist the drone pivot and argue warehouse coordination should remain unchanged forever.",
+      "Wait for leadership to mandate exact training modules before taking any personal learning action.",
+      "Leave the company immediately because the technology is unfamiliar."
+    ]
+  },
+  "M42": {
+    "scenario": "At Al-Majd Renewable Energy Solutions, the senior mechanical engineer, Khalid, and the senior project scheduler, Layla, have become increasingly tense over the decision to accelerate the prototype testing phase of a new solar inverter. Khalid argues that skipping certain validation steps will compromise the product's reliability, while Layla insists the client's tight deadline demands a faster release. Their disagreement has escalated into personal arguments during weekly meetings, causing delays in the team's workflow and lowering morale among the junior engineers.",
+    "instructions": "Explain the mediation approach you would take to transform this tension into a collaborative solution that balances product reliability with schedule commitments.",
+    "questionType": "mcq",
+    "choices": [
+      "Mediate Khalid and Layla: separate people from problem, restate reliability vs deadline interests, and facilitate a collaborative plan (which validations are non-negotiable vs which can be parallelized/risk-accepted with client visibility).",
+      "Order them to stop arguing and impose the scheduler’s accelerated plan without addressing reliability risks.",
+      "Order full validation with no schedule relief, accepting the client deadline miss without negotiation.",
+      "Reassign both off the project to end the conflict without mediating a technical compromise."
+    ]
+  },
+  "M43": {
+    "scenario": "You are a senior nurse manager at a large tertiary hospital in Riyadh. The current patient discharge process is fully manual, taking an average of 45 minutes per patient and creating bottlenecks that reduce bed turnover and increase readmission risk. After a month‑long trial involving 30 patients, you have developed a prototype electronic discharge summary that integrates with the hospital's EMR and reduces the average discharge time to 20 minutes, saving roughly 25 minutes per discharge. The hospital discharges approximately 150 patients each day, six days a week, so the new system would free up more than 60 staff hours each week and is projected to lower readmission rates by 8%, resulting in an estimated annual cost avoidance of about SAR 2.5 million. You have been asked to present a concise three‑minute pitch at the upcoming quarterly executive meeting to obtain approval for a two‑week development sprint and the necessary training budget. In the pitch you need to clearly present the quantitative benefits, demonstrate your direct experience with the discharge workflow, and align the proposal with senior management's focus on improving patient flow, enhancing quality metrics and protecting revenue.",
+    "instructions": "Write a persuasive three‑minute speech that convinces senior leadership to approve the proposed electronic discharge summary system.",
+    "questionType": "mcq",
+    "choices": [
+      "Pitch with quantified benefits: 45→20 min discharge, ~60 staff hours/week freed, ~8% readmission drop / SAR 2.5M avoidance; cite trial of 30 patients and EMR integration; ask for two-week sprint + training budget aligned to patient flow and quality.",
+      "Pitch only that the idea “feels modern” with no numbers from the trial.",
+      "Ask for an open-ended multi-year budget with no link to bed turnover or readmissions.",
+      "Present the technical EMR schema in deep detail for the full three minutes with no ask."
+    ]
+  },
+  "M44": {
+    "scenario": "A newly hired senior operations manager, Fatima, has joined Saudi Industrial Materials Co., a leading producer of steel components that recently transitioned to a digital factory model. Her first responsibility is to coordinate the launch of a new production scheduling system that will be rolled out across the company's multiple plants. The organization relies on a suite of cloud collaboration platforms: Azure Boards for agile task tracking, Teams for real‑time meetings and chat, SharePoint for document sharing, and a digital twin visualization tool hosted on the cloud. Fatima is technically proficient but has limited experience with this particular stack, and the rollout is scheduled to begin in ten days.",
+    "instructions": "Prepare a detailed onboarding plan for Fatima that identifies the most critical cloud tools for her upcoming tasks, sequences learning activities across the first week, and outlines clear norms for asynchronous communication within the cross‑functional team.",
+    "questionType": "mcq",
+    "choices": [
+      "Week-1 onboarding: prioritize Azure Boards + Teams for the scheduling rollout, then SharePoint and digital twin; daily practice tasks; set async norms (Boards updates, response-time expectations) for the cross-plant team before the 10-day go-live.",
+      "Skip tool training and learn only during the live rollout in ten days.",
+      "Train only on personal email and WhatsApp, ignoring Azure Boards and Teams.",
+      "Mandate that all decisions wait for synchronous all-hands meetings with no async Boards usage."
+    ]
+  },
+  "M45": {
+    "scenario": "You are applying for a Junior Data Analyst position at a fast‑growing fintech company based in Jeddah. The company uses its internal talent marketplace to match candidates with project teams, and the application portal asks you to upload a concise professional profile summary that must not exceed 150 words, clearly describing who you are, the analytical projects you have completed, and the type of challenges you are eager to tackle. It also requires you to indicate your current Arabic and English language proficiency according to the CEFR framework, providing a brief justification for each level.",
+    "instructions": "Compose a professional summary for the talent marketplace profile that is 150 words or fewer and declare your Arabic and English CEFR proficiency levels with a brief one‑sentence justification for each.",
+    "questionType": "mcq",
+    "choices": [
+      "Write a ≤150-word profile: who you are, analytical projects completed, challenges you seek; state Arabic and English CEFR levels each with one justifying sentence.",
+      "Submit a 400-word essay with no CEFR levels.",
+      "List only CEFR codes with no professional summary of projects.",
+      "Claim native proficiency in five languages without justification or project evidence."
+    ]
+  },
+  "M46": {
+    "scenario": "You are currently employed as a Junior Business Analyst at a leading Saudi fintech consultancy. In your upcoming bi‑annual performance review, your manager will request you to articulate a 3‑to‑5‑year career roadmap that demonstrates how you will expand your expertise, assume greater responsibilities, and contribute to the company’s vision of shaping the Kingdom’s digital economy.",
+    "instructions": "Provide a detailed free‑text description of your 3‑5 year career plan, including your target position, measurable steps, and the impact you expect to create.",
+    "questionType": "mcq",
+    "choices": [
+      "Present a 3–5 year roadmap: target role beyond Junior BA, measurable skill/responsibility milestones, and explicit contribution to the firm’s digital-economy vision in KSA.",
+      "Say you have no plan and will decide year by year with no target role.",
+      "State only that you want a higher salary within six months, with no skill or impact roadmap.",
+      "Plan to leave the industry entirely next year without linking to company vision."
+    ]
+  },
+  "M47": {
+    "scenario": "A Saudi project manager at a multinational oil‑and‑gas services company in Riyadh is leading a cross‑functional team that includes a senior technician from Brazil, who prefers indirect communication and values personal relationships, and a lead process engineer from Finland, who favors concise, data‑driven updates and strict adherence to schedule. During a safety‑critical design review, the Brazilian technician subtly signals concerns about a proposed valve configuration by mentioning past issues, while the Finnish engineer openly states that the current plan will miss the upcoming milestone. The manager must address both signals to keep the project on track and maintain team cohesion.",
+    "instructions": "Select the most effective response to the situation described.",
+    "questionType": "mcq",
+    "choices": [
+      "Privately thank the Brazilian technician for raising concerns, clarify how the suggested valve change could affect the milestone, ask them to co‑develop an alternative, and then share the agreed solution with the Finnish engineer, highlighting updated timelines.",
+      "Publicly rebuke the Brazilian technician for not speaking clearly, demand immediate clarification, and tell the Finnish engineer to ignore the delay.",
+      "Send a brief email to the Finnish engineer summarizing the Brazilian's hints as a risk, asking for a faster decision without addressing the Brazilian directly.",
+      "Hold an impromptu group meeting, emphasizing the need to meet the deadline, while asking the Brazilian technician to keep comments to the point."
+    ]
+  },
+  "JOBFIT-ACCOUNTING-FINANCE-1": {
+    "scenario": "Saudi Green Energy Ltd., a solar power developer, has applied for a SAR 10 million term loan to finance the construction of a 50‑MW solar farm. The audited financial statements for the most recent fiscal year show a current ratio of 1.3, a quick ratio of 0.8, a debt‑to‑equity ratio of 1.6, an interest‑coverage ratio of 1.2 times, and a debt‑service‑coverage ratio of 1.1 times. Receivables represent 15 % of total assets, with 30 % of the receivable balance aged over 90 days. EBIT margin has remained stable at 7 % over the past three years, while operating cash flow has fallen from SAR 2.5 million to SAR 1.8 million. Management highlights strong demand for renewable energy but notes potential regulatory changes. The loan would be secured by the solar farm’s equipment and a partial pledge of the company’s existing land assets.",
+    "instructions": "Analyze the credit risk using ratio analysis and the five Cs of credit, then write a detailed recommendation on whether to approve the loan, with any conditions or mitigations you deem necessary.",
+    "questionType": "mcq",
+    "choices": [
+      "Recommend decline or tightly conditioned approval: weak coverage (interest 1.2×, DSCR 1.1×), high leverage (D/E 1.6), weak liquidity (quick 0.8), aging receivables — require stronger equity/collateral, cash-flow covenants, and receivable cleanup before full SAR 10M.",
+      "Approve the full SAR 10M unsecured because renewable energy demand is strong, ignoring the weak coverage ratios.",
+      "Approve solely because land is pledged, without analyzing the five Cs or cash-flow adequacy.",
+      "Reject solely because the sector is renewable energy, without ratio analysis."
+    ]
+  },
+  "JOBFIT-ACCOUNTING-FINANCE-2": {
+    "scenario": "The university's Career Services Department reported a SAR 210,000 overspend for the latest quarter. Its approved budget was SAR 1,200,000, but actual expenditures rose to SAR 1,410,000. The variance is comprised of three elements: a 15% increase in the number of career‑development workshops delivered (driven by higher student participation), a 6% rise in the per‑workshop fee charged by external training providers, and a one‑off SAR 45,000 cost for relocating the spring job fair after the original venue was unexpectedly cancelled.",
+    "instructions": "Explain the budget overrun to the dean, highlighting the primary drivers and offering practical recommendations for future budgeting.",
+    "questionType": "mcq",
+    "choices": [
+      "Explain the SAR 210k overrun to the dean by splitting volume (more workshops), price (6% fee rise), and the one-off SAR 45k venue move; recommend flexible volume budgeting, fee locks/quotes, and contingency for events.",
+      "Blame the entire overrun on staff misconduct without using the three stated drivers.",
+      "Hide the SAR 45k relocation cost and only discuss workshop volume.",
+      "Ask the dean to ignore variances because career services spending always fluctuates."
+    ]
+  },
+  "JOBFIT-ACCOUNTING-FINANCE-3": {
+    "scenario": "A fast-growing Saudi e-commerce startup has a three-person operations team. The team member responsible for order fulfillment also updates the inventory management system and prepares the month-end sales-inventory reconciliation that feeds into the company's SOCPA and CMA financial disclosures. During the latest quarterly audit, auditors identified that inventory levels were overstated while sales figures were understated, leading to an inaccurate financial statement. The discrepancy has raised concerns about the integrity of the disclosed financial data.",
+    "instructions": "Analyze the situation described, identify the underlying segregation-of-duties weakness, explain how it creates fraud or error risk for the SOCPA/CMA disclosures, and suggest a practical, proportionate remediation suitable for a small team.",
+    "questionType": "mcq",
+    "choices": [
+      "Identify SoD failure (same person fulfills orders, updates inventory, and prepares sales-inventory reconciliation feeding SOCPA/CMA); risk of error/fraud and misstated inventory/sales; remediate with split duties or compensating reviews/system logs suitable for a 3-person team.",
+      "Conclude there is no control issue because the team is small and everyone must multitask.",
+      "Recommend firing the operations team without addressing segregation or compensating controls.",
+      "Fix only the latest numbers in the disclosure without changing process controls."
+    ]
+  },
+  "JOBFIT-HEALTHCARE-MEDICINE-1": {
+    "scenario": "In a bustling urgent care clinic, a 58-year-old man arrives with sudden left-side weakness, facial droop, and speech difficulty, indicating a possible stroke. At the same moment, the hospital's chief financial officer, a senior board member, presents for a routine skin lesion examination that can be safely postponed.",
+    "instructions": "Select the best action for the triage nurse.",
+    "questionType": "mcq",
+    "choices": [
+      "Activate the stroke protocol and treat the patient with facial droop first; then politely tell the CFO his skin lesion appointment will be delayed.",
+      "See the CFO first for his routine skin check, then assess the stroke patient.",
+      "Ask the CFO to wait in the waiting area while you complete paperwork for the stroke case.",
+      "Discharge the stroke patient to the waiting room so the board member is not inconvenienced."
+    ]
+  },
+  "JOBFIT-HEALTHCARE-MEDICINE-2": {
+    "scenario": "You are a data manager at the Saudi Center for Biomedical Research, which maintains a secured database of patient clinical trial records. A junior researcher in your team messages you on a personal instant‑messenger and asks you to copy a participant's complete electronic case report form (e‑CRF) onto a USB flash drive so they can analyze the data on their home laptop.",
+    "instructions": "Choose the best course of action to protect patient confidentiality and comply with data protection policies.",
+    "questionType": "mcq",
+    "choices": [
+      "Deny the request to use a personal USB drive and direct the researcher to access the e‑CRF through the institute\u000059s encrypted study portal, which logs all accesses.",
+      "Transfer the e‑CRF to the USB drive after encrypting the file and send it to the researcher.",
+      "Email the e‑CRF as a PDF attachment to the researcher\u000059s work address.",
+      "Upload the e‑CRF to a public cloud storage folder and share the link with the researcher."
+    ]
+  },
+  "JOBFIT-HEALTHCARE-MEDICINE-3": {
+    "scenario": "The outpatient medicine department at a regional hospital has recorded medication reconciliation errors in 28% of patient discharge summaries over the last three months. These errors have led to duplicate prescriptions and adverse drug events, prompting leadership to target a reduction in error rates by 50% within six months.",
+    "instructions": "Select the single most appropriate action to include in the Plan stage of the first PDSA cycle.",
+    "questionType": "mcq",
+    "choices": [
+      "Assign a dedicated pharmacist to review each discharge summary before finalization.",
+      "Conduct a one-time staff workshop on medication reconciliation best practices.",
+      "Develop a standardized electronic medication reconciliation checklist, train staff on its use, and collect baseline error-rate data before the first test.",
+      "Increase the number of discharge paperwork forms to allow more space for medication details."
+    ]
+  },
+  "JOBFIT-CYBERSECURITY-1": {
+    "scenario": "At 23:45, the SOC dashboard flagged a sudden surge of anomalous DNS queries from a critical payment‑processing application server, along with multiple failed SSH login attempts from an external IP. The server hosts transaction logs and is connected to the internal network, serving other services. Preliminary analysis suggests a possible compromise, but lateral movement has not yet been confirmed.",
+    "instructions": "Select the most appropriate first‑hour action to contain the breach while preserving evidence.",
+    "questionType": "mcq",
+    "choices": [
+      "Power off the compromised server immediately to stop the attack, then notify senior management.",
+      "Isolate the server from the network using a quarantine VLAN while preserving volatile memory and logs, then begin forensic data collection and notify the incident response lead for NCA‑aligned escalation.",
+      "Deploy an automated malware scanner across all hosts before confirming the source of the suspicious activity.",
+      "Send an immediate email to all users warning of a potential breach without first securing the affected system."
+    ]
+  },
+  "JOBFIT-CYBERSECURITY-2": {
+    "scenario": "Auditors for the Riyadh-based online marketplace AlMawaleh discovered that 30% of its customer-service representatives possess full read/write access to the production order database, while a single shared integration account is used by four automated order-processing pipelines. The shared account's credentials have not been rotated for 18 months, and the over-privileged user accounts exceed the permissions required for their daily tasks.",
+    "instructions": "Select the single most effective action to remediate the identified access-control issues.",
+    "questionType": "mcq",
+    "choices": [
+      "Implement a phased, business-aware rollout of RBAC roles, granting each role only the permissions required for its function and configuring automated secret rotation for the shared service account.",
+      "Strip all database write privileges from support staff without first assessing their job duties.",
+      "Keep the shared service account unchanged but enforce MFA for the engineers using it.",
+      "Schedule a manual password change for the service account next quarter and leave existing privilege assignments as is."
+    ]
+  },
+  "JOBFIT-CYBERSECURITY-3": {
+    "scenario": "A mid‑size Saudi construction firm has noticed that three project engineers received emails appearing to be from the procurement manager, containing a PDF attachment that, when opened, prompts the user to enter login credentials on a forged SharePoint site. The attachment also drops a backdoor onto the workstation. Within the next 24 hours, two additional engineers report similar messages, and one of them confirmed that their credentials were used to access the company’s project management system.",
+    "instructions": "Select the most comprehensive response that fully addresses the multi‑email phishing campaign and mitigates its impact.",
+    "questionType": "mcq",
+    "choices": [
+      "Search all mailboxes for matching phishing emails, list every recipient, extract indicators of compromise, block the malicious domain, reset compromised credentials, enforce MFA, and run a company‑wide awareness briefing.",
+      "Reset the passwords of the two engineers who opened the attachment and enable multi‑factor authentication for those accounts only.",
+      "Block the forged SharePoint domain and submit the incident report to the Saudi National Cybersecurity Authority.",
+      "Provide a phishing awareness workshop for the procurement and engineering teams, but leave the domain unblocked."
+    ]
+  },
+  "JOBFIT-HEALTH-MANAGEMENT-1": {
+    "scenario": "In the cardiac catheterization laboratory of a tertiary-care hospital, nursing staff have noted that after a procedure the single-use catheter trays are often placed uncovered on a nearby workbench while technicians retrieve other supplies. The uncovered trays remain on the bench for up to two hours during peak times, and the laboratory's storage cabinet is frequently full. No catheter-related bloodstream infections have been documented in the last month, but the practice creates a latent risk of microbial contamination that could lead to severe patient harm if an infected device is used.",
+    "instructions": "Prioritise the most critical patient-safety risk in the scenario and propose a set of concrete, CBAHI-aligned controls to reduce its likelihood and severity.",
+    "questionType": "mcq",
+    "choices": [
+      "Prioritize contamination risk from uncovered single-use catheter trays left up to two hours; enforce immediate covered/sterile staging, clear bench policy, storage capacity fix, and monitoring aligned with CBAHI infection-prevention expectations — even though no BSI yet.",
+      "Ignore the practice because no bloodstream infections were documented last month.",
+      "Focus first on redesigning the lab logo and wayfinding signage as the top patient-safety risk.",
+      "Allow uncovered staging indefinitely and only act after an infection is confirmed."
+    ]
+  },
+  "JOBFIT-HEALTH-MANAGEMENT-2": {
+    "scenario": "A leading e‑commerce retailer’s fulfillment center processes 30,000 orders per day. While inventory picking and sorting maintain a steady flow, the final packaging and label‑printing station has become a bottleneck, causing an average queue of 2,000 orders and shipping delays of up to 24 hours. The director wants to reduce the average order‑to‑shipment time to under 6 hours. Identify the downstream constraint, suggest a concrete flow change to relieve it, and propose a metric to confirm the improvement.",
+    "instructions": "Explain how you would locate the constraint, design a specific flow change, and select a metric to evaluate the impact.",
+    "questionType": "mcq",
+    "choices": [
+      "Locate the constraint at final packaging/label-printing (2,000-order queue); change flow (extra pack station, parallel labeling, or WIP limit before pack); metric: average order-to-shipment time targeting <6 hours.",
+      "Speed up upstream picking further without changing the packaging bottleneck.",
+      "Measure only total daily orders with no time-to-ship metric.",
+      "Remove quality checks on packaging to go faster, with no constraint analysis."
+    ]
+  },
+  "JOBFIT-HEALTH-MANAGEMENT-3": {
+    "scenario": "You are a data protection officer at a large public hospital in Riyadh. A senior physician who leads a clinical research unit approaches you and says that a multinational pharmaceutical company has offered to fund a new study on the effectiveness of a novel diabetes medication. The physician asks you to pull the complete electronic health records of 1,200 patients diagnosed with type 2 diabetes over the past two years, including full medical histories, lab results, imaging reports, medication lists, and personally identifiable information such as national ID numbers and contact details. The company wants the data uploaded to their secure cloud platform, but they have not provided any written data sharing agreement, nor have they obtained explicit patient consent as required under the PDPD and the hospital's internal confidentiality policies. They need the dataset within 48 hours to meet a grant submission deadline.",
+    "instructions": "Explain how you would handle this request to ensure compliance with the PDPD and protect patient confidentiality.",
+    "questionType": "mcq",
+    "choices": [
+      "Refuse bulk identifiable EHR transfer without DSA and required consents under PDPL/hospital policy; offer lawful alternatives (ethics/IRB path, anonymized/minimized data, formal agreement) and do not upload to the company cloud in 48 hours under pressure.",
+      "Upload the full 1,200 identifiable records within 48 hours to meet the grant deadline.",
+      "Email national ID numbers and contacts to the physician’s personal Gmail for convenience.",
+      "Approve the transfer orally with no written agreement because the sponsor is a well-known pharma company."
+    ]
+  },
+  "JOBFIT-ARTIFICIAL-INTELLIGENCE-DATA-SCIENCE-1": {
+    "scenario": "A regional Saudi health authority has deployed a machine learning model to screen routine laboratory results for early signs of chronic kidney disease. In the target population, only about 2 % of individuals actually have CKD, resulting in a heavily imbalanced dataset. The current version of the model reports 96 % accuracy, yet clinicians have observed a high number of missed CKD cases that later required costly dialysis treatment. The medical director, focused on patient outcomes and resource allocation, has asked the data science team to evaluate the model more robustly and to recommend a metric that reflects the real‑world consequences of false negatives (undetected disease) versus false positives (unnecessary follow‑up tests).",
+    "instructions": "Select and justify an appropriate metric for evaluating the CKD detection model that reflects the business cost of false negatives versus false positives, and convey your rationale in a clear, non‑technical summary for stakeholders.",
+    "questionType": "mcq",
+    "choices": [
+      "Reject accuracy as primary metric on 2% prevalence; recommend recall/sensitivity and/or cost-weighted false-negative focused metrics (e.g., F2, utility) and explain to the director that missed CKD (FN) is costlier than extra follow-up (FP).",
+      "Keep optimizing accuracy because 96% sounds strong to leadership.",
+      "Optimize only precision and ignore false negatives entirely.",
+      "Recommend random guessing as a fair baseline for clinicians."
+    ]
+  },
+  "JOBFIT-ARTIFICIAL-INTELLIGENCE-DATA-SCIENCE-2": {
+    "scenario": "You have been assigned to the predictive maintenance team at a major Saudi renewable energy firm that operates a fleet of wind turbines across the kingdom. Your colleague has built a classification model to predict turbine blade failure within the next month and reports a 100% recall on a validation set after using a feature that records the exact failure timestamp for each turbine in the past 12 months and also applying a normalization step to the entire dataset before the train-test split. Outline how you would scrutinize the validation results, pinpoint the data leakage, and redesign the data preparation and evaluation pipeline to enforce genuine train-test discipline and reliable cross-validation.",
+    "instructions": "Explain how you would investigate the data leakage, correct the preprocessing, and perform proper validation to obtain realistic performance.",
+    "questionType": "mcq",
+    "choices": [
+      "Flag leakage: failure timestamp and fit-normalization on full data before split; remove post-failure features, fit preprocessors on train only, and re-validate with proper CV for realistic performance.",
+      "Accept 100% recall as proof the model is production-ready.",
+      "Add more leaked target-derived features to push accuracy higher.",
+      "Evaluate only on the same rows used for training to confirm stability."
+    ]
+  },
+  "JOBFIT-ARTIFICIAL-INTELLIGENCE-DATA-SCIENCE-3": {
+    "scenario": "A Saudi university consortium has developed an AI-driven scholarship eligibility model that combines GPA, standardized test scores, extracurricular participation, and a proxy for socioeconomic status derived from postcode. The model demonstrates 93% overall predictive accuracy, but a fairness audit reveals that female applicants from the Western provinces experience a false‑negative rate that is 2.5 times higher than male applicants from central provinces, resulting in significantly fewer scholarship offers despite similar academic profiles. The project team intends to roll out the system to all member universities in three months, arguing that the disparity is a minor artifact that can be addressed through post‑deployment monitoring.",
+    "instructions": "Provide a comprehensive remediation plan for the fairness issue, including root‑cause analysis, corrective changes to data, features, or model thresholds, re‑validation across demographic groups, implementation of human oversight, and thorough documentation aligned with SDAIA AI Ethics 2.0 and Saudi PDPL.",
+    "questionType": "mcq",
+    "choices": [
+      "Do not ship in 3 months as-is: analyze FN disparity drivers, remediate data/features/thresholds, re-validate by demographic group, add human oversight, and document per SDAIA AI Ethics 2.0 and PDPL before rollout.",
+      "Roll out now and only monitor the gender/province disparity after deployment as planned.",
+      "Remove all female applicants from the training data to equalize rates.",
+      "Ignore the fairness audit because overall accuracy is 93%."
+    ]
+  }
+}

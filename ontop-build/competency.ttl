@@ -1,0 +1,277 @@
+@prefix : <https://iscarb.edu/ontology/competency/> .
+@prefix iscarb-competency: <https://iscarb.edu/ontology/competency/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+### Ontology Version 1.0.0 ###
+
+### Class: SkillExploration
+iscarb-competency:SkillExploration a owl:Class ;
+  rdfs:label "SkillExploration" .
+
+iscarb-competency:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillExploration .
+
+iscarb-competency:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillExploration .
+
+iscarb-competency:skillName a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillExploration .
+
+iscarb-competency:sscoCode a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillExploration .
+
+iscarb-competency:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillExploration .
+
+iscarb-competency:notes a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillExploration .
+
+iscarb-competency:discoveredAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillExploration .
+
+iscarb-competency:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillExploration .
+
+iscarb-competency:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-competency:SkillExploration ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: SkillProgress
+iscarb-competency:SkillProgress a owl:Class ;
+  rdfs:label "SkillProgress" .
+
+iscarb-competency:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillProgress .
+
+iscarb-competency:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillProgress .
+
+iscarb-competency:skillName a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillProgress .
+
+iscarb-competency:currentLevel a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillProgress .
+
+iscarb-competency:targetLevel a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillProgress .
+
+iscarb-competency:activitiesJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillProgress .
+
+iscarb-competency:lastPracticedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillProgress .
+
+iscarb-competency:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillProgress .
+
+iscarb-competency:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillProgress .
+
+iscarb-competency:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-competency:SkillProgress ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: PortfolioSkill
+iscarb-competency:PortfolioSkill a owl:Class ;
+  rdfs:label "PortfolioSkill" .
+
+iscarb-competency:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:PortfolioSkill .
+
+iscarb-competency:portfolioId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:PortfolioSkill .
+
+iscarb-competency:name a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:PortfolioSkill .
+
+iscarb-competency:level a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:PortfolioSkill .
+
+iscarb-competency:endorsementCount a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:PortfolioSkill .
+
+iscarb-competency:yearsExperience a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:PortfolioSkill .
+
+iscarb-competency:isVerified a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:PortfolioSkill .
+
+iscarb-competency:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:PortfolioSkill .
+
+iscarb-competency:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:PortfolioSkill .
+
+iscarb-competency:portfolio a owl:ObjectProperty ;
+  rdfs:domain iscarb-competency:PortfolioSkill ;
+  rdfs:range <https://iscarb.edu/ontology/core/Portfolio> .
+
+iscarb-competency:endorsements a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:PortfolioSkill .
+
+### Class: SkillEndorsement
+iscarb-competency:SkillEndorsement a owl:Class ;
+  rdfs:label "SkillEndorsement" .
+
+iscarb-competency:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillEndorsement .
+
+iscarb-competency:skillId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillEndorsement .
+
+iscarb-competency:portfolioId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillEndorsement .
+
+iscarb-competency:endorsedBy a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillEndorsement .
+
+iscarb-competency:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillEndorsement .
+
+iscarb-competency:message a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillEndorsement .
+
+iscarb-competency:endorsedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillEndorsement .
+
+iscarb-competency:respondedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:SkillEndorsement .
+
+iscarb-competency:portfolio a owl:ObjectProperty ;
+  rdfs:domain iscarb-competency:SkillEndorsement ;
+  rdfs:range <https://iscarb.edu/ontology/core/Portfolio> .
+
+iscarb-competency:skill a owl:ObjectProperty ;
+  rdfs:domain iscarb-competency:SkillEndorsement ;
+  rdfs:range <https://iscarb.edu/ontology/core/PortfolioSkill> .
+
+### Class: CompetencyFramework
+iscarb-competency:CompetencyFramework a owl:Class ;
+  rdfs:label "CompetencyFramework" .
+
+iscarb-competency:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyFramework .
+
+iscarb-competency:name a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyFramework .
+
+iscarb-competency:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyFramework .
+
+iscarb-competency:version a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyFramework .
+
+iscarb-competency:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyFramework .
+
+iscarb-competency:organizationId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyFramework .
+
+iscarb-competency:createdBy a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyFramework .
+
+iscarb-competency:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyFramework .
+
+iscarb-competency:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyFramework .
+
+iscarb-competency:competencies a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyFramework .
+
+### Class: CompetencyDefinition
+iscarb-competency:CompetencyDefinition a owl:Class ;
+  rdfs:label "CompetencyDefinition" .
+
+iscarb-competency:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyDefinition .
+
+iscarb-competency:frameworkId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyDefinition .
+
+iscarb-competency:name a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyDefinition .
+
+iscarb-competency:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyDefinition .
+
+iscarb-competency:category a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyDefinition .
+
+iscarb-competency:level a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyDefinition .
+
+iscarb-competency:parentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyDefinition .
+
+iscarb-competency:weight a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyDefinition .
+
+iscarb-competency:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyDefinition .
+
+iscarb-competency:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyDefinition .
+
+iscarb-competency:framework a owl:ObjectProperty ;
+  rdfs:domain iscarb-competency:CompetencyDefinition ;
+  rdfs:range <https://iscarb.edu/ontology/core/CompetencyFramework> .
+
+iscarb-competency:parent a owl:ObjectProperty ;
+  rdfs:domain iscarb-competency:CompetencyDefinition ;
+  rdfs:range <https://iscarb.edu/ontology/core/CompetencyDefinition> .
+
+iscarb-competency:children a owl:ObjectProperty ;
+  rdfs:domain iscarb-competency:CompetencyDefinition ;
+  rdfs:range <https://iscarb.edu/ontology/core/CompetencyDefinition> .
+
+iscarb-competency:studentGraphs a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyDefinition .
+
+### Class: CompetencyEvidence
+iscarb-competency:CompetencyEvidence a owl:Class ;
+  rdfs:label "CompetencyEvidence" .
+
+iscarb-competency:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyEvidence .
+
+iscarb-competency:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyEvidence .
+
+iscarb-competency:competencyId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyEvidence .
+
+iscarb-competency:competencyName a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyEvidence .
+
+iscarb-competency:evidenceType a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyEvidence .
+
+iscarb-competency:evidenceId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyEvidence .
+
+iscarb-competency:evidenceName a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyEvidence .
+
+iscarb-competency:confidenceScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyEvidence .
+
+iscarb-competency:earnedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyEvidence .
+
+iscarb-competency:verifiedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyEvidence .
+
+iscarb-competency:verifiedBy a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyEvidence .
+
+iscarb-competency:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-competency:CompetencyEvidence .
+
+iscarb-competency:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-competency:CompetencyEvidence ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+

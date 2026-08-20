@@ -1,0 +1,350 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-manrope);
+  --font-arabic: var(--font-cairo);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  /* iSCARB brand tokens (base + variants registered for Tailwind utility generation) */
+  --color-iscarb-green: var(--iscarb-green);
+  --color-iscarb-green-soft: var(--iscarb-green-soft);
+  --color-iscarb-green-dark: var(--iscarb-green-dark);
+  --color-iscarb-cyan: var(--iscarb-cyan);
+  --color-iscarb-cyan-soft: var(--iscarb-cyan-soft);
+  --color-iscarb-cyan-dark: var(--iscarb-cyan-dark);
+  --color-iscarb-gold: var(--iscarb-gold);
+  --color-iscarb-gold-soft: var(--iscarb-gold-soft);
+  --color-iscarb-gold-dark: var(--iscarb-gold-dark);
+  --color-iscarb-teal: var(--iscarb-teal);
+  --color-iscarb-ink: var(--iscarb-ink);
+  --color-iscarb-ink-2: var(--iscarb-ink-2);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.75rem;
+  /* Self-hosted variable fonts (via @fontsource-variable/*) — no external
+     network dependency at build OR runtime (previously next/font/google,
+     which fetches fonts.googleapis.com at build time). Each "<Name> Variable"
+     family is registered by the corresponding @fontsource-variable CSS
+     import in layout.tsx; the stack falls back gracefully if that ever fails
+     to load. */
+  --font-inter: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-manrope: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-cairo: 'Cairo Variable', 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  /* iSCARB Saudi theme palette (Saudi national green, Vision-2030 gold, oasis teal) */
+  --iscarb-green: #0E6C3C;      /* Saudi national green (flag green, warmed) */
+  --iscarb-green-dark: #0A5230;
+  --iscarb-green-soft: #E7F3EC;
+  --iscarb-cyan: #0F7B8A;       /* oasis teal (name kept for compatibility) */
+  --iscarb-cyan-dark: #0B5E6A;
+  --iscarb-cyan-soft: #E3F4F6;
+  --iscarb-gold: #C9A227;       /* Vision-2030 desaturated gold */
+  --iscarb-gold-dark: #8C6D14;  /* AA-safe gold for text on white */
+  --iscarb-gold-soft: #F9F3DF;
+  --iscarb-teal: #12808C;
+  --iscarb-ink: #08261A;        /* deep palm ink for headings */
+  --iscarb-ink-2: #0F3324;
+
+  --background: #FDFDFB;        /* warm off-white with a faint sand cast */
+  --foreground: #14251C;
+  --card: #FFFFFF;
+  --card-foreground: #14251C;
+  --popover: #FFFFFF;
+  --popover-foreground: #14251C;
+  --primary: #0E6C3C;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F1F6F0;
+  --secondary-foreground: #0F3324;
+  --muted: #F3F5F1;
+  --muted-foreground: #58695F;
+  --accent: #E7F3EC;
+  --accent-foreground: #0A5230;
+  --destructive: #DC2626;
+  --border: #E1E9E2;
+  --input: #E1E9E2;
+  --ring: #0E6C3C;
+  --chart-1: #0E6C3C;
+  --chart-2: #12808C;
+  --chart-3: #C9A227;
+  --chart-4: #2E9E63;
+  --chart-5: #B95C2C;
+  /* Signature Saudi look: deep palm-green sidebar even in light mode, gold active accents */
+  --sidebar: #08261A;
+  --sidebar-foreground: #E9F2EC;
+  --sidebar-primary: #C9A227;
+  --sidebar-primary-foreground: #08261A;
+  --sidebar-accent: #10402B;
+  --sidebar-accent-foreground: #F3E9C8;
+  --sidebar-border: #12402C;
+  --sidebar-ring: #C9A227;
+}
+
+.dark {
+  --background: #06130D;
+  --foreground: #E6F0E9;
+  --card: #0B2016;
+  --card-foreground: #E6F0E9;
+  --popover: #0B2016;
+  --popover-foreground: #E6F0E9;
+  --primary: #35A96A;
+  --primary-foreground: #041209;
+  --secondary: #123626;
+  --secondary-foreground: #E6F0E9;
+  --muted: #102B1F;
+  --muted-foreground: #97AF9F;
+  --accent: #123626;
+  --accent-foreground: #58CE95;
+  --destructive: #F87171;
+  --border: #1B4230;
+  --input: #1B4230;
+  --ring: #35A96A;
+  --chart-1: #35A96A;
+  --chart-2: #3FB3C4;
+  --chart-3: #E3C55C;
+  --chart-4: #6BC493;
+  --chart-5: #E08A5C;
+  --sidebar: #04100A;
+  --sidebar-foreground: #E6F0E9;
+  --sidebar-primary: #E3C55C;
+  --sidebar-primary-foreground: #04100A;
+  --sidebar-accent: #10402B;
+  --sidebar-accent-foreground: #F3E9C8;
+  --sidebar-border: #12402C;
+  --sidebar-ring: #E3C55C;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "cv01";
+  }
+  h1, h2, h3, h4, h5 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}
+
+/* iSCARB utility classes */
+@layer utilities {
+  .font-display { font-family: var(--font-display); }
+  .font-arabic { font-family: var(--font-arabic); }
+
+  .text-gradient-brand {
+    background: linear-gradient(135deg, #C9A227 0%, #0E6C3C 55%, #12808C 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .text-gradient-green {
+    background: linear-gradient(135deg, #0E6C3C 0%, #C9A227 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .bg-brand-mesh {
+    background-color: #FDFDFB;
+    background-image:
+      radial-gradient(at 8% 12%, rgba(14, 108, 60, 0.10) 0px, transparent 45%),
+      radial-gradient(at 92% 8%, rgba(18, 128, 140, 0.09) 0px, transparent 42%),
+      radial-gradient(at 78% 88%, rgba(201, 162, 39, 0.10) 0px, transparent 40%);
+  }
+  .dark .bg-brand-mesh {
+    background-color: #06130D;
+    background-image:
+      radial-gradient(at 8% 12%, rgba(53, 169, 106, 0.16) 0px, transparent 45%),
+      radial-gradient(at 92% 8%, rgba(63, 179, 196, 0.10) 0px, transparent 42%),
+      radial-gradient(at 78% 88%, rgba(227, 197, 92, 0.09) 0px, transparent 40%);
+  }
+  .bg-ink-section {
+    background-color: var(--iscarb-ink);
+    color: #E8F1ED;
+  }
+  .glass-card {
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.4);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+  }
+  .dark .glass-card {
+    background: rgba(15, 42, 32, 0.45);
+    border: 1px solid rgba(255,255,255,0.05);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .glass-panel {
+    background: linear-gradient(145deg, rgba(255,255,255,0.9), rgba(255,255,255,0.6));
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.5);
+  }
+  .dark .glass-panel {
+    background: linear-gradient(145deg, rgba(15, 42, 32, 0.7), rgba(15, 42, 32, 0.4));
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .ring-brand {
+    box-shadow: 0 0 0 1px rgba(14,108,60,0.25), 0 0 0 4px rgba(14,108,60,0.08);
+  }
+  .shadow-brand {
+    box-shadow: 0 20px 50px -20px rgba(14, 108, 60, 0.35);
+  }
+  .shadow-gold {
+    box-shadow: 0 18px 48px -18px rgba(201, 162, 39, 0.45);
+  }
+  .hairline {
+    background-image: linear-gradient(90deg, transparent, rgba(14,108,60,0.25), transparent);
+    height: 1px;
+  }
+  .hairline-gold {
+    background-image: linear-gradient(90deg, transparent, rgba(201,162,39,0.55), transparent);
+    height: 1px;
+  }
+  .grid-dots {
+    background-image: radial-gradient(rgba(14,108,60,0.18) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  /* Sadu-weave inspired diamond band (subtle, for section backgrounds) */
+  .bg-sadu {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cpath d='M24 4l20 20-20 20L4 24z' fill='none' stroke='%230E6C3C' stroke-opacity='.07'/%3E%3Cpath d='M24 14l10 10-10 10-10-10z' fill='%23C9A227' fill-opacity='.05'/%3E%3C/svg%3E");
+    background-size: 48px 48px;
+  }
+  .dark .bg-sadu {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cpath d='M24 4l20 20-20 20L4 24z' fill='none' stroke='%2335A96A' stroke-opacity='.12'/%3E%3Cpath d='M24 14l10 10-10 10-10-10z' fill='%23E3C55C' fill-opacity='.07'/%3E%3C/svg%3E");
+    background-size: 48px 48px;
+  }
+  /* Najdi eight-point star lattice (for hero sections over dark green) */
+  .bg-najdi-star {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Cpath d='M32 8l6 18 18 6-18 6-6 18-6-18-18-6 18-6z' fill='none' stroke='%23C9A227' stroke-opacity='.14'/%3E%3C/svg%3E");
+    background-size: 64px 64px;
+  }
+  /* Layered deep-green hero gradient (compose with .bg-najdi-star) */
+  .bg-hero-saudi {
+    background-image: linear-gradient(160deg, #08261A 0%, #0E6C3C 60%, #0A5230 100%);
+    color: #E9F2EC;
+  }
+  .scrollbar-iscarb::-webkit-scrollbar { width: 8px; height: 8px; }
+  .scrollbar-iscarb::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-iscarb::-webkit-scrollbar-thumb { background: rgba(14,108,60,0.28); border-radius: 999px; }
+  .scrollbar-iscarb::-webkit-scrollbar-thumb:hover { background: rgba(14,108,60,0.5); }
+}
+
+/* Motivational alert variants */
+.alert-discipline {
+  border-inline-start: 4px solid var(--iscarb-gold);
+  background: linear-gradient(90deg, var(--iscarb-gold-soft), transparent);
+}
+.alert-iron {
+  border-inline-start: 4px solid var(--destructive);
+  background: linear-gradient(90deg, #FEF2F2, transparent);
+}
+
+/* Animated readiness ring */
+@keyframes ring-fill {
+  from { stroke-dashoffset: var(--ring-circumference); }
+  to { stroke-dashoffset: var(--ring-offset); }
+}
+.animate-ring-fill { animation: ring-fill 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+.animate-pulse-soft { animation: pulse-soft 2.4s ease-in-out infinite; }
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-marquee { animation: marquee 38s linear infinite; }
+
+[dir="rtl"] body { font-family: var(--font-arabic); }
+[dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3, [dir="rtl"] h4, [dir="rtl"] h5 { font-family: var(--font-arabic); }
+
+/* ─── Micro-interactions ─── */
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.2s ease-out;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-150%); }
+  50% { transform: translateX(150%); }
+  100% { transform: translateX(150%); }
+}
+
+.hover-lift {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.active-press {
+  transition: transform 0.1s ease;
+}
+.active-press:active {
+  transform: scale(0.98);
+}
+
+/* ─── Print styles ─── */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white !important; }
+  header, nav, footer, aside { display: none !important; }
+  main { padding: 0 !important; overflow: visible !important; }
+  .print-break-before { page-break-before: always; }
+  .print-break-after { page-break-after: always; }
+}

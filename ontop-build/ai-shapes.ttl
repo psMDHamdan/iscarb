@@ -1,0 +1,1757 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix : <https://iscarb.edu/ontology/ai/> .
+@prefix iscarb-ai: <https://iscarb.edu/ontology/ai/> .
+
+### SHACL Validation Version 1.0.0 ###
+
+iscarb-ai:AiPromptShape a sh:NodeShape ;
+  sh:targetClass :AiPrompt ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :unitId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :stage ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :modelTag ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :systemPrompt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :userTemplate ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :temperature ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:EmailVerificationShape a sh:NodeShape ;
+  sh:targetClass :EmailVerification ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :userId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :email ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :tokenHash ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :expiresAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :used ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:MaintenanceLogShape a sh:NodeShape ;
+  sh:targetClass :MaintenanceLog ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :assetId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :type ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :cost ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :scheduledDate ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :completedDate ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :assignedTo ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:AiRequestLogShape a sh:NodeShape ;
+  sh:targetClass :AiRequestLog ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :userId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :modelId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :prompt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :response ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :tokensInput ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :tokensOutput ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :cost ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :latencyMs ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :errorMessage ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :metadata ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:AiModelShape a sh:NodeShape ;
+  sh:targetClass :AiModel ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :name ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :version ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :provider ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :endpoint ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :apiKeyEncrypted ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :config ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :health ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :maxTokens ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :costPer1kInput ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :costPer1kOutput ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :metrics ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :versions ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :requestLogs ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-ai:AiModelVersionShape a sh:NodeShape ;
+  sh:targetClass :AiModelVersion ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :modelId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :version ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :config ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :isActive ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:AiModelMetricShape a sh:NodeShape ;
+  sh:targetClass :AiModelMetric ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :modelId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :metric ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :value ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :timestamp ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:AiAgentShape a sh:NodeShape ;
+  sh:targetClass :AiAgent ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :name ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :type ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :config ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :tools ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :systemPrompt ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :organizationId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :sessions ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-ai:AiAgentSessionShape a sh:NodeShape ;
+  sh:targetClass :AiAgentSession ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :agentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :userId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :context ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :startedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :endedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :messages ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-ai:AiAgentMessageShape a sh:NodeShape ;
+  sh:targetClass :AiAgentMessage ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :sessionId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :role ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :content ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :toolCalls ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :toolResults ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :tokens ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:AiMemoryShape a sh:NodeShape ;
+  sh:targetClass :AiMemory ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :userId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :type ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :content ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :summary ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :embedding ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :metadata ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :relevance ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :accessCount ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :lastAccessedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :expiresAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:AiPlanShape a sh:NodeShape ;
+  sh:targetClass :AiPlan ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :userId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :goal ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :priority ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :targetDate ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :completedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :metadata ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :steps ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :reflections ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-ai:AiPlanStepShape a sh:NodeShape ;
+  sh:targetClass :AiPlanStep ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :planId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :order ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :result ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :dependencies ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :startedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :completedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:AiReflectionShape a sh:NodeShape ;
+  sh:targetClass :AiReflection ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :planId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :userId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :content ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :insights ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :confidence ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:AiToolShape a sh:NodeShape ;
+  sh:targetClass :AiTool ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :name ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :parameters ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :category ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :isActive ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :requiredRole ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :executions ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-ai:AiToolExecutionShape a sh:NodeShape ;
+  sh:targetClass :AiToolExecution ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :toolId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :sessionId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :userId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :params ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :result ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :errorMessage ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :durationMs ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:AiEvaluationShape a sh:NodeShape ;
+  sh:targetClass :AiEvaluation ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :sessionId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :userId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :metric ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :value ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :threshold ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :passed ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :details ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:AiFeedbackShape a sh:NodeShape ;
+  sh:targetClass :AiFeedback ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :sessionId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :userId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :rating ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :comment ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :helpful ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :category ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:AiAlertShape a sh:NodeShape ;
+  sh:targetClass :AiAlert ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :type ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :severity ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :message ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :metadata ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :acknowledgedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :resolvedAt ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:AiMetricShape a sh:NodeShape ;
+  sh:targetClass :AiMetric ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :metric ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :value ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :dimensions ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :timestamp ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:EmailTemplateShape a sh:NodeShape ;
+  sh:targetClass :EmailTemplate ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :name ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :subject ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :body ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :variables ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :category ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :organizationId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :isActive ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:EmailLogShape a sh:NodeShape ;
+  sh:targetClass :EmailLog ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :templateId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :to ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :subject ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :sentAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :deliveredAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :errorMessage ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :metadata ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-ai:WaitlistShape a sh:NodeShape ;
+  sh:targetClass :Waitlist ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :courseId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :position ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:DailyLearningGoalShape a sh:NodeShape ;
+  sh:targetClass :DailyLearningGoal ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :journeyId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :targetMinutes ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :actualMinutes ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :date ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :completed ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:AIExplainRequestShape a sh:NodeShape ;
+  sh:targetClass :AIExplainRequest ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :topic ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :mode ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :language ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :response ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :rating ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:AIGeneratedQuizShape a sh:NodeShape ;
+  sh:targetClass :AIGeneratedQuiz ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :courseId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :topic ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :questionCount ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :difficulty ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :questions ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :score ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :completedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:AIStudyRecommendationShape a sh:NodeShape ;
+  sh:targetClass :AIStudyRecommendation ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :type ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :priority ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :reasoning ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :accepted ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:AILearningInsightShape a sh:NodeShape ;
+  sh:targetClass :AILearningInsight ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :insightType ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :confidence ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :actionable ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :acknowledged ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:FacultyTrainingShape a sh:NodeShape ;
+  sh:targetClass :FacultyTraining ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :facultyId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :category ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :provider ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :startDate ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :endDate ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :hours ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :certificate ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :competencyJson ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :universityId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:SavedPromptShape a sh:NodeShape ;
+  sh:targetClass :SavedPrompt ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :facultyId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :prompt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :category ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :usageCount ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :universityId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:DomainEventShape a sh:NodeShape ;
+  sh:targetClass :DomainEvent ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :type ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :source ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :entityId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :entityType ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :payload ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :metadata ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :publishedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :processedBy ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-ai:AIRecommendationShape a sh:NodeShape ;
+  sh:targetClass :AIRecommendation ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :type ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :reasoning ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :relatedEntity ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :relatedType ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :acceptedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :completedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:AITutoringSessionShape a sh:NodeShape ;
+  sh:targetClass :AITutoringSession ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :courseId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :topicId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :messages ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :startedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :endedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :totalMinutes ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :feedbackRating ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :summary ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:AIContentGenerationShape a sh:NodeShape ;
+  sh:targetClass :AIContentGeneration ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :contentType ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :sourceId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :sourceType ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :generatedContent ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :rating ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:AIInterventionCampaignShape a sh:NodeShape ;
+  sh:targetClass :AIInterventionCampaign ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :interventionType ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :trigger ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :recommendedActions ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :sentAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :respondedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :outcome ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-ai:ResumeAiReviewShape a sh:NodeShape ;
+  sh:targetClass :ResumeAiReview ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :resumeContent ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :strengths ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :improvements ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :suggestedRevisions ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :score ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :reviewedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :studentAccepted ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+

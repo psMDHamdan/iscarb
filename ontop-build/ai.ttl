@@ -1,0 +1,1278 @@
+@prefix : <https://iscarb.edu/ontology/ai/> .
+@prefix iscarb-ai: <https://iscarb.edu/ontology/ai/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+### Ontology Version 1.0.0 ###
+
+### Class: AiPrompt
+iscarb-ai:AiPrompt a owl:Class ;
+  rdfs:label "AiPrompt" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPrompt .
+
+iscarb-ai:unitId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPrompt .
+
+iscarb-ai:stage a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPrompt .
+
+iscarb-ai:modelTag a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPrompt .
+
+iscarb-ai:systemPrompt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPrompt .
+
+iscarb-ai:userTemplate a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPrompt .
+
+iscarb-ai:temperature a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPrompt .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPrompt .
+
+iscarb-ai:unit a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:AiPrompt ;
+  rdfs:range <https://iscarb.edu/ontology/core/Unit> .
+
+### Class: EmailVerification
+iscarb-ai:EmailVerification a owl:Class ;
+  rdfs:label "EmailVerification" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailVerification .
+
+iscarb-ai:userId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailVerification .
+
+iscarb-ai:email a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailVerification .
+
+iscarb-ai:tokenHash a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailVerification .
+
+iscarb-ai:expiresAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailVerification .
+
+iscarb-ai:used a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailVerification .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailVerification .
+
+### Class: MaintenanceLog
+iscarb-ai:MaintenanceLog a owl:Class ;
+  rdfs:label "MaintenanceLog" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:MaintenanceLog .
+
+iscarb-ai:assetId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:MaintenanceLog .
+
+iscarb-ai:type a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:MaintenanceLog .
+
+iscarb-ai:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:MaintenanceLog .
+
+iscarb-ai:cost a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:MaintenanceLog .
+
+iscarb-ai:scheduledDate a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:MaintenanceLog .
+
+iscarb-ai:completedDate a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:MaintenanceLog .
+
+iscarb-ai:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:MaintenanceLog .
+
+iscarb-ai:assignedTo a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:MaintenanceLog .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:MaintenanceLog .
+
+iscarb-ai:asset a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:MaintenanceLog ;
+  rdfs:range <https://iscarb.edu/ontology/core/Asset> .
+
+### Class: AiRequestLog
+iscarb-ai:AiRequestLog a owl:Class ;
+  rdfs:label "AiRequestLog" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiRequestLog .
+
+iscarb-ai:userId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiRequestLog .
+
+iscarb-ai:modelId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiRequestLog .
+
+iscarb-ai:prompt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiRequestLog .
+
+iscarb-ai:response a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiRequestLog .
+
+iscarb-ai:tokensInput a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiRequestLog .
+
+iscarb-ai:tokensOutput a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiRequestLog .
+
+iscarb-ai:cost a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiRequestLog .
+
+iscarb-ai:latencyMs a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiRequestLog .
+
+iscarb-ai:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiRequestLog .
+
+iscarb-ai:errorMessage a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiRequestLog .
+
+iscarb-ai:metadata a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiRequestLog .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiRequestLog .
+
+iscarb-ai:model a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:AiRequestLog ;
+  rdfs:range <https://iscarb.edu/ontology/core/AiModel> .
+
+### Class: AiModel
+iscarb-ai:AiModel a owl:Class ;
+  rdfs:label "AiModel" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModel .
+
+iscarb-ai:name a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModel .
+
+iscarb-ai:version a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModel .
+
+iscarb-ai:provider a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModel .
+
+iscarb-ai:endpoint a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModel .
+
+iscarb-ai:apiKeyEncrypted a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModel .
+
+iscarb-ai:config a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModel .
+
+iscarb-ai:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModel .
+
+iscarb-ai:health a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModel .
+
+iscarb-ai:maxTokens a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModel .
+
+iscarb-ai:costPer1kInput a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModel .
+
+iscarb-ai:costPer1kOutput a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModel .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModel .
+
+iscarb-ai:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModel .
+
+iscarb-ai:metrics a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModel .
+
+iscarb-ai:versions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModel .
+
+iscarb-ai:requestLogs a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModel .
+
+### Class: AiModelVersion
+iscarb-ai:AiModelVersion a owl:Class ;
+  rdfs:label "AiModelVersion" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModelVersion .
+
+iscarb-ai:modelId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModelVersion .
+
+iscarb-ai:version a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModelVersion .
+
+iscarb-ai:config a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModelVersion .
+
+iscarb-ai:isActive a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModelVersion .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModelVersion .
+
+iscarb-ai:model a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:AiModelVersion ;
+  rdfs:range <https://iscarb.edu/ontology/core/AiModel> .
+
+### Class: AiModelMetric
+iscarb-ai:AiModelMetric a owl:Class ;
+  rdfs:label "AiModelMetric" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModelMetric .
+
+iscarb-ai:modelId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModelMetric .
+
+iscarb-ai:metric a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModelMetric .
+
+iscarb-ai:value a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModelMetric .
+
+iscarb-ai:timestamp a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiModelMetric .
+
+iscarb-ai:model a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:AiModelMetric ;
+  rdfs:range <https://iscarb.edu/ontology/core/AiModel> .
+
+### Class: AiAgent
+iscarb-ai:AiAgent a owl:Class ;
+  rdfs:label "AiAgent" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgent .
+
+iscarb-ai:name a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgent .
+
+iscarb-ai:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgent .
+
+iscarb-ai:type a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgent .
+
+iscarb-ai:config a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgent .
+
+iscarb-ai:tools a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgent .
+
+iscarb-ai:systemPrompt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgent .
+
+iscarb-ai:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgent .
+
+iscarb-ai:organizationId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgent .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgent .
+
+iscarb-ai:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgent .
+
+iscarb-ai:sessions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgent .
+
+### Class: AiAgentSession
+iscarb-ai:AiAgentSession a owl:Class ;
+  rdfs:label "AiAgentSession" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgentSession .
+
+iscarb-ai:agentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgentSession .
+
+iscarb-ai:userId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgentSession .
+
+iscarb-ai:context a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgentSession .
+
+iscarb-ai:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgentSession .
+
+iscarb-ai:startedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgentSession .
+
+iscarb-ai:endedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgentSession .
+
+iscarb-ai:messages a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgentSession .
+
+iscarb-ai:agent a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:AiAgentSession ;
+  rdfs:range <https://iscarb.edu/ontology/core/AiAgent> .
+
+### Class: AiAgentMessage
+iscarb-ai:AiAgentMessage a owl:Class ;
+  rdfs:label "AiAgentMessage" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgentMessage .
+
+iscarb-ai:sessionId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgentMessage .
+
+iscarb-ai:role a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgentMessage .
+
+iscarb-ai:content a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgentMessage .
+
+iscarb-ai:toolCalls a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgentMessage .
+
+iscarb-ai:toolResults a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgentMessage .
+
+iscarb-ai:tokens a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgentMessage .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAgentMessage .
+
+iscarb-ai:session a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:AiAgentMessage ;
+  rdfs:range <https://iscarb.edu/ontology/core/AiAgentSession> .
+
+### Class: AiMemory
+iscarb-ai:AiMemory a owl:Class ;
+  rdfs:label "AiMemory" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiMemory .
+
+iscarb-ai:userId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiMemory .
+
+iscarb-ai:type a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiMemory .
+
+iscarb-ai:content a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiMemory .
+
+iscarb-ai:summary a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiMemory .
+
+iscarb-ai:embedding a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiMemory .
+
+iscarb-ai:metadata a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiMemory .
+
+iscarb-ai:relevance a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiMemory .
+
+iscarb-ai:accessCount a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiMemory .
+
+iscarb-ai:lastAccessedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiMemory .
+
+iscarb-ai:expiresAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiMemory .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiMemory .
+
+iscarb-ai:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiMemory .
+
+### Class: AiPlan
+iscarb-ai:AiPlan a owl:Class ;
+  rdfs:label "AiPlan" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlan .
+
+iscarb-ai:userId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlan .
+
+iscarb-ai:goal a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlan .
+
+iscarb-ai:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlan .
+
+iscarb-ai:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlan .
+
+iscarb-ai:priority a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlan .
+
+iscarb-ai:targetDate a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlan .
+
+iscarb-ai:completedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlan .
+
+iscarb-ai:metadata a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlan .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlan .
+
+iscarb-ai:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlan .
+
+iscarb-ai:steps a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlan .
+
+iscarb-ai:reflections a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlan .
+
+### Class: AiPlanStep
+iscarb-ai:AiPlanStep a owl:Class ;
+  rdfs:label "AiPlanStep" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlanStep .
+
+iscarb-ai:planId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlanStep .
+
+iscarb-ai:order a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlanStep .
+
+iscarb-ai:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlanStep .
+
+iscarb-ai:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlanStep .
+
+iscarb-ai:result a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlanStep .
+
+iscarb-ai:dependencies a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlanStep .
+
+iscarb-ai:startedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlanStep .
+
+iscarb-ai:completedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlanStep .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiPlanStep .
+
+iscarb-ai:plan a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:AiPlanStep ;
+  rdfs:range <https://iscarb.edu/ontology/core/AiPlan> .
+
+### Class: AiReflection
+iscarb-ai:AiReflection a owl:Class ;
+  rdfs:label "AiReflection" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiReflection .
+
+iscarb-ai:planId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiReflection .
+
+iscarb-ai:userId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiReflection .
+
+iscarb-ai:content a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiReflection .
+
+iscarb-ai:insights a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiReflection .
+
+iscarb-ai:confidence a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiReflection .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiReflection .
+
+iscarb-ai:plan a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:AiReflection ;
+  rdfs:range <https://iscarb.edu/ontology/core/AiPlan> .
+
+### Class: AiTool
+iscarb-ai:AiTool a owl:Class ;
+  rdfs:label "AiTool" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiTool .
+
+iscarb-ai:name a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiTool .
+
+iscarb-ai:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiTool .
+
+iscarb-ai:parameters a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiTool .
+
+iscarb-ai:category a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiTool .
+
+iscarb-ai:isActive a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiTool .
+
+iscarb-ai:requiredRole a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiTool .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiTool .
+
+iscarb-ai:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiTool .
+
+iscarb-ai:executions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiTool .
+
+### Class: AiToolExecution
+iscarb-ai:AiToolExecution a owl:Class ;
+  rdfs:label "AiToolExecution" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiToolExecution .
+
+iscarb-ai:toolId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiToolExecution .
+
+iscarb-ai:sessionId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiToolExecution .
+
+iscarb-ai:userId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiToolExecution .
+
+iscarb-ai:params a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiToolExecution .
+
+iscarb-ai:result a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiToolExecution .
+
+iscarb-ai:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiToolExecution .
+
+iscarb-ai:errorMessage a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiToolExecution .
+
+iscarb-ai:durationMs a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiToolExecution .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiToolExecution .
+
+iscarb-ai:tool a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:AiToolExecution ;
+  rdfs:range <https://iscarb.edu/ontology/core/AiTool> .
+
+### Class: AiEvaluation
+iscarb-ai:AiEvaluation a owl:Class ;
+  rdfs:label "AiEvaluation" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiEvaluation .
+
+iscarb-ai:sessionId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiEvaluation .
+
+iscarb-ai:userId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiEvaluation .
+
+iscarb-ai:metric a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiEvaluation .
+
+iscarb-ai:value a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiEvaluation .
+
+iscarb-ai:threshold a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiEvaluation .
+
+iscarb-ai:passed a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiEvaluation .
+
+iscarb-ai:details a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiEvaluation .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiEvaluation .
+
+### Class: AiFeedback
+iscarb-ai:AiFeedback a owl:Class ;
+  rdfs:label "AiFeedback" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiFeedback .
+
+iscarb-ai:sessionId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiFeedback .
+
+iscarb-ai:userId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiFeedback .
+
+iscarb-ai:rating a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiFeedback .
+
+iscarb-ai:comment a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiFeedback .
+
+iscarb-ai:helpful a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiFeedback .
+
+iscarb-ai:category a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiFeedback .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiFeedback .
+
+### Class: AiAlert
+iscarb-ai:AiAlert a owl:Class ;
+  rdfs:label "AiAlert" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAlert .
+
+iscarb-ai:type a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAlert .
+
+iscarb-ai:severity a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAlert .
+
+iscarb-ai:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAlert .
+
+iscarb-ai:message a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAlert .
+
+iscarb-ai:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAlert .
+
+iscarb-ai:metadata a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAlert .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAlert .
+
+iscarb-ai:acknowledgedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAlert .
+
+iscarb-ai:resolvedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiAlert .
+
+### Class: AiMetric
+iscarb-ai:AiMetric a owl:Class ;
+  rdfs:label "AiMetric" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiMetric .
+
+iscarb-ai:metric a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiMetric .
+
+iscarb-ai:value a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiMetric .
+
+iscarb-ai:dimensions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiMetric .
+
+iscarb-ai:timestamp a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AiMetric .
+
+### Class: EmailTemplate
+iscarb-ai:EmailTemplate a owl:Class ;
+  rdfs:label "EmailTemplate" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailTemplate .
+
+iscarb-ai:name a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailTemplate .
+
+iscarb-ai:subject a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailTemplate .
+
+iscarb-ai:body a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailTemplate .
+
+iscarb-ai:variables a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailTemplate .
+
+iscarb-ai:category a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailTemplate .
+
+iscarb-ai:organizationId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailTemplate .
+
+iscarb-ai:isActive a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailTemplate .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailTemplate .
+
+iscarb-ai:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailTemplate .
+
+### Class: EmailLog
+iscarb-ai:EmailLog a owl:Class ;
+  rdfs:label "EmailLog" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailLog .
+
+iscarb-ai:templateId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailLog .
+
+iscarb-ai:to a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailLog .
+
+iscarb-ai:subject a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailLog .
+
+iscarb-ai:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailLog .
+
+iscarb-ai:sentAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailLog .
+
+iscarb-ai:deliveredAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailLog .
+
+iscarb-ai:errorMessage a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailLog .
+
+iscarb-ai:metadata a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:EmailLog .
+
+### Class: Waitlist
+iscarb-ai:Waitlist a owl:Class ;
+  rdfs:label "Waitlist" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:Waitlist .
+
+iscarb-ai:courseId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:Waitlist .
+
+iscarb-ai:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:Waitlist .
+
+iscarb-ai:position a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:Waitlist .
+
+iscarb-ai:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:Waitlist .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:Waitlist .
+
+iscarb-ai:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:Waitlist .
+
+### Class: DailyLearningGoal
+iscarb-ai:DailyLearningGoal a owl:Class ;
+  rdfs:label "DailyLearningGoal" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:DailyLearningGoal .
+
+iscarb-ai:journeyId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:DailyLearningGoal .
+
+iscarb-ai:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:DailyLearningGoal .
+
+iscarb-ai:targetMinutes a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:DailyLearningGoal .
+
+iscarb-ai:actualMinutes a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:DailyLearningGoal .
+
+iscarb-ai:date a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:DailyLearningGoal .
+
+iscarb-ai:completed a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:DailyLearningGoal .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:DailyLearningGoal .
+
+iscarb-ai:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:DailyLearningGoal .
+
+iscarb-ai:journey a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:DailyLearningGoal ;
+  rdfs:range <https://iscarb.edu/ontology/core/LearningJourney> .
+
+### Class: AIExplainRequest
+iscarb-ai:AIExplainRequest a owl:Class ;
+  rdfs:label "AIExplainRequest" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIExplainRequest .
+
+iscarb-ai:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIExplainRequest .
+
+iscarb-ai:topic a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIExplainRequest .
+
+iscarb-ai:mode a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIExplainRequest .
+
+iscarb-ai:language a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIExplainRequest .
+
+iscarb-ai:response a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIExplainRequest .
+
+iscarb-ai:rating a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIExplainRequest .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIExplainRequest .
+
+iscarb-ai:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIExplainRequest .
+
+iscarb-ai:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:AIExplainRequest ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: AIGeneratedQuiz
+iscarb-ai:AIGeneratedQuiz a owl:Class ;
+  rdfs:label "AIGeneratedQuiz" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIGeneratedQuiz .
+
+iscarb-ai:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIGeneratedQuiz .
+
+iscarb-ai:courseId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIGeneratedQuiz .
+
+iscarb-ai:topic a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIGeneratedQuiz .
+
+iscarb-ai:questionCount a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIGeneratedQuiz .
+
+iscarb-ai:difficulty a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIGeneratedQuiz .
+
+iscarb-ai:questions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIGeneratedQuiz .
+
+iscarb-ai:score a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIGeneratedQuiz .
+
+iscarb-ai:completedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIGeneratedQuiz .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIGeneratedQuiz .
+
+iscarb-ai:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIGeneratedQuiz .
+
+iscarb-ai:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:AIGeneratedQuiz ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: AIStudyRecommendation
+iscarb-ai:AIStudyRecommendation a owl:Class ;
+  rdfs:label "AIStudyRecommendation" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIStudyRecommendation .
+
+iscarb-ai:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIStudyRecommendation .
+
+iscarb-ai:type a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIStudyRecommendation .
+
+iscarb-ai:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIStudyRecommendation .
+
+iscarb-ai:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIStudyRecommendation .
+
+iscarb-ai:priority a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIStudyRecommendation .
+
+iscarb-ai:reasoning a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIStudyRecommendation .
+
+iscarb-ai:accepted a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIStudyRecommendation .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIStudyRecommendation .
+
+iscarb-ai:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIStudyRecommendation .
+
+iscarb-ai:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:AIStudyRecommendation ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: AILearningInsight
+iscarb-ai:AILearningInsight a owl:Class ;
+  rdfs:label "AILearningInsight" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AILearningInsight .
+
+iscarb-ai:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AILearningInsight .
+
+iscarb-ai:insightType a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AILearningInsight .
+
+iscarb-ai:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AILearningInsight .
+
+iscarb-ai:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AILearningInsight .
+
+iscarb-ai:confidence a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AILearningInsight .
+
+iscarb-ai:actionable a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AILearningInsight .
+
+iscarb-ai:acknowledged a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AILearningInsight .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AILearningInsight .
+
+iscarb-ai:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AILearningInsight .
+
+iscarb-ai:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:AILearningInsight ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: FacultyTraining
+iscarb-ai:FacultyTraining a owl:Class ;
+  rdfs:label "FacultyTraining" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:FacultyTraining .
+
+iscarb-ai:facultyId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:FacultyTraining .
+
+iscarb-ai:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:FacultyTraining .
+
+iscarb-ai:category a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:FacultyTraining .
+
+iscarb-ai:provider a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:FacultyTraining .
+
+iscarb-ai:startDate a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:FacultyTraining .
+
+iscarb-ai:endDate a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:FacultyTraining .
+
+iscarb-ai:hours a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:FacultyTraining .
+
+iscarb-ai:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:FacultyTraining .
+
+iscarb-ai:certificate a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:FacultyTraining .
+
+iscarb-ai:competencyJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:FacultyTraining .
+
+iscarb-ai:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:FacultyTraining .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:FacultyTraining .
+
+iscarb-ai:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:FacultyTraining .
+
+### Class: SavedPrompt
+iscarb-ai:SavedPrompt a owl:Class ;
+  rdfs:label "SavedPrompt" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:SavedPrompt .
+
+iscarb-ai:facultyId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:SavedPrompt .
+
+iscarb-ai:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:SavedPrompt .
+
+iscarb-ai:prompt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:SavedPrompt .
+
+iscarb-ai:category a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:SavedPrompt .
+
+iscarb-ai:usageCount a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:SavedPrompt .
+
+iscarb-ai:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:SavedPrompt .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:SavedPrompt .
+
+iscarb-ai:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:SavedPrompt .
+
+### Class: DomainEvent
+iscarb-ai:DomainEvent a owl:Class ;
+  rdfs:label "DomainEvent" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:DomainEvent .
+
+iscarb-ai:type a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:DomainEvent .
+
+iscarb-ai:source a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:DomainEvent .
+
+iscarb-ai:entityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:DomainEvent .
+
+iscarb-ai:entityType a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:DomainEvent .
+
+iscarb-ai:payload a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:DomainEvent .
+
+iscarb-ai:metadata a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:DomainEvent .
+
+iscarb-ai:publishedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:DomainEvent .
+
+iscarb-ai:processedBy a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:DomainEvent .
+
+### Class: AIRecommendation
+iscarb-ai:AIRecommendation a owl:Class ;
+  rdfs:label "AIRecommendation" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIRecommendation .
+
+iscarb-ai:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIRecommendation .
+
+iscarb-ai:type a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIRecommendation .
+
+iscarb-ai:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIRecommendation .
+
+iscarb-ai:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIRecommendation .
+
+iscarb-ai:reasoning a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIRecommendation .
+
+iscarb-ai:relatedEntity a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIRecommendation .
+
+iscarb-ai:relatedType a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIRecommendation .
+
+iscarb-ai:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIRecommendation .
+
+iscarb-ai:acceptedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIRecommendation .
+
+iscarb-ai:completedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIRecommendation .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIRecommendation .
+
+iscarb-ai:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:AIRecommendation ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: AITutoringSession
+iscarb-ai:AITutoringSession a owl:Class ;
+  rdfs:label "AITutoringSession" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AITutoringSession .
+
+iscarb-ai:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AITutoringSession .
+
+iscarb-ai:courseId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AITutoringSession .
+
+iscarb-ai:topicId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AITutoringSession .
+
+iscarb-ai:messages a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AITutoringSession .
+
+iscarb-ai:startedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AITutoringSession .
+
+iscarb-ai:endedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AITutoringSession .
+
+iscarb-ai:totalMinutes a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AITutoringSession .
+
+iscarb-ai:feedbackRating a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AITutoringSession .
+
+iscarb-ai:summary a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AITutoringSession .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AITutoringSession .
+
+iscarb-ai:course a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:AITutoringSession ;
+  rdfs:range <https://iscarb.edu/ontology/core/Course> .
+
+iscarb-ai:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:AITutoringSession ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: AIContentGeneration
+iscarb-ai:AIContentGeneration a owl:Class ;
+  rdfs:label "AIContentGeneration" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIContentGeneration .
+
+iscarb-ai:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIContentGeneration .
+
+iscarb-ai:contentType a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIContentGeneration .
+
+iscarb-ai:sourceId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIContentGeneration .
+
+iscarb-ai:sourceType a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIContentGeneration .
+
+iscarb-ai:generatedContent a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIContentGeneration .
+
+iscarb-ai:rating a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIContentGeneration .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIContentGeneration .
+
+iscarb-ai:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:AIContentGeneration ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: AIInterventionCampaign
+iscarb-ai:AIInterventionCampaign a owl:Class ;
+  rdfs:label "AIInterventionCampaign" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIInterventionCampaign .
+
+iscarb-ai:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIInterventionCampaign .
+
+iscarb-ai:interventionType a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIInterventionCampaign .
+
+iscarb-ai:trigger a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIInterventionCampaign .
+
+iscarb-ai:recommendedActions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIInterventionCampaign .
+
+iscarb-ai:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIInterventionCampaign .
+
+iscarb-ai:sentAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIInterventionCampaign .
+
+iscarb-ai:respondedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIInterventionCampaign .
+
+iscarb-ai:outcome a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIInterventionCampaign .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:AIInterventionCampaign .
+
+iscarb-ai:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:AIInterventionCampaign ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: ResumeAiReview
+iscarb-ai:ResumeAiReview a owl:Class ;
+  rdfs:label "ResumeAiReview" .
+
+iscarb-ai:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:ResumeAiReview .
+
+iscarb-ai:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:ResumeAiReview .
+
+iscarb-ai:resumeContent a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:ResumeAiReview .
+
+iscarb-ai:strengths a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:ResumeAiReview .
+
+iscarb-ai:improvements a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:ResumeAiReview .
+
+iscarb-ai:suggestedRevisions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:ResumeAiReview .
+
+iscarb-ai:score a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:ResumeAiReview .
+
+iscarb-ai:reviewedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:ResumeAiReview .
+
+iscarb-ai:studentAccepted a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:ResumeAiReview .
+
+iscarb-ai:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-ai:ResumeAiReview .
+
+iscarb-ai:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-ai:ResumeAiReview ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+

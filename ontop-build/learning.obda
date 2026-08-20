@@ -1,0 +1,114 @@
+[PrefixDeclaration]
+:		https://iscarb.edu/ontology/learning/
+iscarb-learning:	https://iscarb.edu/ontology/learning/
+xsd:		http://www.w3.org/2001/XMLSchema#
+owl:		http://www.w3.org/2002/07/owl#
+rdf:		http://www.w3.org/1999/02/22-rdf-syntax-ns#
+rdfs:		http://www.w3.org/2000/01/rdf-schema#
+
+[MappingDeclaration] @collection [[
+mappingId	course-mapping
+target		iscarb-learning:course/{id} a iscarb-learning:Course ; iscarb-learning:id {id} ; iscarb-learning:code {code} ; iscarb-learning:name {name} ; iscarb-learning:nameAr {nameAr} ; iscarb-learning:credits {credits} ; iscarb-learning:programType {programType} ; iscarb-learning:nqfLevel {nqfLevel} ; iscarb-learning:bloomTarget {bloomTarget} ; iscarb-learning:domains {domains} ; iscarb-learning:universityId {universityId} ; iscarb-learning:createdAt {createdAt} .
+source		SELECT "id", "code", "name", "nameAr", "credits", "programType", "nqfLevel", "bloomTarget", "domains", "universityId", "createdAt" FROM "Course"
+
+mappingId	course-has-universityRef
+target		iscarb-learning:course/{id} iscarb-learning:universityRef <https://iscarb.edu/ontology/core/university/{universityId}> .
+source		SELECT "id", "universityId" FROM "Course" WHERE "universityId" IS NOT NULL
+
+mappingId	unit-mapping
+target		iscarb-learning:unit/{id} a iscarb-learning:Unit ; iscarb-learning:id {id} ; iscarb-learning:courseId {courseId} ; iscarb-learning:title {title} ; iscarb-learning:content {content} ; iscarb-learning:order {order} ; iscarb-learning:createdAt {createdAt} .
+source		SELECT "id", "courseId", "title", "content", "order", "createdAt" FROM "Unit"
+
+mappingId	unit-has-course
+target		iscarb-learning:unit/{id} iscarb-learning:course <https://iscarb.edu/ontology/core/course/{courseId}> .
+source		SELECT "id", "courseId" FROM "Unit" WHERE "courseId" IS NOT NULL
+
+mappingId	simulation-mapping
+target		iscarb-learning:simulation/{id} a iscarb-learning:Simulation ; iscarb-learning:id {id} ; iscarb-learning:unitId {unitId} ; iscarb-learning:title {title} ; iscarb-learning:context {context} ; iscarb-learning:opening {opening} ; iscarb-learning:successCriteria {successCriteria} ; iscarb-learning:company {company} ; iscarb-learning:role {role} ; iscarb-learning:payload {payload} ; iscarb-learning:confidence {confidence} ; iscarb-learning:createdAt {createdAt} .
+source		SELECT "id", "unitId", "title", "context", "opening", "successCriteria", "company", "role", "payload", "confidence", "createdAt" FROM "Simulation"
+
+mappingId	simulation-has-unit
+target		iscarb-learning:simulation/{id} iscarb-learning:unit <https://iscarb.edu/ontology/core/unit/{unitId}> .
+source		SELECT "id", "unitId" FROM "Simulation" WHERE "unitId" IS NOT NULL
+
+mappingId	project-mapping
+target		iscarb-learning:project/{id} a iscarb-learning:Project ; iscarb-learning:id {id} ; iscarb-learning:studentId {studentId} ; iscarb-learning:title {title} ; iscarb-learning:type {type} ; iscarb-learning:description {description} ; iscarb-learning:skillsJson {skillsJson} ; iscarb-learning:contentJson {contentJson} ; iscarb-learning:evalScore {evalScore} ; iscarb-learning:evalConfidence {evalConfidence} ; iscarb-learning:evalRubricJson {evalRubricJson} ; iscarb-learning:evalModel {evalModel} ; iscarb-learning:evaluatedAt {evaluatedAt} ; iscarb-learning:artifactUrl {artifactUrl} ; iscarb-learning:createdAt {createdAt} ; iscarb-learning:universityId {universityId} .
+source		SELECT "id", "studentId", "title", "type", "description", "skillsJson", "contentJson", "evalScore", "evalConfidence", "evalRubricJson", "evalModel", "evaluatedAt", "artifactUrl", "createdAt", "universityId" FROM "Project"
+
+mappingId	project-has-student
+target		iscarb-learning:project/{id} iscarb-learning:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "Project" WHERE "studentId" IS NOT NULL
+
+mappingId	communitypost-mapping
+target		iscarb-learning:communitypost/{id} a iscarb-learning:CommunityPost ; iscarb-learning:id {id} ; iscarb-learning:authorId {authorId} ; iscarb-learning:authorName {authorName} ; iscarb-learning:authorRole {authorRole} ; iscarb-learning:category {category} ; iscarb-learning:title {title} ; iscarb-learning:content {content} ; iscarb-learning:tagsJson {tagsJson} ; iscarb-learning:upvotes {upvotes} ; iscarb-learning:createdAt {createdAt} .
+source		SELECT "id", "authorId", "authorName", "authorRole", "category", "title", "content", "tagsJson", "upvotes", "createdAt" FROM "CommunityPost"
+
+mappingId	communityreply-mapping
+target		iscarb-learning:communityreply/{id} a iscarb-learning:CommunityReply ; iscarb-learning:id {id} ; iscarb-learning:postId {postId} ; iscarb-learning:authorName {authorName} ; iscarb-learning:authorRole {authorRole} ; iscarb-learning:content {content} ; iscarb-learning:createdAt {createdAt} .
+source		SELECT "id", "postId", "authorName", "authorRole", "content", "createdAt" FROM "CommunityReply"
+
+mappingId	communityreply-has-post
+target		iscarb-learning:communityreply/{id} iscarb-learning:post <https://iscarb.edu/ontology/core/communitypost/{postId}> .
+source		SELECT "id", "postId" FROM "CommunityReply" WHERE "postId" IS NOT NULL
+
+mappingId	courseconcept-mapping
+target		iscarb-learning:courseconcept/{id} a iscarb-learning:CourseConcept ; iscarb-learning:id {id} ; iscarb-learning:courseId {courseId} ; iscarb-learning:conceptId {conceptId} .
+source		SELECT "id", "courseId", "conceptId" FROM "CourseConcept"
+
+mappingId	courseconcept-has-concept
+target		iscarb-learning:courseconcept/{id} iscarb-learning:concept <https://iscarb.edu/ontology/core/concept/{conceptId}> .
+source		SELECT "id", "conceptId" FROM "CourseConcept" WHERE "conceptId" IS NOT NULL
+
+mappingId	courseconcept-has-course
+target		iscarb-learning:courseconcept/{id} iscarb-learning:course <https://iscarb.edu/ontology/core/course/{courseId}> .
+source		SELECT "id", "courseId" FROM "CourseConcept" WHERE "courseId" IS NOT NULL
+
+mappingId	curriculumcourse-mapping
+target		iscarb-learning:curriculumcourse/{id} a iscarb-learning:CurriculumCourse ; iscarb-learning:id {id} ; iscarb-learning:curriculumId {curriculumId} ; iscarb-learning:courseId {courseId} ; iscarb-learning:isCore {isCore} ; iscarb-learning:credits {credits} ; iscarb-learning:semester {semester} ; iscarb-learning:order {order} ; iscarb-learning:createdAt {createdAt} .
+source		SELECT "id", "curriculumId", "courseId", "isCore", "credits", "semester", "order", "createdAt" FROM "CurriculumCourse"
+
+mappingId	curriculumcourse-has-curriculum
+target		iscarb-learning:curriculumcourse/{id} iscarb-learning:curriculum <https://iscarb.edu/ontology/core/curriculum/{curriculumId}> .
+source		SELECT "id", "curriculumId" FROM "CurriculumCourse" WHERE "curriculumId" IS NOT NULL
+
+mappingId	courseoutcome-mapping
+target		iscarb-learning:courseoutcome/{id} a iscarb-learning:CourseOutcome ; iscarb-learning:id {id} ; iscarb-learning:courseId {courseId} ; iscarb-learning:description {description} ; iscarb-learning:bloomsLevel {bloomsLevel} ; iscarb-learning:order {order} ; iscarb-learning:createdAt {createdAt} .
+source		SELECT "id", "courseId", "description", "bloomsLevel", "order", "createdAt" FROM "CourseOutcome"
+
+mappingId	courseresource-mapping
+target		iscarb-learning:courseresource/{id} a iscarb-learning:CourseResource ; iscarb-learning:id {id} ; iscarb-learning:courseId {courseId} ; iscarb-learning:title {title} ; iscarb-learning:type {type} ; iscarb-learning:url {url} ; iscarb-learning:filePath {filePath} ; iscarb-learning:description {description} ; iscarb-learning:order {order} ; iscarb-learning:createdAt {createdAt} .
+source		SELECT "id", "courseId", "title", "type", "url", "filePath", "description", "order", "createdAt" FROM "CourseResource"
+
+mappingId	courseallocation-mapping
+target		iscarb-learning:courseallocation/{id} a iscarb-learning:CourseAllocation ; iscarb-learning:id {id} ; iscarb-learning:courseId {courseId} ; iscarb-learning:semesterId {semesterId} ; iscarb-learning:sectionId {sectionId} ; iscarb-learning:facultyId {facultyId} ; iscarb-learning:classroomId {classroomId} ; iscarb-learning:status {status} ; iscarb-learning:createdAt {createdAt} ; iscarb-learning:updatedAt {updatedAt} .
+source		SELECT "id", "courseId", "semesterId", "sectionId", "facultyId", "classroomId", "status", "createdAt", "updatedAt" FROM "CourseAllocation"
+
+mappingId	courseregistration-mapping
+target		iscarb-learning:courseregistration/{id} a iscarb-learning:CourseRegistration ; iscarb-learning:id {id} ; iscarb-learning:studentId {studentId} ; iscarb-learning:courseId {courseId} ; iscarb-learning:semesterId {semesterId} ; iscarb-learning:status {status} ; iscarb-learning:registeredAt {registeredAt} ; iscarb-learning:droppedAt {droppedAt} ; iscarb-learning:createdAt {createdAt} ; iscarb-learning:updatedAt {updatedAt} .
+source		SELECT "id", "studentId", "courseId", "semesterId", "status", "registeredAt", "droppedAt", "createdAt", "updatedAt" FROM "CourseRegistration"
+
+mappingId	researchproject-mapping
+target		iscarb-learning:researchproject/{id} a iscarb-learning:ResearchProject ; iscarb-learning:id {id} ; iscarb-learning:title {title} ; iscarb-learning:description {description} ; iscarb-learning:principalInvestigatorId {principalInvestigatorId} ; iscarb-learning:status {status} ; iscarb-learning:startDate {startDate} ; iscarb-learning:endDate {endDate} ; iscarb-learning:budget {budget} ; iscarb-learning:fundingSource {fundingSource} ; iscarb-learning:organizationId {organizationId} ; iscarb-learning:createdAt {createdAt} ; iscarb-learning:updatedAt {updatedAt} .
+source		SELECT "id", "title", "description", "principalInvestigatorId", "status", "startDate", "endDate", "budget", "fundingSource", "organizationId", "createdAt", "updatedAt" FROM "ResearchProject"
+
+mappingId	grantopportunity-mapping
+target		iscarb-learning:grantopportunity/{id} a iscarb-learning:GrantOpportunity ; iscarb-learning:id {id} ; iscarb-learning:title {title} ; iscarb-learning:provider {provider} ; iscarb-learning:description {description} ; iscarb-learning:amount {amount} ; iscarb-learning:currency {currency} ; iscarb-learning:deadline {deadline} ; iscarb-learning:eligibility {eligibility} ; iscarb-learning:category {category} ; iscarb-learning:status {status} ; iscarb-learning:createdAt {createdAt} ; iscarb-learning:updatedAt {updatedAt} .
+source		SELECT "id", "title", "provider", "description", "amount", "currency", "deadline", "eligibility", "category", "status", "createdAt", "updatedAt" FROM "GrantOpportunity"
+
+mappingId	simulationscenario-mapping
+target		iscarb-learning:simulationscenario/{id} a iscarb-learning:SimulationScenario ; iscarb-learning:id {id} ; iscarb-learning:universityId {universityId} ; iscarb-learning:studentId {studentId} ; iscarb-learning:scenarioType {scenarioType} ; iscarb-learning:scenarioName {scenarioName} ; iscarb-learning:description {description} ; iscarb-learning:startedAt {startedAt} ; iscarb-learning:completedAt {completedAt} ; iscarb-learning:outcome {outcome} .
+source		SELECT "id", "universityId", "studentId", "scenarioType", "scenarioName", "description", "startedAt", "completedAt", "outcome" FROM "SimulationScenario"
+
+mappingId	capstoneproject-mapping
+target		iscarb-learning:capstoneproject/{id} a iscarb-learning:CapstoneProject ; iscarb-learning:id {id} ; iscarb-learning:universityId {universityId} ; iscarb-learning:studentId {studentId} ; iscarb-learning:title {title} ; iscarb-learning:description {description} ; iscarb-learning:focusArea {focusArea} ; iscarb-learning:status {status} ; iscarb-learning:startDate {startDate} ; iscarb-learning:targetCompletionDate {targetCompletionDate} ; iscarb-learning:completedAt {completedAt} ; iscarb-learning:mentorId {mentorId} ; iscarb-learning:teamMembers {teamMembers} ; iscarb-learning:deliverables {deliverables} ; iscarb-learning:milestones {milestones} .
+source		SELECT "id", "universityId", "studentId", "title", "description", "focusArea", "status", "startDate", "targetCompletionDate", "completedAt", "mentorId", "teamMembers", "deliverables", "milestones" FROM "CapstoneProject"
+
+mappingId	coursecontent-mapping
+target		iscarb-learning:coursecontent/{id} a iscarb-learning:CourseContent ; iscarb-learning:id {id} ; iscarb-learning:courseId {courseId} ; iscarb-learning:fileName {fileName} ; iscarb-learning:fileUrl {fileUrl} ; iscarb-learning:textContent {textContent} ; iscarb-learning:chunks {chunks} ; iscarb-learning:uploadedBy {uploadedBy} ; iscarb-learning:createdAt {createdAt} .
+source		SELECT "id", "courseId", "fileName", "fileUrl", "textContent", "chunks", "uploadedBy", "createdAt" FROM "CourseContent"
+
+mappingId	courselearningoutcome-mapping
+target		iscarb-learning:courselearningoutcome/{id} a iscarb-learning:CourseLearningOutcome ; iscarb-learning:id {id} ; iscarb-learning:courseId {courseId} ; iscarb-learning:number {number} ; iscarb-learning:text {text} ; iscarb-learning:textAr {textAr} ; iscarb-learning:bloomLevel {bloomLevel} ; iscarb-learning:weight {weight} ; iscarb-learning:createdAt {createdAt} .
+source		SELECT "id", "courseId", "number", "text", "textAr", "bloomLevel", "weight", "createdAt" FROM "CourseLearningOutcome"
+
+]]

@@ -1,0 +1,162 @@
+[PrefixDeclaration]
+:		https://iscarb.edu/ontology/student/
+iscarb-student:	https://iscarb.edu/ontology/student/
+xsd:		http://www.w3.org/2001/XMLSchema#
+owl:		http://www.w3.org/2002/07/owl#
+rdf:		http://www.w3.org/1999/02/22-rdf-syntax-ns#
+rdfs:		http://www.w3.org/2000/01/rdf-schema#
+
+[MappingDeclaration] @collection [[
+mappingId	student-mapping
+target		iscarb-student:student/{id} a iscarb-student:Student ; iscarb-student:id {id} ; iscarb-student:name {name} ; iscarb-student:email {email} ; iscarb-student:university {university} ; iscarb-student:universityId {universityId} ; iscarb-student:college {college} ; iscarb-student:program {program} ; iscarb-student:cohort {cohort} ; iscarb-student:guardianName {guardianName} ; iscarb-student:guardianPhone {guardianPhone} ; iscarb-student:readinessScore {readinessScore} ; iscarb-student:discoverable {discoverable} ; iscarb-student:scedSpecializationCode {scedSpecializationCode} ; iscarb-student:educationLevelCode {educationLevelCode} ; iscarb-student:createdAt {createdAt} ; iscarb-student:userId {userId} ; iscarb-student:guardianConsentAt {guardianConsentAt} ; iscarb-student:aiOnboardingComplete {aiOnboardingComplete} ; iscarb-student:targetCareerName {targetCareerName} ; iscarb-student:targetCareerUri {targetCareerUri} ; iscarb-student:lastAIBriefing {lastAIBriefing} ; iscarb-student:totalStudyHours {totalStudyHours} ; iscarb-student:currentStreak {currentStreak} ; iscarb-student:careerProfile {careerProfile} ; iscarb-student:employabilityProfile {employabilityProfile} ; iscarb-student:equityLedger {equityLedger} ; iscarb-student:graduationChecklist {graduationChecklist} ; iscarb-student:interviewPrep {interviewPrep} ; iscarb-student:learningStreak {learningStreak} ; iscarb-student:portfolio {portfolio} ; iscarb-student:studentOnboarding {studentOnboarding} ; iscarb-student:successMetrics {successMetrics} ; iscarb-student:learningProfile {learningProfile} .
+source		SELECT "id", "name", "email", "university", "universityId", "college", "program", "cohort", "guardianName", "guardianPhone", "readinessScore", "discoverable", "scedSpecializationCode", "educationLevelCode", "createdAt", "userId", "guardianConsentAt", "aiOnboardingComplete", "targetCareerName", "targetCareerUri", "lastAIBriefing", "totalStudyHours", "currentStreak", "careerProfile", "employabilityProfile", "equityLedger", "graduationChecklist", "interviewPrep", "learningStreak", "portfolio", "studentOnboarding", "successMetrics", "learningProfile" FROM "Student"
+
+mappingId	student-has-educationLevel
+target		iscarb-student:student/{id} iscarb-student:educationLevel <https://iscarb.edu/ontology/core/scedfield/{educationLevelCode}> .
+source		SELECT "id", "educationLevelCode" FROM "Student" WHERE "educationLevelCode" IS NOT NULL
+
+mappingId	student-has-scedSpecialization
+target		iscarb-student:student/{id} iscarb-student:scedSpecialization <https://iscarb.edu/ontology/core/scedfield/{scedSpecializationCode}> .
+source		SELECT "id", "scedSpecializationCode" FROM "Student" WHERE "scedSpecializationCode" IS NOT NULL
+
+mappingId	student-has-universityRef
+target		iscarb-student:student/{id} iscarb-student:universityRef <https://iscarb.edu/ontology/core/university/{universityId}> .
+source		SELECT "id", "universityId" FROM "Student" WHERE "universityId" IS NOT NULL
+
+mappingId	student-has-authUser
+target		iscarb-student:student/{id} iscarb-student:authUser <https://iscarb.edu/ontology/core/user/{userId}> .
+source		SELECT "id", "userId" FROM "Student" WHERE "userId" IS NOT NULL
+
+mappingId	enrollment-mapping
+target		iscarb-student:enrollment/{id} a iscarb-student:Enrollment ; iscarb-student:id {id} ; iscarb-student:courseId {courseId} ; iscarb-student:studentId {studentId} ; iscarb-student:facultyId {facultyId} ; iscarb-student:semester {semester} ; iscarb-student:enrolledAt {enrolledAt} ; iscarb-student:universityId {universityId} ; iscarb-student:grade {grade} .
+source		SELECT "id", "courseId", "studentId", "facultyId", "semester", "enrolledAt", "universityId", "grade" FROM "Enrollment"
+
+mappingId	enrollment-has-course
+target		iscarb-student:enrollment/{id} iscarb-student:course <https://iscarb.edu/ontology/core/course/{courseId}> .
+source		SELECT "id", "courseId" FROM "Enrollment" WHERE "courseId" IS NOT NULL
+
+mappingId	enrollment-has-faculty
+target		iscarb-student:enrollment/{id} iscarb-student:faculty <https://iscarb.edu/ontology/core/faculty/{facultyId}> .
+source		SELECT "id", "facultyId" FROM "Enrollment" WHERE "facultyId" IS NOT NULL
+
+mappingId	enrollment-has-student
+target		iscarb-student:enrollment/{id} iscarb-student:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "Enrollment" WHERE "studentId" IS NOT NULL
+
+mappingId	grade-mapping
+target		iscarb-student:grade/{id} a iscarb-student:Grade ; iscarb-student:id {id} ; iscarb-student:studentId {studentId} ; iscarb-student:courseId {courseId} ; iscarb-student:enrollmentId {enrollmentId} ; iscarb-student:semester {semester} ; iscarb-student:letter {letter} ; iscarb-student:gpa {gpa} ; iscarb-student:percentage {percentage} ; iscarb-student:credits {credits} ; iscarb-student:status {status} ; iscarb-student:createdAt {createdAt} .
+source		SELECT "id", "studentId", "courseId", "enrollmentId", "semester", "letter", "gpa", "percentage", "credits", "status", "createdAt" FROM "Grade"
+
+mappingId	grade-has-student
+target		iscarb-student:grade/{id} iscarb-student:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "Grade" WHERE "studentId" IS NOT NULL
+
+mappingId	grade-has-course
+target		iscarb-student:grade/{id} iscarb-student:course <https://iscarb.edu/ontology/core/course/{courseId}> .
+source		SELECT "id", "courseId" FROM "Grade" WHERE "courseId" IS NOT NULL
+
+mappingId	grade-has-enrollment
+target		iscarb-student:grade/{id} iscarb-student:enrollment <https://iscarb.edu/ontology/core/enrollment/{enrollmentId}> .
+source		SELECT "id", "enrollmentId" FROM "Grade" WHERE "enrollmentId" IS NOT NULL
+
+mappingId	gradeadjustment-mapping
+target		iscarb-student:gradeadjustment/{id} a iscarb-student:GradeAdjustment ; iscarb-student:id {id} ; iscarb-student:studentId {studentId} ; iscarb-student:courseId {courseId} ; iscarb-student:facultyId {facultyId} ; iscarb-student:oldGrade {oldGrade} ; iscarb-student:newGrade {newGrade} ; iscarb-student:justificationReason {justificationReason} ; iscarb-student:evidence {evidence} ; iscarb-student:status {status} ; iscarb-student:approvedBy {approvedBy} ; iscarb-student:deanNotified {deanNotified} ; iscarb-student:createdAt {createdAt} ; iscarb-student:reviewedAt {reviewedAt} ; iscarb-student:universityId {universityId} .
+source		SELECT "id", "studentId", "courseId", "facultyId", "oldGrade", "newGrade", "justificationReason", "evidence", "status", "approvedBy", "deanNotified", "createdAt", "reviewedAt", "universityId" FROM "GradeAdjustment"
+
+mappingId	gradeadjustment-has-student
+target		iscarb-student:gradeadjustment/{id} iscarb-student:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "GradeAdjustment" WHERE "studentId" IS NOT NULL
+
+mappingId	studentagent-mapping
+target		iscarb-student:studentagent/{id} a iscarb-student:StudentAgent ; iscarb-student:id {id} ; iscarb-student:studentId {studentId} ; iscarb-student:name {name} ; iscarb-student:persona {persona} ; iscarb-student:state {state} ; iscarb-student:lastNudge {lastNudge} ; iscarb-student:streakDays {streakDays} ; iscarb-student:createdAt {createdAt} ; iscarb-student:updatedAt {updatedAt} .
+source		SELECT "id", "studentId", "name", "persona", "state", "lastNudge", "streakDays", "createdAt", "updatedAt" FROM "StudentAgent"
+
+mappingId	studentagent-has-student
+target		iscarb-student:studentagent/{id} iscarb-student:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "StudentAgent" WHERE "studentId" IS NOT NULL
+
+mappingId	studentbadge-mapping
+target		iscarb-student:studentbadge/{id} a iscarb-student:StudentBadge ; iscarb-student:id {id} ; iscarb-student:studentId {studentId} ; iscarb-student:badgeCode {badgeCode} ; iscarb-student:earnedAt {earnedAt} .
+source		SELECT "id", "studentId", "badgeCode", "earnedAt" FROM "StudentBadge"
+
+mappingId	studentbadge-has-student
+target		iscarb-student:studentbadge/{id} iscarb-student:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "StudentBadge" WHERE "studentId" IS NOT NULL
+
+mappingId	studentonboarding-mapping
+target		iscarb-student:studentonboarding/{id} a iscarb-student:StudentOnboarding ; iscarb-student:id {id} ; iscarb-student:studentId {studentId} ; iscarb-student:academicYear {academicYear} ; iscarb-student:interests {interests} ; iscarb-student:strengths {strengths} ; iscarb-student:completed {completed} ; iscarb-student:completedAt {completedAt} ; iscarb-student:createdAt {createdAt} ; iscarb-student:updatedAt {updatedAt} .
+source		SELECT "id", "studentId", "academicYear", "interests", "strengths", "completed", "completedAt", "createdAt", "updatedAt" FROM "StudentOnboarding"
+
+mappingId	studentonboarding-has-student
+target		iscarb-student:studentonboarding/{id} iscarb-student:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "StudentOnboarding" WHERE "studentId" IS NOT NULL
+
+mappingId	studentagentmessage-mapping
+target		iscarb-student:studentagentmessage/{id} a iscarb-student:StudentAgentMessage ; iscarb-student:id {id} ; iscarb-student:agentId {agentId} ; iscarb-student:studentId {studentId} ; iscarb-student:role {role} ; iscarb-student:content {content} ; iscarb-student:metaJson {metaJson} .
+source		SELECT "id", "agentId", "studentId", "role", "content", "metaJson" FROM "StudentAgentMessage"
+
+mappingId	studentcompetencygraph-mapping
+target		iscarb-student:studentcompetencygraph/{id} a iscarb-student:StudentCompetencyGraph ; iscarb-student:id {id} ; iscarb-student:studentId {studentId} ; iscarb-student:competencyId {competencyId} ; iscarb-student:currentLevel {currentLevel} ; iscarb-student:targetLevel {targetLevel} ; iscarb-student:trend {trend} ; iscarb-student:lastAssessedAt {lastAssessedAt} ; iscarb-student:assessmentCount {assessmentCount} ; iscarb-student:evidence {evidence} ; iscarb-student:createdAt {createdAt} ; iscarb-student:updatedAt {updatedAt} .
+source		SELECT "id", "studentId", "competencyId", "currentLevel", "targetLevel", "trend", "lastAssessedAt", "assessmentCount", "evidence", "createdAt", "updatedAt" FROM "StudentCompetencyGraph"
+
+mappingId	studentcompetencygraph-has-competency
+target		iscarb-student:studentcompetencygraph/{id} iscarb-student:competency <https://iscarb.edu/ontology/core/competencydefinition/{competencyId}> .
+source		SELECT "id", "competencyId" FROM "StudentCompetencyGraph" WHERE "competencyId" IS NOT NULL
+
+mappingId	studentcohort-mapping
+target		iscarb-student:studentcohort/{id} a iscarb-student:StudentCohort ; iscarb-student:id {id} ; iscarb-student:programId {programId} ; iscarb-student:name {name} ; iscarb-student:year {year} ; iscarb-student:startDate {startDate} ; iscarb-student:status {status} ; iscarb-student:createdAt {createdAt} .
+source		SELECT "id", "programId", "name", "year", "startDate", "status", "createdAt" FROM "StudentCohort"
+
+mappingId	studentalert-mapping
+target		iscarb-student:studentalert/{id} a iscarb-student:StudentAlert ; iscarb-student:id {id} ; iscarb-student:facultyId {facultyId} ; iscarb-student:studentId {studentId} ; iscarb-student:alertType {alertType} ; iscarb-student:severity {severity} ; iscarb-student:title {title} ; iscarb-student:description {description} ; iscarb-student:source {source} ; iscarb-student:status {status} ; iscarb-student:actionTaken {actionTaken} ; iscarb-student:universityId {universityId} ; iscarb-student:createdAt {createdAt} ; iscarb-student:updatedAt {updatedAt} .
+source		SELECT "id", "facultyId", "studentId", "alertType", "severity", "title", "description", "source", "status", "actionTaken", "universityId", "createdAt", "updatedAt" FROM "StudentAlert"
+
+mappingId	studentrecommendation-mapping
+target		iscarb-student:studentrecommendation/{id} a iscarb-student:StudentRecommendation ; iscarb-student:id {id} ; iscarb-student:facultyId {facultyId} ; iscarb-student:studentId {studentId} ; iscarb-student:category {category} ; iscarb-student:title {title} ; iscarb-student:description {description} ; iscarb-student:priority {priority} ; iscarb-student:status {status} ; iscarb-student:aiGenerated {aiGenerated} ; iscarb-student:universityId {universityId} ; iscarb-student:createdAt {createdAt} .
+source		SELECT "id", "facultyId", "studentId", "category", "title", "description", "priority", "status", "aiGenerated", "universityId", "createdAt" FROM "StudentRecommendation"
+
+mappingId	betaenrollment-mapping
+target		iscarb-student:betaenrollment/{id} a iscarb-student:BetaEnrollment ; iscarb-student:id {id} ; iscarb-student:programId {programId} ; iscarb-student:userId {userId} ; iscarb-student:status {status} ; iscarb-student:feedback {feedback} ; iscarb-student:enrolledAt {enrolledAt} ; iscarb-student:completedAt {completedAt} .
+source		SELECT "id", "programId", "userId", "status", "feedback", "enrolledAt", "completedAt" FROM "BetaEnrollment"
+
+mappingId	betaenrollment-has-program
+target		iscarb-student:betaenrollment/{id} iscarb-student:program <https://iscarb.edu/ontology/core/betaprogram/{programId}> .
+source		SELECT "id", "programId" FROM "BetaEnrollment" WHERE "programId" IS NOT NULL
+
+mappingId	studentevent-mapping
+target		iscarb-student:studentevent/{id} a iscarb-student:StudentEvent ; iscarb-student:id {id} ; iscarb-student:studentId {studentId} ; iscarb-student:eventType {eventType} ; iscarb-student:entityId {entityId} ; iscarb-student:metadata {metadata} ; iscarb-student:createdAt {createdAt} .
+source		SELECT "id", "studentId", "eventType", "entityId", "metadata", "createdAt" FROM "StudentEvent"
+
+mappingId	studentevent-has-student
+target		iscarb-student:studentevent/{id} iscarb-student:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "StudentEvent" WHERE "studentId" IS NOT NULL
+
+mappingId	studentlearningprofile-mapping
+target		iscarb-student:studentlearningprofile/{id} a iscarb-student:StudentLearningProfile ; iscarb-student:id {id} ; iscarb-student:studentId {studentId} ; iscarb-student:preferredLearningStyle {preferredLearningStyle} ; iscarb-student:studyPacePreference {studyPacePreference} ; iscarb-student:focusSessionDurationMinutes {focusSessionDurationMinutes} ; iscarb-student:bestStudyTime {bestStudyTime} ; iscarb-student:avgStudySessionLength {avgStudySessionLength} ; iscarb-student:preferredResourceTypes {preferredResourceTypes} ; iscarb-student:adaptiveDifficultyLevel {adaptiveDifficultyLevel} ; iscarb-student:lastUpdatedAt {lastUpdatedAt} ; iscarb-student:createdAt {createdAt} .
+source		SELECT "id", "studentId", "preferredLearningStyle", "studyPacePreference", "focusSessionDurationMinutes", "bestStudyTime", "avgStudySessionLength", "preferredResourceTypes", "adaptiveDifficultyLevel", "lastUpdatedAt", "createdAt" FROM "StudentLearningProfile"
+
+mappingId	studentlearningprofile-has-student
+target		iscarb-student:studentlearningprofile/{id} iscarb-student:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "StudentLearningProfile" WHERE "studentId" IS NOT NULL
+
+mappingId	studentgoal-mapping
+target		iscarb-student:studentgoal/{id} a iscarb-student:StudentGoal ; iscarb-student:id {id} ; iscarb-student:universityId {universityId} ; iscarb-student:studentId {studentId} ; iscarb-student:title {title} ; iscarb-student:description {description} ; iscarb-student:category {category} ; iscarb-student:status {status} ; iscarb-student:priority {priority} ; iscarb-student:progress {progress} ; iscarb-student:targetDate {targetDate} ; iscarb-student:completedAt {completedAt} ; iscarb-student:milestones {milestones} ; iscarb-student:relatedCompetencies {relatedCompetencies} ; iscarb-student:createdAt {createdAt} ; iscarb-student:updatedAt {updatedAt} .
+source		SELECT "id", "universityId", "studentId", "title", "description", "category", "status", "priority", "progress", "targetDate", "completedAt", "milestones", "relatedCompetencies", "createdAt", "updatedAt" FROM "StudentGoal"
+
+mappingId	studentgoal-has-student
+target		iscarb-student:studentgoal/{id} iscarb-student:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "StudentGoal" WHERE "studentId" IS NOT NULL
+
+mappingId	studentachievement-mapping
+target		iscarb-student:studentachievement/{id} a iscarb-student:StudentAchievement ; iscarb-student:id {id} ; iscarb-student:universityId {universityId} ; iscarb-student:studentId {studentId} ; iscarb-student:title {title} ; iscarb-student:description {description} ; iscarb-student:category {category} ; iscarb-student:badgeIcon {badgeIcon} ; iscarb-student:rarity {rarity} ; iscarb-student:progress {progress} ; iscarb-student:requirement {requirement} .
+source		SELECT "id", "universityId", "studentId", "title", "description", "category", "badgeIcon", "rarity", "progress", "requirement" FROM "StudentAchievement"
+
+mappingId	studenttask-mapping
+target		iscarb-student:studenttask/{id} a iscarb-student:StudentTask ; iscarb-student:id {id} ; iscarb-student:universityId {universityId} ; iscarb-student:studentId {studentId} ; iscarb-student:title {title} ; iscarb-student:description {description} ; iscarb-student:priority {priority} ; iscarb-student:status {status} ; iscarb-student:dueDate {dueDate} ; iscarb-student:completedAt {completedAt} ; iscarb-student:estimatedHours {estimatedHours} ; iscarb-student:actualHours {actualHours} ; iscarb-student:tags {tags} ; iscarb-student:dependencies {dependencies} ; iscarb-student:createdAt {createdAt} ; iscarb-student:updatedAt {updatedAt} .
+source		SELECT "id", "universityId", "studentId", "title", "description", "priority", "status", "dueDate", "completedAt", "estimatedHours", "actualHours", "tags", "dependencies", "createdAt", "updatedAt" FROM "StudentTask"
+
+mappingId	studenttask-has-student
+target		iscarb-student:studenttask/{id} iscarb-student:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "StudentTask" WHERE "studentId" IS NOT NULL
+
+]]

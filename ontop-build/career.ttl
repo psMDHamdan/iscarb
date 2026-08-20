@@ -1,0 +1,1293 @@
+@prefix : <https://iscarb.edu/ontology/career/> .
+@prefix iscarb-career: <https://iscarb.edu/ontology/career/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+### Ontology Version 1.0.0 ###
+
+### Class: CareerMapping
+iscarb-career:CareerMapping a owl:Class ;
+  rdfs:label "CareerMapping" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMapping .
+
+iscarb-career:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMapping .
+
+iscarb-career:generatedTitle a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMapping .
+
+iscarb-career:titleAr a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMapping .
+
+iscarb-career:cluster a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMapping .
+
+iscarb-career:sscoCode a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMapping .
+
+iscarb-career:iscoMajorGroup a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMapping .
+
+iscarb-career:alignment a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMapping .
+
+iscarb-career:matchScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMapping .
+
+iscarb-career:skillsEvidence a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMapping .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMapping .
+
+iscarb-career:ssco a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:CareerMapping ;
+  rdfs:range <https://iscarb.edu/ontology/core/SsccoOccupation> .
+
+iscarb-career:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:CareerMapping ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: CareerPath
+iscarb-career:CareerPath a owl:Class ;
+  rdfs:label "CareerPath" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerPath .
+
+iscarb-career:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerPath .
+
+iscarb-career:titleEn a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerPath .
+
+iscarb-career:titleAr a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerPath .
+
+iscarb-career:targetSscoCode a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerPath .
+
+iscarb-career:targetComposite a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerPath .
+
+iscarb-career:rationaleEn a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerPath .
+
+iscarb-career:rationaleAr a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerPath .
+
+iscarb-career:source a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerPath .
+
+iscarb-career:model a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerPath .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerPath .
+
+iscarb-career:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:CareerPath ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+iscarb-career:stages a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerPath .
+
+### Class: CareerStage
+iscarb-career:CareerStage a owl:Class ;
+  rdfs:label "CareerStage" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerStage .
+
+iscarb-career:pathId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerStage .
+
+iscarb-career:order a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerStage .
+
+iscarb-career:titleEn a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerStage .
+
+iscarb-career:titleAr a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerStage .
+
+iscarb-career:focusEn a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerStage .
+
+iscarb-career:focusAr a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerStage .
+
+iscarb-career:activitiesJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerStage .
+
+iscarb-career:targetComposite a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerStage .
+
+iscarb-career:path a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:CareerStage ;
+  rdfs:range <https://iscarb.edu/ontology/core/CareerPath> .
+
+### Class: JobPosting
+iscarb-career:JobPosting a owl:Class ;
+  rdfs:label "JobPosting" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:titleAr a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:employer a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:sector a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:industry a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:sscoCode a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:minComposite a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:skillsJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:skills a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:salaryMin a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:salaryMax a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:currency a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:jobType a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:location a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:remote a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:vision2030 a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:views a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:source a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:externalId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:postedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:deadline a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:closedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:recruiterId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:applications a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:matches a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:jobOffers a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobPosting .
+
+iscarb-career:recruiter a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:JobPosting ;
+  rdfs:range <https://iscarb.edu/ontology/core/Recruiter> .
+
+iscarb-career:ssco a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:JobPosting ;
+  rdfs:range <https://iscarb.edu/ontology/core/SsccoOccupation> .
+
+### Class: JobMatch
+iscarb-career:JobMatch a owl:Class ;
+  rdfs:label "JobMatch" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobMatch .
+
+iscarb-career:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobMatch .
+
+iscarb-career:jobId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobMatch .
+
+iscarb-career:matchScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobMatch .
+
+iscarb-career:sscoScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobMatch .
+
+iscarb-career:compositeScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobMatch .
+
+iscarb-career:skillsScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobMatch .
+
+iscarb-career:vision2030Bonus a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobMatch .
+
+iscarb-career:breakdownJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobMatch .
+
+iscarb-career:computedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobMatch .
+
+iscarb-career:job a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:JobMatch ;
+  rdfs:range <https://iscarb.edu/ontology/core/JobPosting> .
+
+iscarb-career:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:JobMatch ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: Recruiter
+iscarb-career:Recruiter a owl:Class ;
+  rdfs:label "Recruiter" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Recruiter .
+
+iscarb-career:userId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Recruiter .
+
+iscarb-career:name a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Recruiter .
+
+iscarb-career:email a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Recruiter .
+
+iscarb-career:employer a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Recruiter .
+
+iscarb-career:employerLogo a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Recruiter .
+
+iscarb-career:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Recruiter .
+
+iscarb-career:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Recruiter .
+
+iscarb-career:preferences a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Recruiter .
+
+iscarb-career:verified a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Recruiter .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Recruiter .
+
+iscarb-career:jobPostings a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Recruiter .
+
+iscarb-career:pipelineStages a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Recruiter .
+
+iscarb-career:activities a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Recruiter .
+
+iscarb-career:talentPools a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Recruiter .
+
+### Class: RecruiterActivity
+iscarb-career:RecruiterActivity a owl:Class ;
+  rdfs:label "RecruiterActivity" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:RecruiterActivity .
+
+iscarb-career:recruiterId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:RecruiterActivity .
+
+iscarb-career:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:RecruiterActivity .
+
+iscarb-career:action a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:RecruiterActivity .
+
+iscarb-career:metadataJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:RecruiterActivity .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:RecruiterActivity .
+
+iscarb-career:recruiter a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:RecruiterActivity ;
+  rdfs:range <https://iscarb.edu/ontology/core/Recruiter> .
+
+iscarb-career:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:RecruiterActivity ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: CareerCard
+iscarb-career:CareerCard a owl:Class ;
+  rdfs:label "CareerCard" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerCard .
+
+iscarb-career:slug a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerCard .
+
+iscarb-career:titleEn a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerCard .
+
+iscarb-career:titleAr a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerCard .
+
+iscarb-career:employer a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerCard .
+
+iscarb-career:sector a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerCard .
+
+iscarb-career:sscoCode a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerCard .
+
+iscarb-career:cluster a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerCard .
+
+iscarb-career:dayInLifeEn a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerCard .
+
+iscarb-career:dayInLifeAr a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerCard .
+
+iscarb-career:skillsJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerCard .
+
+iscarb-career:salaryRangeSAR a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerCard .
+
+iscarb-career:vision2030 a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerCard .
+
+iscarb-career:demandIndex a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerCard .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerCard .
+
+iscarb-career:ssco a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:CareerCard ;
+  rdfs:range <https://iscarb.edu/ontology/core/SsccoOccupation> .
+
+### Class: CareerInterest
+iscarb-career:CareerInterest a owl:Class ;
+  rdfs:label "CareerInterest" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerInterest .
+
+iscarb-career:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerInterest .
+
+iscarb-career:cardId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerInterest .
+
+iscarb-career:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerInterest .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerInterest .
+
+iscarb-career:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:CareerInterest ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: Internship
+iscarb-career:Internship a owl:Class ;
+  rdfs:label "Internship" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Internship .
+
+iscarb-career:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Internship .
+
+iscarb-career:employer a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Internship .
+
+iscarb-career:role a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Internship .
+
+iscarb-career:startDate a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Internship .
+
+iscarb-career:endDate a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Internship .
+
+iscarb-career:supervisorName a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Internship .
+
+iscarb-career:supervisorEmail a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Internship .
+
+iscarb-career:learningOutcomesJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Internship .
+
+iscarb-career:skillsJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Internship .
+
+iscarb-career:evaluationScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Internship .
+
+iscarb-career:evaluationNotes a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Internship .
+
+iscarb-career:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Internship .
+
+iscarb-career:projectId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Internship .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Internship .
+
+iscarb-career:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Internship .
+
+iscarb-career:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:Internship ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: InterviewPrep
+iscarb-career:InterviewPrep a owl:Class ;
+  rdfs:label "InterviewPrep" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewPrep .
+
+iscarb-career:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewPrep .
+
+iscarb-career:targetSsco a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewPrep .
+
+iscarb-career:targetTitle a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewPrep .
+
+iscarb-career:sessionsJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewPrep .
+
+iscarb-career:readiness a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewPrep .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewPrep .
+
+iscarb-career:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewPrep .
+
+iscarb-career:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:InterviewPrep ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: PortfolioCareerProfile
+iscarb-career:PortfolioCareerProfile a owl:Class ;
+  rdfs:label "PortfolioCareerProfile" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:PortfolioCareerProfile .
+
+iscarb-career:portfolioId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:PortfolioCareerProfile .
+
+iscarb-career:targetRoles a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:PortfolioCareerProfile .
+
+iscarb-career:preferredLocations a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:PortfolioCareerProfile .
+
+iscarb-career:salaryMin a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:PortfolioCareerProfile .
+
+iscarb-career:salaryMax a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:PortfolioCareerProfile .
+
+iscarb-career:yearsExperience a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:PortfolioCareerProfile .
+
+iscarb-career:industryPreferences a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:PortfolioCareerProfile .
+
+iscarb-career:workType a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:PortfolioCareerProfile .
+
+iscarb-career:openToRemote a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:PortfolioCareerProfile .
+
+iscarb-career:visaSponsorship a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:PortfolioCareerProfile .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:PortfolioCareerProfile .
+
+iscarb-career:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:PortfolioCareerProfile .
+
+iscarb-career:portfolio a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:PortfolioCareerProfile ;
+  rdfs:range <https://iscarb.edu/ontology/core/Portfolio> .
+
+### Class: JobOpening
+iscarb-career:JobOpening a owl:Class ;
+  rdfs:label "JobOpening" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOpening .
+
+iscarb-career:employerId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOpening .
+
+iscarb-career:employer a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOpening .
+
+iscarb-career:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOpening .
+
+iscarb-career:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOpening .
+
+iscarb-career:requiredCompetencies a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOpening .
+
+iscarb-career:salaryMin a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOpening .
+
+iscarb-career:salaryMax a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOpening .
+
+iscarb-career:location a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOpening .
+
+iscarb-career:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOpening .
+
+iscarb-career:focusAreasJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOpening .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOpening .
+
+iscarb-career:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOpening .
+
+iscarb-career:submissions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOpening .
+
+### Class: JobTemplate
+iscarb-career:JobTemplate a owl:Class ;
+  rdfs:label "JobTemplate" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobTemplate .
+
+iscarb-career:employerId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobTemplate .
+
+iscarb-career:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobTemplate .
+
+iscarb-career:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobTemplate .
+
+iscarb-career:competencies a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobTemplate .
+
+iscarb-career:salaryMin a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobTemplate .
+
+iscarb-career:salaryMax a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobTemplate .
+
+iscarb-career:location a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobTemplate .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobTemplate .
+
+iscarb-career:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobTemplate .
+
+### Class: Interview
+iscarb-career:Interview a owl:Class ;
+  rdfs:label "Interview" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Interview .
+
+iscarb-career:submissionId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Interview .
+
+iscarb-career:scheduledBy a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Interview .
+
+iscarb-career:candidateId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Interview .
+
+iscarb-career:startTime a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Interview .
+
+iscarb-career:endTime a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Interview .
+
+iscarb-career:meetingUrl a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Interview .
+
+iscarb-career:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Interview .
+
+iscarb-career:notes a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Interview .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:Interview .
+
+### Class: JobTitle
+iscarb-career:JobTitle a owl:Class ;
+  rdfs:label "JobTitle" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobTitle .
+
+iscarb-career:organizationId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobTitle .
+
+iscarb-career:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobTitle .
+
+iscarb-career:level a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobTitle .
+
+iscarb-career:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobTitle .
+
+iscarb-career:category a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobTitle .
+
+iscarb-career:salaryRangeMin a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobTitle .
+
+iscarb-career:salaryRangeMax a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobTitle .
+
+iscarb-career:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobTitle .
+
+iscarb-career:metadata a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobTitle .
+
+### Class: KnowledgeIngestionJob
+iscarb-career:KnowledgeIngestionJob a owl:Class ;
+  rdfs:label "KnowledgeIngestionJob" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:KnowledgeIngestionJob .
+
+iscarb-career:sourceId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:KnowledgeIngestionJob .
+
+iscarb-career:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:KnowledgeIngestionJob .
+
+iscarb-career:startedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:KnowledgeIngestionJob .
+
+iscarb-career:completedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:KnowledgeIngestionJob .
+
+iscarb-career:documentsCount a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:KnowledgeIngestionJob .
+
+iscarb-career:errors a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:KnowledgeIngestionJob .
+
+iscarb-career:metadata a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:KnowledgeIngestionJob .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:KnowledgeIngestionJob .
+
+iscarb-career:source a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:KnowledgeIngestionJob ;
+  rdfs:range <https://iscarb.edu/ontology/core/KnowledgeSource> .
+
+### Class: CareerProfile
+iscarb-career:CareerProfile a owl:Class ;
+  rdfs:label "CareerProfile" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerProfile .
+
+iscarb-career:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerProfile .
+
+iscarb-career:headline a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerProfile .
+
+iscarb-career:bio a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerProfile .
+
+iscarb-career:targetRoles a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerProfile .
+
+iscarb-career:locationPref a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerProfile .
+
+iscarb-career:salaryExpectMin a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerProfile .
+
+iscarb-career:salaryExpectMax a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerProfile .
+
+iscarb-career:workTypePref a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerProfile .
+
+iscarb-career:openToRemote a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerProfile .
+
+iscarb-career:linkedinUrl a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerProfile .
+
+iscarb-career:portfolioUrl a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerProfile .
+
+iscarb-career:websiteUrl a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerProfile .
+
+iscarb-career:digitalCvHtml a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerProfile .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerProfile .
+
+iscarb-career:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerProfile .
+
+iscarb-career:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:CareerProfile ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: CareerGoal
+iscarb-career:CareerGoal a owl:Class ;
+  rdfs:label "CareerGoal" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerGoal .
+
+iscarb-career:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerGoal .
+
+iscarb-career:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerGoal .
+
+iscarb-career:titleAr a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerGoal .
+
+iscarb-career:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerGoal .
+
+iscarb-career:descriptionAr a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerGoal .
+
+iscarb-career:category a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerGoal .
+
+iscarb-career:priority a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerGoal .
+
+iscarb-career:targetDate a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerGoal .
+
+iscarb-career:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerGoal .
+
+iscarb-career:progress a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerGoal .
+
+iscarb-career:completedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerGoal .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerGoal .
+
+iscarb-career:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerGoal .
+
+iscarb-career:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:CareerGoal ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: InterviewSession
+iscarb-career:InterviewSession a owl:Class ;
+  rdfs:label "InterviewSession" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewSession .
+
+iscarb-career:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewSession .
+
+iscarb-career:type a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewSession .
+
+iscarb-career:employerKey a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewSession .
+
+iscarb-career:targetRole a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewSession .
+
+iscarb-career:questionsJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewSession .
+
+iscarb-career:overallScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewSession .
+
+iscarb-career:confidenceScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewSession .
+
+iscarb-career:communicationScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewSession .
+
+iscarb-career:feedback a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewSession .
+
+iscarb-career:improvementPlan a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewSession .
+
+iscarb-career:durationMs a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewSession .
+
+iscarb-career:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewSession .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewSession .
+
+iscarb-career:completedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:InterviewSession .
+
+iscarb-career:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:InterviewSession ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: CareerIntelligenceSnapshot
+iscarb-career:CareerIntelligenceSnapshot a owl:Class ;
+  rdfs:label "CareerIntelligenceSnapshot" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerIntelligenceSnapshot .
+
+iscarb-career:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerIntelligenceSnapshot .
+
+iscarb-career:targetRole a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerIntelligenceSnapshot .
+
+iscarb-career:readinessScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerIntelligenceSnapshot .
+
+iscarb-career:gapsJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerIntelligenceSnapshot .
+
+iscarb-career:recommendationsJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerIntelligenceSnapshot .
+
+iscarb-career:jobMatchCount a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerIntelligenceSnapshot .
+
+iscarb-career:estimatedTimeWeeks a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerIntelligenceSnapshot .
+
+iscarb-career:computedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerIntelligenceSnapshot .
+
+iscarb-career:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:CareerIntelligenceSnapshot ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: IntegrationSyncJob
+iscarb-career:IntegrationSyncJob a owl:Class ;
+  rdfs:label "IntegrationSyncJob" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:IntegrationSyncJob .
+
+iscarb-career:instanceId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:IntegrationSyncJob .
+
+iscarb-career:direction a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:IntegrationSyncJob .
+
+iscarb-career:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:IntegrationSyncJob .
+
+iscarb-career:entitiesSynced a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:IntegrationSyncJob .
+
+iscarb-career:errors a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:IntegrationSyncJob .
+
+iscarb-career:startedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:IntegrationSyncJob .
+
+iscarb-career:completedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:IntegrationSyncJob .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:IntegrationSyncJob .
+
+iscarb-career:instance a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:IntegrationSyncJob ;
+  rdfs:range <https://iscarb.edu/ontology/core/IntegrationInstance> .
+
+### Class: JobApplication
+iscarb-career:JobApplication a owl:Class ;
+  rdfs:label "JobApplication" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobApplication .
+
+iscarb-career:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobApplication .
+
+iscarb-career:jobId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobApplication .
+
+iscarb-career:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobApplication .
+
+iscarb-career:stage a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobApplication .
+
+iscarb-career:source a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobApplication .
+
+iscarb-career:notes a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobApplication .
+
+iscarb-career:appliedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobApplication .
+
+iscarb-career:reviewedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobApplication .
+
+iscarb-career:interviewedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobApplication .
+
+iscarb-career:decisionAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobApplication .
+
+iscarb-career:coverLetter a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobApplication .
+
+iscarb-career:customAnswers a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobApplication .
+
+### Class: JobOffer
+iscarb-career:JobOffer a owl:Class ;
+  rdfs:label "JobOffer" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOffer .
+
+iscarb-career:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOffer .
+
+iscarb-career:jobId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOffer .
+
+iscarb-career:salary a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOffer .
+
+iscarb-career:currency a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOffer .
+
+iscarb-career:startDate a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOffer .
+
+iscarb-career:benefits a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOffer .
+
+iscarb-career:expiresAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOffer .
+
+iscarb-career:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOffer .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOffer .
+
+iscarb-career:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobOffer .
+
+iscarb-career:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:JobOffer ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+iscarb-career:job a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:JobOffer ;
+  rdfs:range <https://iscarb.edu/ontology/core/JobPosting> .
+
+### Class: CareerDevelopmentPlan
+iscarb-career:CareerDevelopmentPlan a owl:Class ;
+  rdfs:label "CareerDevelopmentPlan" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerDevelopmentPlan .
+
+iscarb-career:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerDevelopmentPlan .
+
+iscarb-career:targetRole a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerDevelopmentPlan .
+
+iscarb-career:targetIndustry a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerDevelopmentPlan .
+
+iscarb-career:timeline a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerDevelopmentPlan .
+
+iscarb-career:shortTermGoals a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerDevelopmentPlan .
+
+iscarb-career:longTermGoals a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerDevelopmentPlan .
+
+iscarb-career:skillsToAcquire a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerDevelopmentPlan .
+
+iscarb-career:actionItems a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerDevelopmentPlan .
+
+iscarb-career:lastReviewDate a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerDevelopmentPlan .
+
+iscarb-career:nextReviewDate a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerDevelopmentPlan .
+
+iscarb-career:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerDevelopmentPlan .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerDevelopmentPlan .
+
+iscarb-career:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerDevelopmentPlan .
+
+iscarb-career:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:CareerDevelopmentPlan ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: CareerResourceAccess
+iscarb-career:CareerResourceAccess a owl:Class ;
+  rdfs:label "CareerResourceAccess" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerResourceAccess .
+
+iscarb-career:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerResourceAccess .
+
+iscarb-career:resourceType a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerResourceAccess .
+
+iscarb-career:resourceTitle a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerResourceAccess .
+
+iscarb-career:resourceUrl a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerResourceAccess .
+
+iscarb-career:accessedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerResourceAccess .
+
+iscarb-career:bookmarked a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerResourceAccess .
+
+iscarb-career:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerResourceAccess .
+
+iscarb-career:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:CareerResourceAccess ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: CareerAIInsight
+iscarb-career:CareerAIInsight a owl:Class ;
+  rdfs:label "CareerAIInsight" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerAIInsight .
+
+iscarb-career:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerAIInsight .
+
+iscarb-career:insightType a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerAIInsight .
+
+iscarb-career:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerAIInsight .
+
+iscarb-career:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerAIInsight .
+
+iscarb-career:confidenceScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerAIInsight .
+
+iscarb-career:relatedJobs a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerAIInsight .
+
+iscarb-career:relatedSkills a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerAIInsight .
+
+iscarb-career:actionable a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerAIInsight .
+
+iscarb-career:dismissed a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerAIInsight .
+
+iscarb-career:generatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerAIInsight .
+
+iscarb-career:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerAIInsight .
+
+iscarb-career:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:CareerAIInsight ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: CareerMockInterview
+iscarb-career:CareerMockInterview a owl:Class ;
+  rdfs:label "CareerMockInterview" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMockInterview .
+
+iscarb-career:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMockInterview .
+
+iscarb-career:interviewType a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMockInterview .
+
+iscarb-career:targetRole a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMockInterview .
+
+iscarb-career:targetCompany a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMockInterview .
+
+iscarb-career:questions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMockInterview .
+
+iscarb-career:performanceScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMockInterview .
+
+iscarb-career:duration a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMockInterview .
+
+iscarb-career:startedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMockInterview .
+
+iscarb-career:completedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMockInterview .
+
+iscarb-career:aiGeneratedFeedback a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMockInterview .
+
+iscarb-career:recommendations a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMockInterview .
+
+iscarb-career:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:CareerMockInterview .
+
+iscarb-career:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:CareerMockInterview ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: JobAlertSubscription
+iscarb-career:JobAlertSubscription a owl:Class ;
+  rdfs:label "JobAlertSubscription" .
+
+iscarb-career:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobAlertSubscription .
+
+iscarb-career:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobAlertSubscription .
+
+iscarb-career:keywords a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobAlertSubscription .
+
+iscarb-career:industries a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobAlertSubscription .
+
+iscarb-career:locations a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobAlertSubscription .
+
+iscarb-career:jobTypes a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobAlertSubscription .
+
+iscarb-career:minSalary a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobAlertSubscription .
+
+iscarb-career:maxSalary a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobAlertSubscription .
+
+iscarb-career:frequency a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobAlertSubscription .
+
+iscarb-career:active a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobAlertSubscription .
+
+iscarb-career:lastAlertSent a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobAlertSubscription .
+
+iscarb-career:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobAlertSubscription .
+
+iscarb-career:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobAlertSubscription .
+
+iscarb-career:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-career:JobAlertSubscription .
+
+iscarb-career:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-career:JobAlertSubscription ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+

@@ -1,0 +1,1741 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix : <https://iscarb.edu/ontology/career/> .
+@prefix iscarb-career: <https://iscarb.edu/ontology/career/> .
+
+### SHACL Validation Version 1.0.0 ###
+
+iscarb-career:CareerMappingShape a sh:NodeShape ;
+  sh:targetClass :CareerMapping ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :generatedTitle ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :titleAr ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :cluster ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :sscoCode ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :iscoMajorGroup ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :alignment ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :matchScore ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :skillsEvidence ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-career:CareerPathShape a sh:NodeShape ;
+  sh:targetClass :CareerPath ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :titleEn ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :titleAr ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :targetSscoCode ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :targetComposite ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :rationaleEn ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :rationaleAr ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :source ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :model ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :stages ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-career:CareerStageShape a sh:NodeShape ;
+  sh:targetClass :CareerStage ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :pathId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :order ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :titleEn ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :titleAr ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :focusEn ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :focusAr ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :activitiesJson ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :targetComposite ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] .
+
+iscarb-career:JobPostingShape a sh:NodeShape ;
+  sh:targetClass :JobPosting ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :titleAr ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :employer ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :sector ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :industry ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :sscoCode ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :minComposite ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :skillsJson ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :skills ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :salaryMin ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :salaryMax ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :currency ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :jobType ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :location ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :remote ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :vision2030 ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :views ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :source ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :externalId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :postedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :deadline ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :closedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :recruiterId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :applications ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :matches ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :jobOffers ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-career:JobMatchShape a sh:NodeShape ;
+  sh:targetClass :JobMatch ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :jobId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :matchScore ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :sscoScore ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :compositeScore ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :skillsScore ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :vision2030Bonus ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :breakdownJson ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :computedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-career:RecruiterShape a sh:NodeShape ;
+  sh:targetClass :Recruiter ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :userId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :name ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :email ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :employer ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :employerLogo ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :preferences ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :verified ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :jobPostings ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :pipelineStages ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :activities ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :talentPools ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-career:RecruiterActivityShape a sh:NodeShape ;
+  sh:targetClass :RecruiterActivity ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :recruiterId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :action ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :metadataJson ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-career:CareerCardShape a sh:NodeShape ;
+  sh:targetClass :CareerCard ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :slug ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :titleEn ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :titleAr ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :employer ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :sector ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :sscoCode ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :cluster ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :dayInLifeEn ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :dayInLifeAr ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :skillsJson ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :salaryRangeSAR ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :vision2030 ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :demandIndex ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-career:CareerInterestShape a sh:NodeShape ;
+  sh:targetClass :CareerInterest ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :cardId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-career:InternshipShape a sh:NodeShape ;
+  sh:targetClass :Internship ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :employer ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :role ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :startDate ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :endDate ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :supervisorName ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :supervisorEmail ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :learningOutcomesJson ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :skillsJson ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :evaluationScore ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :evaluationNotes ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :projectId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-career:InterviewPrepShape a sh:NodeShape ;
+  sh:targetClass :InterviewPrep ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :targetSsco ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :targetTitle ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :sessionsJson ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :readiness ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-career:PortfolioCareerProfileShape a sh:NodeShape ;
+  sh:targetClass :PortfolioCareerProfile ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :portfolioId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :targetRoles ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :preferredLocations ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :salaryMin ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :salaryMax ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :yearsExperience ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :industryPreferences ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :workType ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :openToRemote ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :visaSponsorship ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-career:JobOpeningShape a sh:NodeShape ;
+  sh:targetClass :JobOpening ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :employerId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :employer ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :requiredCompetencies ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :salaryMin ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :salaryMax ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :location ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :focusAreasJson ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :submissions ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-career:JobTemplateShape a sh:NodeShape ;
+  sh:targetClass :JobTemplate ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :employerId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :competencies ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :salaryMin ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :salaryMax ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :location ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-career:InterviewShape a sh:NodeShape ;
+  sh:targetClass :Interview ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :submissionId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :scheduledBy ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :candidateId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :startTime ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :endTime ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :meetingUrl ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :notes ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-career:JobTitleShape a sh:NodeShape ;
+  sh:targetClass :JobTitle ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :organizationId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :level ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :category ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :salaryRangeMin ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :salaryRangeMax ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :metadata ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-career:KnowledgeIngestionJobShape a sh:NodeShape ;
+  sh:targetClass :KnowledgeIngestionJob ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :sourceId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :startedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :completedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :documentsCount ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :errors ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :metadata ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-career:CareerProfileShape a sh:NodeShape ;
+  sh:targetClass :CareerProfile ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :headline ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :bio ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :targetRoles ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :locationPref ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :salaryExpectMin ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :salaryExpectMax ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :workTypePref ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :openToRemote ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :linkedinUrl ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :portfolioUrl ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :websiteUrl ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :digitalCvHtml ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-career:CareerGoalShape a sh:NodeShape ;
+  sh:targetClass :CareerGoal ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :titleAr ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :descriptionAr ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :category ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :priority ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :targetDate ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :progress ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :completedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-career:InterviewSessionShape a sh:NodeShape ;
+  sh:targetClass :InterviewSession ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :type ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :employerKey ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :targetRole ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :questionsJson ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :overallScore ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :confidenceScore ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :communicationScore ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :feedback ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :improvementPlan ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :durationMs ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :completedAt ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-career:CareerIntelligenceSnapshotShape a sh:NodeShape ;
+  sh:targetClass :CareerIntelligenceSnapshot ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :targetRole ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :readinessScore ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :gapsJson ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :recommendationsJson ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :jobMatchCount ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :estimatedTimeWeeks ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :computedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-career:IntegrationSyncJobShape a sh:NodeShape ;
+  sh:targetClass :IntegrationSyncJob ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :instanceId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :direction ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :entitiesSynced ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :errors ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :startedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :completedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-career:JobApplicationShape a sh:NodeShape ;
+  sh:targetClass :JobApplication ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :jobId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :stage ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :source ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :notes ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :appliedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :reviewedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :interviewedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :decisionAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :coverLetter ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :customAnswers ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-career:JobOfferShape a sh:NodeShape ;
+  sh:targetClass :JobOffer ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :jobId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :salary ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :currency ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :startDate ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :benefits ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :expiresAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-career:CareerDevelopmentPlanShape a sh:NodeShape ;
+  sh:targetClass :CareerDevelopmentPlan ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :targetRole ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :targetIndustry ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :timeline ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :shortTermGoals ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :longTermGoals ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :skillsToAcquire ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :actionItems ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :lastReviewDate ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :nextReviewDate ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :universityId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-career:CareerResourceAccessShape a sh:NodeShape ;
+  sh:targetClass :CareerResourceAccess ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :resourceType ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :resourceTitle ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :resourceUrl ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :accessedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :bookmarked ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :universityId ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-career:CareerAIInsightShape a sh:NodeShape ;
+  sh:targetClass :CareerAIInsight ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :insightType ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :confidenceScore ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :relatedJobs ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :relatedSkills ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :actionable ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :dismissed ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :generatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :universityId ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-career:CareerMockInterviewShape a sh:NodeShape ;
+  sh:targetClass :CareerMockInterview ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :interviewType ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :targetRole ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :targetCompany ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :questions ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :performanceScore ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :duration ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :startedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :completedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :aiGeneratedFeedback ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :recommendations ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :universityId ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-career:JobAlertSubscriptionShape a sh:NodeShape ;
+  sh:targetClass :JobAlertSubscription ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :keywords ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :industries ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :locations ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :jobTypes ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :minSalary ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :maxSalary ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :frequency ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :active ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :lastAlertSent ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :universityId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+

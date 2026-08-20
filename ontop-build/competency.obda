@@ -1,0 +1,70 @@
+[PrefixDeclaration]
+:		https://iscarb.edu/ontology/competency/
+iscarb-competency:	https://iscarb.edu/ontology/competency/
+xsd:		http://www.w3.org/2001/XMLSchema#
+owl:		http://www.w3.org/2002/07/owl#
+rdf:		http://www.w3.org/1999/02/22-rdf-syntax-ns#
+rdfs:		http://www.w3.org/2000/01/rdf-schema#
+
+[MappingDeclaration] @collection [[
+mappingId	skillexploration-mapping
+target		iscarb-competency:skillexploration/{id} a iscarb-competency:SkillExploration ; iscarb-competency:id {id} ; iscarb-competency:studentId {studentId} ; iscarb-competency:skillName {skillName} ; iscarb-competency:sscoCode {sscoCode} ; iscarb-competency:status {status} ; iscarb-competency:notes {notes} ; iscarb-competency:discoveredAt {discoveredAt} ; iscarb-competency:updatedAt {updatedAt} .
+source		SELECT "id", "studentId", "skillName", "sscoCode", "status", "notes", "discoveredAt", "updatedAt" FROM "SkillExploration"
+
+mappingId	skillexploration-has-student
+target		iscarb-competency:skillexploration/{id} iscarb-competency:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "SkillExploration" WHERE "studentId" IS NOT NULL
+
+mappingId	skillprogress-mapping
+target		iscarb-competency:skillprogress/{id} a iscarb-competency:SkillProgress ; iscarb-competency:id {id} ; iscarb-competency:studentId {studentId} ; iscarb-competency:skillName {skillName} ; iscarb-competency:currentLevel {currentLevel} ; iscarb-competency:targetLevel {targetLevel} ; iscarb-competency:activitiesJson {activitiesJson} ; iscarb-competency:lastPracticedAt {lastPracticedAt} ; iscarb-competency:createdAt {createdAt} ; iscarb-competency:updatedAt {updatedAt} .
+source		SELECT "id", "studentId", "skillName", "currentLevel", "targetLevel", "activitiesJson", "lastPracticedAt", "createdAt", "updatedAt" FROM "SkillProgress"
+
+mappingId	skillprogress-has-student
+target		iscarb-competency:skillprogress/{id} iscarb-competency:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "SkillProgress" WHERE "studentId" IS NOT NULL
+
+mappingId	portfolioskill-mapping
+target		iscarb-competency:portfolioskill/{id} a iscarb-competency:PortfolioSkill ; iscarb-competency:id {id} ; iscarb-competency:portfolioId {portfolioId} ; iscarb-competency:name {name} ; iscarb-competency:level {level} ; iscarb-competency:endorsementCount {endorsementCount} ; iscarb-competency:yearsExperience {yearsExperience} ; iscarb-competency:isVerified {isVerified} ; iscarb-competency:createdAt {createdAt} ; iscarb-competency:updatedAt {updatedAt} .
+source		SELECT "id", "portfolioId", "name", "level", "endorsementCount", "yearsExperience", "isVerified", "createdAt", "updatedAt" FROM "PortfolioSkill"
+
+mappingId	portfolioskill-has-portfolio
+target		iscarb-competency:portfolioskill/{id} iscarb-competency:portfolio <https://iscarb.edu/ontology/core/portfolio/{portfolioId}> .
+source		SELECT "id", "portfolioId" FROM "PortfolioSkill" WHERE "portfolioId" IS NOT NULL
+
+mappingId	skillendorsement-mapping
+target		iscarb-competency:skillendorsement/{id} a iscarb-competency:SkillEndorsement ; iscarb-competency:id {id} ; iscarb-competency:skillId {skillId} ; iscarb-competency:portfolioId {portfolioId} ; iscarb-competency:endorsedBy {endorsedBy} ; iscarb-competency:status {status} ; iscarb-competency:message {message} ; iscarb-competency:endorsedAt {endorsedAt} ; iscarb-competency:respondedAt {respondedAt} .
+source		SELECT "id", "skillId", "portfolioId", "endorsedBy", "status", "message", "endorsedAt", "respondedAt" FROM "SkillEndorsement"
+
+mappingId	skillendorsement-has-portfolio
+target		iscarb-competency:skillendorsement/{id} iscarb-competency:portfolio <https://iscarb.edu/ontology/core/portfolio/{portfolioId}> .
+source		SELECT "id", "portfolioId" FROM "SkillEndorsement" WHERE "portfolioId" IS NOT NULL
+
+mappingId	skillendorsement-has-skill
+target		iscarb-competency:skillendorsement/{id} iscarb-competency:skill <https://iscarb.edu/ontology/core/portfolioskill/{skillId}> .
+source		SELECT "id", "skillId" FROM "SkillEndorsement" WHERE "skillId" IS NOT NULL
+
+mappingId	competencyframework-mapping
+target		iscarb-competency:competencyframework/{id} a iscarb-competency:CompetencyFramework ; iscarb-competency:id {id} ; iscarb-competency:name {name} ; iscarb-competency:description {description} ; iscarb-competency:version {version} ; iscarb-competency:status {status} ; iscarb-competency:organizationId {organizationId} ; iscarb-competency:createdBy {createdBy} ; iscarb-competency:createdAt {createdAt} ; iscarb-competency:updatedAt {updatedAt} .
+source		SELECT "id", "name", "description", "version", "status", "organizationId", "createdBy", "createdAt", "updatedAt" FROM "CompetencyFramework"
+
+mappingId	competencydefinition-mapping
+target		iscarb-competency:competencydefinition/{id} a iscarb-competency:CompetencyDefinition ; iscarb-competency:id {id} ; iscarb-competency:frameworkId {frameworkId} ; iscarb-competency:name {name} ; iscarb-competency:description {description} ; iscarb-competency:category {category} ; iscarb-competency:level {level} ; iscarb-competency:parentId {parentId} ; iscarb-competency:weight {weight} ; iscarb-competency:createdAt {createdAt} ; iscarb-competency:updatedAt {updatedAt} .
+source		SELECT "id", "frameworkId", "name", "description", "category", "level", "parentId", "weight", "createdAt", "updatedAt" FROM "CompetencyDefinition"
+
+mappingId	competencydefinition-has-framework
+target		iscarb-competency:competencydefinition/{id} iscarb-competency:framework <https://iscarb.edu/ontology/core/competencyframework/{frameworkId}> .
+source		SELECT "id", "frameworkId" FROM "CompetencyDefinition" WHERE "frameworkId" IS NOT NULL
+
+mappingId	competencydefinition-has-parent
+target		iscarb-competency:competencydefinition/{id} iscarb-competency:parent <https://iscarb.edu/ontology/core/competencydefinition/{parentId}> .
+source		SELECT "id", "parentId" FROM "CompetencyDefinition" WHERE "parentId" IS NOT NULL
+
+mappingId	competencyevidence-mapping
+target		iscarb-competency:competencyevidence/{id} a iscarb-competency:CompetencyEvidence ; iscarb-competency:id {id} ; iscarb-competency:studentId {studentId} ; iscarb-competency:competencyId {competencyId} ; iscarb-competency:competencyName {competencyName} ; iscarb-competency:evidenceType {evidenceType} ; iscarb-competency:evidenceId {evidenceId} ; iscarb-competency:evidenceName {evidenceName} ; iscarb-competency:confidenceScore {confidenceScore} ; iscarb-competency:earnedAt {earnedAt} ; iscarb-competency:verifiedAt {verifiedAt} ; iscarb-competency:verifiedBy {verifiedBy} ; iscarb-competency:createdAt {createdAt} .
+source		SELECT "id", "studentId", "competencyId", "competencyName", "evidenceType", "evidenceId", "evidenceName", "confidenceScore", "earnedAt", "verifiedAt", "verifiedBy", "createdAt" FROM "CompetencyEvidence"
+
+mappingId	competencyevidence-has-student
+target		iscarb-competency:competencyevidence/{id} iscarb-competency:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "CompetencyEvidence" WHERE "studentId" IS NOT NULL
+
+]]

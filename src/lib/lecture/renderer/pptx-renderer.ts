@@ -1,0 +1,160 @@
+/**
+ * PPTX Renderer (TASK-08 §B).
+ * ===========================================================================
+ * Renders approved SlideArtifact JSON into a .pptx buffer using pptxgenjs.
+ * ZTM-on-iSCARB visual rules (FR-021 §3.3): dark background, high-contrast
+ * white text, max 5 bullets at ≥24pt, progress bar, orange student-action
+ * box, RTL for Arabic. Instructor notes go to slide notes — never the slide.
+ *
+ * Deterministic: no LLM, no DB. Output depends only on the artifacts + theme.
+ */
+import PptxGenJS from "pptxgenjs";
+import type { SlideContentJson } from "../generation/types";
+import { slideTitle, slideBullets, slideAction } from "./content";
+import { ZTM_THEME, type ZtmThemeName } from "./ztm-theme";
+import { getAcademicVisualForSlide } from "../academic-visuals";
+import { stripLatexToReadable } from "./math-utils";
+
+// ZTM Accent Colors (Updated to match Studio Design)
+const ACCENT_CYAN = "0F7B8A";
+const ACCENT_GOLD = "0E6C3C";
+const FUTURE_GRAY = "E2E8F0";
+
+const TOTAL_SLIDES = 20;
+
+export interface RenderableSlide {
+  slideNo: number;
+  contentJson: unknown;
+}
+
+export async function renderPPTX(
+  artifacts: RenderableSlide[],
+  theme: ZtmThemeName = "ztm"
+): Promise<Buffer> {
+  const t = ZTM_THEME;
+  const PptxConstructor = typeof PptxGenJS === "function" ? PptxGenJS : (PptxGenJS as any).default || PptxGenJS;
+  const pptx = new PptxConstructor();
+  pptx.defineLayout({ name: "WIDE", width: t.slideWidth, height: t.slideHeight });
+  pptx.layout = "WIDE";
+  pptx.author = "iSCARB Lecture System";
+  pptx.subject = "Lecture package";
+
+  const ordered = [...artifacts].sort((a, b) => a.slideNo - b.slideNo);
+
+  for (const artifact of ordered) {
+    const content = (artifact.contentJson ?? {}) as unknown as SlideContentJson;
+    const slide = pptx.addSlide();
+    slide.background = { color: "FFFFFF" };
+
+    const title = stripLatexToReadable(slideTitle(content));
+    const bullets = slideBullets(content).map(stripLatexToReadable);
+    const action = slideAction(content);
+    const rtl = Boolean(content.textAr?.title || content.textAr?.bullets?.length);
+
+    // 1. Top Bar Badges (Studio Header 1:1)
+    slide.addShape("roundRect", {
+      x: 0.5, y: 0.25, w: 2.8, h: 0.35, fill: { color: "065F46" }, rectRadius: 0.1
+    });
+    slide.addText(`Concept ${artifact.slideNo} / ${TOTAL_SLIDES}`, {
+      x: 0.5, y: 0.25, w: 2.8, h: 0.35, fontSize: 8, bold: true, color: "FFFFFF", align: "center", fontFace: t.fontEnglish
+    });
+
+    const wordCount = title.split(/\s+/).length + bullets.reduce((n, b) => n + b.split(/\s+/).length, 0);
+    slide.addShape("roundRect", {
+      x: 8.7, y: 0.25, w: 0.8, h: 0.35, fill: { color: "ECFDF5" }, line: { color: "A7F3D0", width: 1 }, rectRadius: 0.1
+    });
+    slide.addText(`${wordCount} / 40`, {
+      x: 8.7, y: 0.25, w: 0.8, h: 0.35, fontSize: 9, bold: true, color: "065F46", align: "center", fontFace: t.fontEnglish
+    });
+
+    // 2. Slide Title
+    slide.addText(title, {
+      x: 0.5, y: 0.7, w: 8.8, h: 0.8,
+      fontSize: 24, bold: true, color: "0F172A",
+      fontFace: rtl ? t.fontArabic : t.fontEnglish, rtlMode: rtl
+    });
+
+    // 3. Right Visual Card
+    const spec = content.visualSpec;
+    const academicVisual = getAcademicVisualForSlide(
+      artifact.slideNo,
+      title,
+      `${content.title} ${bullets.join(" ")} ${content.speakerNotes || ""}`
+    );
+
+    if (academicVisual && academicVisual.imageUrl) {
+      slide.addShape("roundRect", {
+        x: 5.4, y: 1.5, w: 4.1, h: 4.6, fill: { color: "FAFAFA" }, line: { color: "A7F3D0", width: 1.5 }, rectRadius: 0.15
+      });
+      try {
+        slide.addImage({
+          path: academicVisual.imageUrl,
+          x: 5.5, y: 1.6, w: 3.9, h: 2.7
+        });
+      } catch {
+        slide.addShape("roundRect", { x: 5.5, y: 1.6, w: 3.9, h: 2.7, fill: { color: "E2E8F0" }, rectRadius: 0.1 });
+      }
+      slide.addText(academicVisual.title, {
+        x: 5.55, y: 4.4, w: 2.5, h: 0.3, fontSize: 11, color: "065F46", bold: true, fontFace: t.fontEnglish
+      });
+      slide.addShape("roundRect", {
+        x: 8.1, y: 4.4, w: 1.3, h: 0.25, fill: { color: "ECFDF5" }, line: { color: "A7F3D0", width: 1 }, rectRadius: 0.1
+      });
+      slide.addText("Scenario Visual", {
+        x: 8.1, y: 4.4, w: 1.3, h: 0.25, fontSize: 8, bold: true, color: "047857", align: "center", fontFace: t.fontEnglish
+      });
+      slide.addText(academicVisual.caption.slice(0, 85), {
+        x: 5.55, y: 4.75, w: 3.8, h: 1.2, fontSize: 9, color: "64748B", italic: true, fontFace: t.fontEnglish
+      });
+    } else {
+      slide.addShape("roundRect", {
+        x: 5.4, y: 1.5, w: 4.1, h: 4.6, fill: { color: "FAFAFA" }, line: { color: "A7F3D0", width: 1.5 }, rectRadius: 0.15
+      });
+      slide.addText(content.visualIntent || "Instructional Model", {
+        x: 5.55, y: 3.0, w: 3.8, h: 1.5, fontSize: 12, color: "0F7B8A", bold: true, align: "center", fontFace: t.fontEnglish
+      });
+    }
+
+    // 4. Left Content Bullets
+    if (bullets.length > 0) {
+      slide.addText(
+        bullets.map((b) => ({ text: b, options: { bullet: { code: "25CF" }, color: "334155", breakLine: true, rtlMode: rtl } })),
+        {
+          x: 0.5, y: 1.6, w: 4.7, h: 4.5,
+          fontSize: 15, color: "334155",
+          fontFace: rtl ? t.fontArabic : t.fontEnglish,
+          valign: "top", rtlMode: rtl
+        }
+      );
+    }
+
+    // 5. Bottom Student Action Callout Box (Studio 1:1 Match)
+    if (action) {
+      slide.addShape("roundRect", {
+        x: 0.5, y: 6.35, w: 9.0, h: 0.8, fill: { color: "ECFDF5" }, line: { color: "A7F3D0", width: 1.2 }, rectRadius: 0.15
+      });
+      slide.addText(`⚡  ${action}`, {
+        x: 0.7, y: 6.35, w: 7.2, h: 0.8, fontSize: 13, bold: true, color: "065F46",
+        fontFace: rtl ? t.fontArabic : t.fontEnglish, rtlMode: rtl
+      });
+      slide.addShape("roundRect", {
+        x: 8.1, y: 6.5, w: 1.2, h: 0.5, fill: { color: "065F46" }, rectRadius: 0.1
+      });
+      slide.addText("Active Task", {
+        x: 8.1, y: 6.5, w: 1.2, h: 0.5, fontSize: 9, bold: true, color: "FFFFFF", align: "center", fontFace: t.fontEnglish
+      });
+    }
+
+    // Instructor Notes
+    slide.addNotes(content.speakerNotes ?? "No instructor notes provided.");
+  }
+
+  let result: any;
+  try {
+    result = await pptx.write({ outputType: "nodebuffer" });
+  } catch {
+    const b64 = await pptx.write({ outputType: "base64" });
+    result = Buffer.from(b64 as string, "base64");
+  }
+  return Buffer.from(result as Uint8Array);
+}

@@ -1,0 +1,160 @@
+{
+  "_meta": {
+    "locale": "ar",
+    "direction": "rtl",
+    "description": "Arabic translations for iSCARB assessment feedback templates",
+    "lastUpdated": "2026-07-11"
+  },
+
+  "scoring": {
+    "yourScoreIs": "درجتك هي {score} من 100.",
+    "youPassed": "لقد اجتزت التقييم بنجاح.",
+    "youDidNotPass": "لم تاجتز التقييم.",
+    "scoreBreakdown": "تفصيل الدرجات",
+    "overallScore": "الدرجة الإجمالية",
+    "perCriterionScore": "درجة كل معيار",
+    "maxScore": "الدرجة القصوى: {max}",
+    "outOf": "من {total}",
+    "percentage": "النسبة المئوية: {pct}%",
+    "points": "{n} نقطة",
+    "pointsEarned": "حصلت على {earned} من {max} نقطة",
+    "ofTotal": "من إجمالي {total}"
+  },
+
+  "bands": {
+    "weak": {
+      "summary": "النتيجة دون المتوقع لمستوى الخريج.",
+      "message": "أنت في شريحة \"ضعيف\" ({score}/100). هذا مستوى مبدئي يتطلب تدخلاً وتطويراً مكثفاً.",
+      "action": "راجع المعايير أدناه واعمل على إغلاق الفجوات قبل إعادة المحاولة."
+    },
+    "developing": {
+      "summary": "أظهرت أساساً لكنك لم تصل إلى مستوى الكفاءة المطلوب.",
+      "message": "أنت في شريحة \"قيد التطور\" ({score}/100). لديك أساس لكن تحتاج إلى تطوير أكثر عمقاً.",
+      "action": "ركز على المعايير التي حصلت على أقل درجة وطوّر مهاراتك بشكل مستمر."
+    },
+    "proficient": {
+      "summary": "مستوى كفؤ يلبي التوقعات الأساسية.",
+      "message": "أنت في شريحة \"كفؤ\" ({score}/100). أنت جاهز للتوظيف مع استمرار التطوير.",
+      "action": "حافظ على مستواك وتابع التطوّر لترتفع إلى الشريحة التالية."
+    },
+    "strong": {
+      "summary": "مستوى متميز يتجاوز التوقعات.",
+      "message": "أنت في شريحة \"متميّز\" ({score}/100). أنت جاهز للوظائف المتطلبة والقيادة.",
+      "action": "استمر في التميّز واستثمر في المهارات القيادية والتمكين."
+    }
+  },
+
+  "strengths": {
+    "title": "نقاط القوة",
+    "lead": "هذه المجالات التي أظهرت فيها تميّزاً:",
+    "noneDetected": "لم تُحدَّد نقاط قوة واضحة في هذا الرد. ركّز على تطوير البنية والتبرير في المحاولة التالية.",
+    "goodStructure": "بنية واضحة ومنظمة",
+    "strongAnalysis": "تحليل عميق وموثوق",
+    "practicalSolution": "حلول عملية وقابلة للتنفيذ",
+    "clearCommunication": "تواصل واضح وفعّال",
+    "domainKnowledge": "معرفة مميزة بالمجال",
+    "criticalThinking": "تفكير نقدي قوي",
+    "adaptation": "تكيّف ممتاز مع السياق",
+    "evidenceBased": "مدعوم بأدلة واضحة",
+    "proactiveApproach": "منهج proactiveness متميّز",
+    "stakeholderAwareness": "وعي بمستوى أصحاب المصلحة",
+    "riskAwareness": "وعي بالمخاطر والتداعيات",
+    "culturalSensitivity": "حساسية ثقافية مناسبة"
+  },
+
+  "improvements": {
+    "title": "مجالات التحسين",
+    "lead": "هذه المجالات التي تحتاج إلى تطوير:",
+    "noneDetected": "لا توجد مجالات تحسين محددة. استمر في التميّز.",
+    "addStructure": "أضف بنية واضحة: السطر الأساسي أولاً، ثم السياق، ثم الإجراءات.",
+    "clarifyNextSteps": "حدّد الخطوات التالية بوضوح أكبر مع جدول زمني.",
+    "strengthenAnalysis": "عمّق التحليل واستشر الأسباب الجذرية بدلاً من الأعراض.",
+    "addEvidence": "أضف دليلاً محدداً وأرقاماً لدعم ادعاءاتك.",
+    "improveAudienceAwareness": "اثر جمهورك: اشرح المصطلحات التقنية أو تجنبها.",
+    "softenTone": "لطّف النبرة: انتقل من نبرة هجومية إلى نبرة بنّاءة وحلّية.",
+    "beMoreSpecific": "كن أكثر تحديداً: استبدل العبارات العامة بأمثلة محددة.",
+    "considerRisks": "ضع في اعتبارك المخاطر والتداعيات المحتملة.",
+    "proposeAlternatives": "اقترح بدائل واقعية مع تقييم كل منها.",
+    "quantifyResults": "قِس نتائجك: أضف أرقاماً ونسباً مئوية محددة.",
+    "respectHierarchy": "راعِ الهرمية: قدّم ملاحظاتك بلباقة واحترام.",
+    "addressAllParts": "agnit إجابة جميع أجزاء السؤال — بعض الأجزاء تُركت دون إجابة."
+  },
+
+  "perCriterion": {
+    "title": "تفصيل المعايير",
+    "description": "كيف قُيِّمت في كل معيار من معايير التقييم:",
+    "scoreOf": "{score} من {max}",
+    "perfect": "مثالي",
+    "good": "جيد",
+    "adequate": "ملائم",
+    "needsImprovement": "يحتاج تحسين",
+    "poor": "ضعيف",
+    "gateWarning": "تنبيه: فشلت في بوابة صلبة. هذه الدرجة تُقيّد درجتك الإجمالية.",
+    "gatePass": "اجتاز بوابة الصولبة بنجاح."
+  },
+
+  "feedback": {
+    "title": "التغذية الراجعة التفصيلية",
+    "aiGenerated": "تغذية راجعة مُولَّدة بالذكاء الاصطناعي",
+    "humanReviewed": "تمت مراجعتها من قِبَل المُقيّم",
+    "overall": "المراجعة العامة",
+    "whatWorked": "ما نجح",
+    "whatToImprove": "ما يحتاج تحسين",
+    "nextSteps": "الخطوات التالية",
+    "resources": "موارد مقترحة للتطوير",
+    "tryThisNextTime": "جرّب هذا في المرة التالية",
+    "compareWithAnchor": "مقارنة مع المرجعيات",
+    "closerTo": "أقرب إلى المرجعية {anchor} (الدرجة {score})"
+  },
+
+  "results": {
+    "title": "نتائج التقييم",
+    "submittedAt": "تم الإرسال: {date}",
+    "scoredAt": "تم التقييم: {date}",
+    "module": "الوحدة: {code} — {title}",
+    "dimension": "البُعد: {dimension}",
+    "specialization": "التخصص: {specialization}",
+    "model": "النموذج: {model}",
+    "source": "المصدر: {source}",
+    "aiSource": "تقييم بالذكاء الاصطناعي",
+    "fallbackSource": "تقييم احتياطي",
+    "latency": "زمن الاستجابة: {ms} مللي ثانية",
+    "validation": "التحقق: {status}",
+    "validationPassed": "ناجح",
+    "validationFailed": "فشل",
+    "validationDisabled": "مُعطّل",
+    "downloadReport": "تنزيل التقرير",
+    "viewRubric": "عرض المعيار",
+    "retakeAssessment": "إعادة التقييم",
+    "nextModule": "الوحدة التالية",
+    "backToModules": "العودة للوحدات"
+  },
+
+  "notifications": {
+    "assessmentCompleted": "اكتمل التقييم: {module}",
+    "assessmentScored": "تم تقييم: {module} — الدرجة {score}",
+    "assessmentPassed": "ناجح: {module} — الدرجة {score}/100",
+    "assessmentFailed": "لم ياجتز: {module} — الدرجة {score}/100",
+    "newAssessmentAvailable": "تقييم جديد متاح: {module}",
+    "profileUpdated": "تم تحديث ملفّ الجاهزية التوظيفية",
+    "careerMapped": "تم رسم المسار المهني: {title}"
+  },
+
+  "explainability": {
+    "title": "شرح قرار التقييم",
+    "howScoreWasDetermined": "كيف حُدِّدت درجتك",
+    "rubricBreakdown": "تفصيل المعيار",
+    "anchorComparison": "المقارنة مع المرجعيات",
+    "scoreJustification": "تبرير الدرجة",
+    "factorsConsidered": "العوامل التي أُخذت في الاعتبار",
+    "rubricWeights": "أوزان المعايير",
+    "responseAnalysis": "تحليل الرد",
+    "gateDecisions": "قرارات البوابات الصلبة",
+    "confidenceLevel": "مستوى الثقة: {level}",
+    "modelUsed": "النموذج المستخدم: {model}",
+    "whyThisScore": "لماذا هذه الدرجة؟",
+    "whatWouldImproveIt": "ما الذي سيحسّن هذه الدرجة؟",
+    "compareWithHighAnchor": "مقارنة مع المرجعية العالية",
+    "compareWithLowAnchor": "مقارنة مع المرجعية المنخفضة"
+  }
+}

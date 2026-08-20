@@ -1,0 +1,804 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix : <https://iscarb.edu/ontology/assessment/> .
+@prefix iscarb-assessment: <https://iscarb.edu/ontology/assessment/> .
+
+### SHACL Validation Version 1.0.0 ###
+
+iscarb-assessment:AssessmentModuleShape a sh:NodeShape ;
+  sh:targetClass :AssessmentModule ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :code ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :dimension ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :specialization ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :level ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :framework ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :generated ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :rubricJson ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :version ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :signOffState ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :authorId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-assessment:AssessmentResponseShape a sh:NodeShape ;
+  sh:targetClass :AssessmentResponse ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :moduleCode ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :dimension ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :specialization ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :score ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :band ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :passed ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :perCriterionJson ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :feedback ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :strengthsJson ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :improvementsJson ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :validationPassed ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :model ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :source ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :rawResponse ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :latencyMs ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :universityId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :tokensInput ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :tokensOutput ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :costUsd ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :processingStatus ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :validationReview ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :calibrationReviews ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-assessment:AssessmentSnapshotShape a sh:NodeShape ;
+  sh:targetClass :AssessmentSnapshot ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :dataJson ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-assessment:AssessmentValidationReviewShape a sh:NodeShape ;
+  sh:targetClass :AssessmentValidationReview ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :responseId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :originalScore ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :originalBand ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :overriddenScore ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :overriddenBand ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :facultyId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :resolvedAt ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-assessment:AssessmentCalibrationReviewShape a sh:NodeShape ;
+  sh:targetClass :AssessmentCalibrationReview ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :responseId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :facultyId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :aiScore ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :facultyScore ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :absoluteError ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-assessment:AssessmentShape a sh:NodeShape ;
+  sh:targetClass :Assessment ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :universityId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :instructions ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :timeLimit ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :randomizeQuestions ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :randomizeAnswers ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :passPercentage ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :createdBy ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :publishedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :questions ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :submissions ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :rubric ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-assessment:AssessmentQuestionShape a sh:NodeShape ;
+  sh:targetClass :AssessmentQuestion ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :assessmentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :order ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :type ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :prompt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :instructionsJson ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :pointsPossible ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :rubricCriterionId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :optionsJson ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :scenarioContext ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :branchingRules ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :responses ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-assessment:AssessmentSubmissionShape a sh:NodeShape ;
+  sh:targetClass :AssessmentSubmission ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :assessmentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :universityId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :startedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :submittedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :scoredAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :totalScore ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :totalPoints ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :percentageScore ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :submissionToken ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :attemptNumber ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :sessionId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :lastActivityAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :aiGeneratedFeedback ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :keyWeaknesses ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :nextRecommendedAction ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :responses ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :scores ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :adjustments ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-assessment:AssessmentQuestionResponseShape a sh:NodeShape ;
+  sh:targetClass :AssessmentQuestionResponse ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :submissionId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :questionId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :responseText ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :selectedAnswer ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :fileUrl ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :sequenceNumber ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :idempotencyKey ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :savedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :submittedAt ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-assessment:RubricShape a sh:NodeShape ;
+  sh:targetClass :Rubric ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :assessmentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :criteria ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-assessment:RubricCriterionShape a sh:NodeShape ;
+  sh:targetClass :RubricCriterion ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :rubricId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :name ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :weight ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :maxScore ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :keywords ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :order ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :questions ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :scores ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-assessment:AssessmentScoreShape a sh:NodeShape ;
+  sh:targetClass :AssessmentScore ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :submissionId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :criterionId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :score ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :maxScore ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :provider ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :confidence ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :feedback ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :scoredBy ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :scoredAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-assessment:AcademicModuleShape a sh:NodeShape ;
+  sh:targetClass :AcademicModule ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :courseId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :order ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :topics ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-assessment:ReadinessAssessmentShape a sh:NodeShape ;
+  sh:targetClass :ReadinessAssessment ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :universityId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :assessmentType ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :categories ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+

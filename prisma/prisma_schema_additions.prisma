@@ -1,0 +1,519 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ASSESSMENT PLATFORM V2: COMPREHENSIVE PRISMA MODELS
+// Add to prisma/schema.prisma after the existing assessment models
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PART 1: RAG / KNOWLEDGE LAYER
+// ═════════════════════════════════════════════════════════════════════════════
+
+model KnowledgeSource {
+  id            String   @id @default(cuid())
+  sourceType    String   // 'pdf' | 'sop' | 'manual' | 'rubric' | 'framework' | 'competency'
+  title         String
+  description   String?
+  content       String?  // Full text content
+  metadata      Json     @default("{}")  // { author, date, version, category, language }
+  filePath      String?  // S3 or Supabase path
+  fileSize      Int?     // Bytes
+  mimeType      String?  // application/pdf, text/plain, etc.
+  uploadedBy    String?
+  uploadedAt    DateTime @default(now())
+  isActive      Boolean  @default(true)
+  universityId  String?
+  university    University? @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  chunks        KnowledgeChunk[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([sourceType, isActive])
+  @@index([universityId])
+  @@index([uploadedBy])
+}
+
+model KnowledgeChunk {
+  id            String   @id @default(cuid())
+  sourceId      String
+  source        KnowledgeSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  chunkNumber   Int      // Sequential position
+  content       String   // ~2000 chars per chunk
+  embedding     String   // Store as JSON string if pgvector not available, or use native pgvector
+  tokensUsed    Int?     // For cost tracking
+  relevanceScore Float?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  @@index([sourceId, chunkNumber])
+  @@index([isActive])
+}
+
+model RagRetrieval {
+  id            String   @id @default(cuid())
+  query         String
+  agentType     String   // 'question_generator' | 'scorer' | 'recommender'
+  retrievedChunkIds String[]
+  relevanceScores Float[]
+  chunksUsedCount Int?
+  k2thinkRequestId String?
+  universityId  String?
+  university    University? @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+
+  @@index([agentType, createdAt])
+  @@index([universityId])
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PART 2: QUESTION BANK & GENERATION
+// ═════════════════════════════════════════════════════════════════════════════
+
+model QuestionBank {
+  id            String   @id @default(cuid())
+  universityId  String
+  university    University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  category      String   // Leadership, Communication, Technical, etc.
+  difficulty    String   // 'easy' | 'medium' | 'hard' | 'expert'
+  topic         String?
+  scenario      String   // Full question text
+  instructions  String?  // How to respond
+  rubricCriteria Json     @default("{}")  // [{ criterion, weight, descriptor, example_good, example_bad }]
+  fewShotExamples Json?  @default("{}")  // [{ response, score, feedback }]
+  competencyIds String[] // Maps to CompetencyFramework
+  generatedBy   String   // 'ai' | 'manual' | 'imported'
+  aiModelUsed   String?  // Which model generated this
+  generatedAt   DateTime?
+  isPublished   Boolean  @default(false)
+  reviewStatus  String   @default("draft")  // 'draft' | 'ai_validated' | 'sme_review' | 'approved' | 'published' | 'archived'
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  tags          String[]
+  metadata      Json     @default("{}")  // { difficulty_rating, estimated_time_minutes, language }
+  version       Int      @default(1)
+  assessmentQuestions AssessmentQuestion[]
+  reviewWorkflows QuestionReviewWorkflow[]
+  versions      QuestionVersion[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([category, difficulty, universityId])
+  @@index([reviewStatus, isPublished, universityId])
+}
+
+model QuestionReviewWorkflow {
+  id            String   @id @default(cuid())
+  questionId    String
+  question      QuestionBank @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  status        String   @default("draft")  // 'draft' | 'ai_validated' | 'sme_review' | 'approved' | 'published' | 'archived'
+  versionNumber Int
+
+  // AI Validation
+  aiValidationNotes Json?
+  aiValidationPassed Boolean?
+  aiValidatedAt DateTime?
+  aiValidatedBy String?
+
+  // SME Review
+  smeReviewerId String?
+  smeNotes      String?
+  smeApproved   Boolean?
+  smeReviewedAt DateTime?
+
+  // Approval
+  approverId    String?
+  approvedAt    DateTime?
+  approvalNotes String?
+
+  // Publication
+  publishedAt   DateTime?
+  publishedBy   String?
+
+  // Archival
+  archivedAt    DateTime?
+  archiveReason String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status, questionId])
+}
+
+model QuestionVersion {
+  id            String   @id @default(cuid())
+  questionId    String
+  question      QuestionBank @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  versionNumber Int
+  scenario      String
+  instructions  String?
+  rubricCriteria Json?
+  competencyIds String[]
+  createdBy     String?
+  changeSummary String?
+  createdAt     DateTime @default(now())
+
+  @@index([questionId, versionNumber])
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PART 3: ASSESSMENT & SCORING ENHANCEMENTS
+// ═════════════════════════════════════════════════════════════════════════════
+
+model AssessmentQuestion {
+  id            String   @id @default(cuid())
+  assessmentId  String
+  assessment    Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  questionId    String
+  question      QuestionBank @relation(fields: [questionId], references: [id], onDelete: Restrict)
+  questionOrder Int
+  questionVersion Int?
+  createdAt     DateTime @default(now())
+
+  @@unique([assessmentId, questionId])
+  @@index([assessmentId, questionOrder])
+}
+
+model AssessmentHistory {
+  id            String   @id @default(cuid())
+  submissionId  String?
+  studentId     String
+  student       Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  assessmentId  String
+  attemptNumber Int
+  startedAt     DateTime?
+  submittedAt   DateTime?
+  previousScore Int?
+  currentScore  Int?
+  improvementDelta Int?
+  timeSpentSeconds Int?
+  deviceInfo    Json?   // { device, browser, os, ip, user_agent }
+  isSuspicious  Boolean @default(false)
+  universityId  String?
+  university    University? @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+
+  @@index([studentId, assessmentId])
+  @@index([submissionId])
+  @@index([isSuspicious, universityId])
+}
+
+model AiEvaluationLog {
+  id            String   @id @default(cuid())
+  submissionId  String?
+  assessmentId  String?
+  criterionName String
+  scoreGiven    Int
+  maxScore      Int
+  weight        Float?
+  reasoning     String?  // Why this score? (explainability)
+  evidenceQuoted String? // Specific response text
+  modelUsed     String?  // glm-4-flash, gpt-4-turbo, etc.
+  confidenceScore Decimal @db.Decimal(3, 2)
+  multiModelConsensus Json?  // { claude: 82, gpt: 83, gemini: 81, consensus: 82 }
+  k2thinkRequestId String?
+  tokensUsed    Int?
+  universityId  String?
+  university    University? @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  evaluationTimestamp DateTime @default(now())
+
+  @@index([submissionId])
+  @@index([criterionName])
+  @@index([confidenceScore])
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PART 4: COMPETENCY ONTOLOGY (SKILL GRAPH)
+// ═════════════════════════════════════════════════════════════════════════════
+
+model CompetencyFramework {
+  id            String   @id @default(cuid())
+  universityId  String
+  university    University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  competencyName String
+  competencyCode String?
+  description   String?
+  parentId      String?
+  parent        CompetencyFramework? @relation("CompetencyHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children      CompetencyFramework[] @relation("CompetencyHierarchy")
+  skillLevel    Int      @default(0)  // Depth in tree
+  weight        Float    @default(1.0)  // Importance (0.0-1.0)
+  category      String?
+  tags          String[]
+  metadata      Json     @default("{}")
+  isActive      Boolean  @default(true)
+  studentGraphs StudentCompetencyGraph[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([universityId, isActive])
+  @@index([parentId])
+  @@index([category])
+}
+
+model StudentCompetencyGraph {
+  id            String   @id @default(cuid())
+  studentId     String
+  student       Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  competencyId  String
+  competency    CompetencyFramework @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+  currentScore  Decimal? @db.Decimal(5, 2)  // 0-100
+  trend         Decimal? @db.Decimal(5, 2)  // Change
+  lastAssessedAt DateTime?
+  assessmentCount Int    @default(0)
+  history       Json?   @default("{}")  // Array of past scores
+  universityId  String?
+  university    University? @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([studentId, competencyId])
+  @@index([studentId])
+  @@index([competencyId])
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PART 5: LEARNING RECOMMENDATIONS
+// ═════════════════════════════════════════════════════════════════════════════
+
+model LearningRecommendation {
+  id            String   @id @default(cuid())
+  studentId     String
+  student       Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  assessmentId  String?
+  competencyId  String?
+  competency    CompetencyFramework? @relation(fields: [competencyId], references: [id], onDelete: SetNull)
+  recommendationType String  // 'course' | 'book' | 'project' | 'practice' | 'article' | 'video' | 'interview'
+  title         String
+  description   String?
+  resourceUrl   String?
+  estimatedHours Float?
+  difficultyLevel String?  // 'beginner' | 'intermediate' | 'advanced'
+  priority      String   @default("medium")  // 'high' | 'medium' | 'low'
+  reason        String?  // Why this recommendation
+  status        String   @default("recommended")  // 'recommended' | 'started' | 'completed' | 'skipped'
+  completedAt   DateTime?
+  universityId  String?
+  university    University? @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  generatedAt   DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  @@index([studentId, status])
+  @@index([competencyId])
+  @@index([priority, studentId])
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PART 6: ANTI-CHEATING DETECTION
+// ═════════════════════════════════════════════════════════════════════════════
+
+model AntiCheatingFlag {
+  id            String   @id @default(cuid())
+  submissionId  String?
+  assessmentId  String?
+  flagType      String   // 'copy_detected' | 'ai_generated' | 'suspicious_time' | 'tab_switch' | 'multiple_device' | 'pattern_anomaly'
+  confidence    Decimal  @db.Decimal(3, 2)  // 0.00-1.00
+  description   String?
+  responseExcerpt String?
+  flaggedAt     DateTime @default(now())
+  adminReviewed Boolean  @default(false)
+  adminReviewNotes String?
+  adminReviewerId String?
+  adminReviewedAt DateTime?
+  actionTaken   String?  // 'flagged_for_review' | 'invalidated' | 'approved' | 'escalated'
+  universityId  String?
+  university    University? @relation(fields: [universityId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+  @@index([adminReviewed, universityId])
+  @@index([flagType, flaggedAt])
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PART 7: AI COST TRACKING & BUDGET
+// ═════════════════════════════════════════════════════════════════════════════
+
+model AiCostTracking {
+  id            String   @id @default(cuid())
+  timestamp     DateTime @default(now())
+  agentType     String   // 'question_generator' | 'scorer' | 'recommender' | 'interviewer'
+  modelUsed     String   // 'glm-4-flash' | 'gpt-4-turbo' | 'claude-opus'
+  tokensInput   Int?
+  tokensOutput  Int?
+  costUsd       Decimal  @db.Decimal(8, 4)
+  operation     String   // 'generate' | 'score' | 'embed' | 'validate' | 'retrieve'
+  submissionId  String?
+  assessmentId  String?
+  studentId     String?
+  universityId  String?
+  university    University? @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  k2thinkRequestId String?
+
+  @@index([timestamp])
+  @@index([universityId, timestamp])
+  @@index([studentId])
+}
+
+model AiBudget {
+  id            String   @id @default(cuid())
+  universityId  String   @unique
+  university    University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  monthYear     String   // '2026-07'
+  budgetUsd     Decimal  @db.Decimal(10, 2)
+  spentUsd      Decimal  @db.Decimal(10, 2) @default(0)
+  projectedUsd  Decimal? @db.Decimal(10, 2)
+  limitReached  Boolean  @default(false)
+  alertThresholdPercent Int @default(80)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([universityId, monthYear])
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PART 8: AGENT MEMORY & CONTEXT
+// ═════════════════════════════════════════════════════════════════════════════
+
+model AgentContext {
+  id            String   @id @default(cuid())
+  studentId     String
+  student       Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  contextType   String   // 'assessment_history' | 'strengths' | 'weaknesses' | 'interview_transcript'
+  key           String
+  value         Json
+  universityId  String?
+  university    University? @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  ttlDays       Int      @default(90)
+  expiresAt     DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([studentId, contextType])
+  @@index([expiresAt])
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PART 9: K2THINK TASK ORCHESTRATION QUEUE
+// ═════════════════════════════════════════════════════════════════════════════
+
+model K2thinkTaskQueue {
+  id            String   @id @default(cuid())
+  agentType     String   // 'question_generator' | 'scorer' | 'recommender'
+  taskStatus    String   @default("queued")  // 'queued' | 'executing' | 'completed' | 'failed'
+  assessmentId  String?
+  studentId     String?
+  taskPayload   Json
+  k2thinkRunId  String?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  result        Json?
+  errorMessage  String?
+  retryCount    Int      @default(0)
+  maxRetries    Int      @default(3)
+  universityId  String?
+  university    University? @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+
+  @@index([taskStatus, createdAt])
+  @@index([agentType, taskStatus])
+  @@index([studentId])
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PART 10: RBAC (ROLE-BASED ACCESS CONTROL)
+// ═════════════════════════════════════════════════════════════════════════════
+
+model UserRole {
+  id            String   @id @default(cuid())
+  roleName      String   @unique  // 'student' | 'admin' | 'faculty' | 'sme' | 'recruiter'
+  description   String?
+  permissions   String[]
+  universityId  String?
+  university    University? @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  isActive      Boolean  @default(true)
+  assignments   UserRoleAssignment[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model UserRoleAssignment {
+  id            String   @id @default(cuid())
+  userId        String
+  roleId        String
+  role          UserRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  assignedAt    DateTime @default(now())
+  expiresAt     DateTime?
+  assignedBy    String?
+  universityId  String?
+  university    University? @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+
+  @@unique([userId, roleId, universityId])
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PART 11: AUDIT LOGGING (COMPLIANCE)
+// ═════════════════════════════════════════════════════════════════════════════
+
+model AuditLog {
+  id            String   @id @default(cuid())
+  userId        String?
+  action        String   // 'create' | 'read' | 'update' | 'delete' | 'publish' | 'archive'
+  resourceType  String   // 'assessment' | 'question' | 'user' | 'knowledge'
+  resourceId    String
+  changes       Json?    // Before/after values
+  ipAddress     String?
+  userAgent     String?
+  universityId  String?
+  university    University? @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  timestamp     DateTime @default(now())
+
+  @@index([userId, timestamp])
+  @@index([resourceType, resourceId])
+  @@index([universityId, timestamp])
+  @@index([action, timestamp])
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PART 12: DATA RETENTION POLICY
+// ═════════════════════════════════════════════════════════════════════════════
+
+model DataRetentionPolicy {
+  id            String   @id @default(cuid())
+  universityId  String?
+  university    University? @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  entityType    String   // 'assessment' | 'audit_log' | 'pii' | 'rag_retrieval'
+  retentionDays Int
+  autoDelete    Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([universityId, entityType])
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// UPDATE EXISTING MODELS WITH NEW RELATIONSHIPS
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Add to existing Student model:
+// assessmentHistories AssessmentHistory[]
+// competencyGraphs StudentCompetencyGraph[]
+// learningRecommendations LearningRecommendation[]
+// agentContexts AgentContext[]
+
+// Add to existing University model:
+// knowledgeSources KnowledgeSource[]
+// ragRetrievals RagRetrieval[]
+// questionBanks QuestionBank[]
+// assessmentHistories AssessmentHistory[]
+// aiEvaluationLogs AiEvaluationLog[]
+// competencyFrameworks CompetencyFramework[]
+// studentCompetencyGraphs StudentCompetencyGraph[]
+// learningRecommendations LearningRecommendation[]
+// antiCheatingFlags AntiCheatingFlag[]
+// aiCostTrackings AiCostTracking[]
+// agentContexts AgentContext[]
+// k2thinkTaskQueues K2thinkTaskQueue[]
+// userRoles UserRole[]
+// userRoleAssignments UserRoleAssignment[]
+// auditLogs AuditLog[]
+// dataRetentionPolicies DataRetentionPolicy[]

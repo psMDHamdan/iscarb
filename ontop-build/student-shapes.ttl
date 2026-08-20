@@ -1,0 +1,1361 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix : <https://iscarb.edu/ontology/student/> .
+@prefix iscarb-student: <https://iscarb.edu/ontology/student/> .
+
+### SHACL Validation Version 1.0.0 ###
+
+iscarb-student:StudentShape a sh:NodeShape ;
+  sh:targetClass :Student ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :name ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :email ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :university ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :universityId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :college ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :program ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :cohort ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :guardianName ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :guardianPhone ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :readinessScore ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :discoverable ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :scedSpecializationCode ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :educationLevelCode ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :userId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :guardianConsentAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :aiOnboardingComplete ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :targetCareerName ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :targetCareerUri ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :lastAIBriefing ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :totalStudyHours ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :currentStreak ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :aiexplainRequests ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :grades ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :aigeneratedQuizs ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :ailearningInsights ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :aiRecommendations ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :aistudyRecommendations ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :academicTranscripts ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :activeParticipation ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :alumniConnections ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :assessmentResponses ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :assessmentSnapshots ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :attendance ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :capstoneProjects ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :careerGoals ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :careerIntelligenceSnapshots ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :careerInterests ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :careerMappings ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :careerPaths ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :careerProfile ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :challengeTeams ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :competencyEvidence ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :consentRecords ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :digitalCredentials ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :employabilityProfile ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :enrollments ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :equityLedger ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :experiencePoints ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :flashcardDecks ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :fundingSaves ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :gradeAdjustments ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :graduationChecklist ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :hackathonRegistrations ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :hackathonTeamMembers ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :internships ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :interviewPrep ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :interviewSessions ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :issuedCredentials ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :jobMatches ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :jobOffers ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :knowledgeGaps ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :learningJourneys ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :learningMemories ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :learningStreak ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :masteryPredictions ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :mentorshipSessions ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :notifications ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :pipelineStages ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :portfolio ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :portfolioReviews ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :productivitySessions ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :projects ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :pushSubscriptions ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :r2cArtifacts ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :readinessAssessments ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :recruiterActivities ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :riskIndicators ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :simulationScenarios ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :skillExplorations ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :skillProgress ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :spacedRepetitionItems ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :successAchievements ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :agents ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentBadges ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentEvents ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :successGoals ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentOnboarding ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :successTasks ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studyPlans ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studyReminders ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studySessions ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :coachSessions ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :successMetrics ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :talentPoolMembers ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :adaptiveDifficultyLevels ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :aiContentGenerations ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :aiInterventionCampaigns ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :aiTutoringSessions ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :resumeAiReviews ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :learningProfile ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-student:EnrollmentShape a sh:NodeShape ;
+  sh:targetClass :Enrollment ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :courseId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :facultyId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :semester ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :enrolledAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :universityId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :grade ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-student:GradeShape a sh:NodeShape ;
+  sh:targetClass :Grade ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :courseId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :enrollmentId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :semester ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :letter ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :gpa ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :percentage ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :credits ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-student:GradeAdjustmentShape a sh:NodeShape ;
+  sh:targetClass :GradeAdjustment ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :courseId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :facultyId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :oldGrade ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :newGrade ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :justificationReason ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :evidence ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :approvedBy ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :deanNotified ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :reviewedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :universityId ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-student:StudentAgentShape a sh:NodeShape ;
+  sh:targetClass :StudentAgent ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :name ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :persona ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :state ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :lastNudge ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :streakDays ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :messages ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-student:StudentBadgeShape a sh:NodeShape ;
+  sh:targetClass :StudentBadge ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :badgeCode ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :earnedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-student:StudentOnboardingShape a sh:NodeShape ;
+  sh:targetClass :StudentOnboarding ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :academicYear ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :interests ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :strengths ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :completed ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :completedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :tasks ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-student:StudentAgentMessageShape a sh:NodeShape ;
+  sh:targetClass :StudentAgentMessage ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :agentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :role ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :content ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :metaJson ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-student:StudentCompetencyGraphShape a sh:NodeShape ;
+  sh:targetClass :StudentCompetencyGraph ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :competencyId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :currentLevel ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :targetLevel ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :trend ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :lastAssessedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :assessmentCount ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :evidence ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-student:StudentCohortShape a sh:NodeShape ;
+  sh:targetClass :StudentCohort ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :programId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :name ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :year ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :startDate ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-student:StudentAlertShape a sh:NodeShape ;
+  sh:targetClass :StudentAlert ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :facultyId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :alertType ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :severity ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :source ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :actionTaken ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :universityId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-student:StudentRecommendationShape a sh:NodeShape ;
+  sh:targetClass :StudentRecommendation ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :facultyId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :category ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :priority ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :aiGenerated ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :universityId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-student:BetaEnrollmentShape a sh:NodeShape ;
+  sh:targetClass :BetaEnrollment ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :programId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :userId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :feedback ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :enrolledAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :completedAt ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-student:StudentEventShape a sh:NodeShape ;
+  sh:targetClass :StudentEvent ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :eventType ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :entityId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :metadata ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-student:StudentLearningProfileShape a sh:NodeShape ;
+  sh:targetClass :StudentLearningProfile ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :preferredLearningStyle ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studyPacePreference ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :focusSessionDurationMinutes ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :bestStudyTime ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :avgStudySessionLength ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :preferredResourceTypes ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :adaptiveDifficultyLevel ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :lastUpdatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-student:StudentGoalShape a sh:NodeShape ;
+  sh:targetClass :StudentGoal ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :universityId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :category ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :priority ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :progress ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :targetDate ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :completedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :milestones ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :relatedCompetencies ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-student:StudentAchievementShape a sh:NodeShape ;
+  sh:targetClass :StudentAchievement ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :universityId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :category ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :badgeIcon ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :rarity ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :progress ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :requirement ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-student:StudentTaskShape a sh:NodeShape ;
+  sh:targetClass :StudentTask ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :universityId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :title ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :priority ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :dueDate ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :completedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :estimatedHours ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :actualHours ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :tags ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :dependencies ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+

@@ -1,0 +1,226 @@
+@prefix : <https://iscarb.edu/ontology/finance/> .
+@prefix iscarb-finance: <https://iscarb.edu/ontology/finance/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+### Ontology Version 1.0.0 ###
+
+### Class: EquityLedger
+iscarb-finance:EquityLedger a owl:Class ;
+  rdfs:label "EquityLedger" .
+
+iscarb-finance:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityLedger .
+
+iscarb-finance:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityLedger .
+
+iscarb-finance:estimatedValue a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityLedger .
+
+iscarb-finance:equityScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityLedger .
+
+iscarb-finance:learningHours a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityLedger .
+
+iscarb-finance:projectsScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityLedger .
+
+iscarb-finance:challengesScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityLedger .
+
+iscarb-finance:skillsCount a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityLedger .
+
+iscarb-finance:breakdownJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityLedger .
+
+iscarb-finance:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityLedger .
+
+iscarb-finance:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityLedger .
+
+iscarb-finance:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityLedger .
+
+iscarb-finance:events a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityLedger .
+
+iscarb-finance:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-finance:EquityLedger ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: EquityEvent
+iscarb-finance:EquityEvent a owl:Class ;
+  rdfs:label "EquityEvent" .
+
+iscarb-finance:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityEvent .
+
+iscarb-finance:ledgerId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityEvent .
+
+iscarb-finance:source a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityEvent .
+
+iscarb-finance:label a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityEvent .
+
+iscarb-finance:valueDelta a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityEvent .
+
+iscarb-finance:scoreDelta a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityEvent .
+
+iscarb-finance:metaJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityEvent .
+
+iscarb-finance:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:EquityEvent .
+
+iscarb-finance:ledger a owl:ObjectProperty ;
+  rdfs:domain iscarb-finance:EquityEvent ;
+  rdfs:range <https://iscarb.edu/ontology/core/EquityLedger> .
+
+### Class: FundingProgram
+iscarb-finance:FundingProgram a owl:Class ;
+  rdfs:label "FundingProgram" .
+
+iscarb-finance:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingProgram .
+
+iscarb-finance:code a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingProgram .
+
+iscarb-finance:provider a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingProgram .
+
+iscarb-finance:nameEn a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingProgram .
+
+iscarb-finance:nameAr a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingProgram .
+
+iscarb-finance:descriptionEn a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingProgram .
+
+iscarb-finance:descriptionAr a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingProgram .
+
+iscarb-finance:type a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingProgram .
+
+iscarb-finance:stage a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingProgram .
+
+iscarb-finance:sector a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingProgram .
+
+iscarb-finance:amountNote a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingProgram .
+
+iscarb-finance:url a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingProgram .
+
+iscarb-finance:active a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingProgram .
+
+iscarb-finance:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingProgram .
+
+iscarb-finance:applications a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingProgram .
+
+iscarb-finance:saves a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingProgram .
+
+### Class: FundingSave
+iscarb-finance:FundingSave a owl:Class ;
+  rdfs:label "FundingSave" .
+
+iscarb-finance:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingSave .
+
+iscarb-finance:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingSave .
+
+iscarb-finance:programId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingSave .
+
+iscarb-finance:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingSave .
+
+iscarb-finance:notes a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingSave .
+
+iscarb-finance:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingSave .
+
+iscarb-finance:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingSave .
+
+iscarb-finance:program a owl:ObjectProperty ;
+  rdfs:domain iscarb-finance:FundingSave ;
+  rdfs:range <https://iscarb.edu/ontology/core/FundingProgram> .
+
+iscarb-finance:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-finance:FundingSave ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: ResearchFundingMetric
+iscarb-finance:ResearchFundingMetric a owl:Class ;
+  rdfs:label "ResearchFundingMetric" .
+
+iscarb-finance:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:ResearchFundingMetric .
+
+iscarb-finance:organizationId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:ResearchFundingMetric .
+
+iscarb-finance:totalFunding a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:ResearchFundingMetric .
+
+iscarb-finance:activeGrants a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:ResearchFundingMetric .
+
+iscarb-finance:completedGrants a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:ResearchFundingMetric .
+
+iscarb-finance:period a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:ResearchFundingMetric .
+
+iscarb-finance:calculatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:ResearchFundingMetric .
+
+### Class: FundingApplication
+iscarb-finance:FundingApplication a owl:Class ;
+  rdfs:label "FundingApplication" .
+
+iscarb-finance:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingApplication .
+
+iscarb-finance:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingApplication .
+
+iscarb-finance:fundingId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingApplication .
+
+iscarb-finance:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingApplication .
+
+iscarb-finance:appliedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingApplication .
+
+iscarb-finance:reviewedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingApplication .
+
+iscarb-finance:decisionAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingApplication .
+
+iscarb-finance:essayResponses a owl:DatatypeProperty ;
+  rdfs:domain iscarb-finance:FundingApplication .
+

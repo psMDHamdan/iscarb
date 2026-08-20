@@ -1,0 +1,65 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+.next/
+out/
+build/
+.swc/
+.vercel/
+.turbo/
+*.tsbuildinfo
+
+# Secrets & environment
+#.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+!.env.example
+
+# Database (local dev sqlite + journals)
+db/*.db-journal
+db/*.db-wal
+db/*.db-shm
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dev.log
+server.log
+.build.log
+
+# Build/verification artifacts
+verification/dist/
+verification/migration-test.db
+coverage/
+.vitest/
+
+# OS / Editor / IDE
+.DS_Store
+*.pem
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Miscellaneous
+.karimo/.worktrees/
+.mimocode/
+scratch/
+.gstack/
+
+# Scratch and generated
+scratch/
+nextjs_tailwind_shadcn_ts@0.2.0/
+dump.rdb
+
+# Local dev file storage (dev S3 fallback)
+.lecture-storage/

@@ -1,0 +1,356 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix : <https://iscarb.edu/ontology/competency/> .
+@prefix iscarb-competency: <https://iscarb.edu/ontology/competency/> .
+
+### SHACL Validation Version 1.0.0 ###
+
+iscarb-competency:SkillExplorationShape a sh:NodeShape ;
+  sh:targetClass :SkillExploration ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :skillName ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :sscoCode ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :notes ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :discoveredAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-competency:SkillProgressShape a sh:NodeShape ;
+  sh:targetClass :SkillProgress ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :skillName ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :currentLevel ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :targetLevel ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :activitiesJson ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :lastPracticedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-competency:PortfolioSkillShape a sh:NodeShape ;
+  sh:targetClass :PortfolioSkill ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :portfolioId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :name ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :level ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :endorsementCount ;
+    sh:minCount 1 ;
+    sh:datatype xsd:integer ;
+  ] ;
+  sh:property [
+    sh:path :yearsExperience ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :isVerified ;
+    sh:minCount 1 ;
+    sh:datatype xsd:boolean ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :endorsements ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-competency:SkillEndorsementShape a sh:NodeShape ;
+  sh:targetClass :SkillEndorsement ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :skillId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :portfolioId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :endorsedBy ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :message ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :endorsedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :respondedAt ;
+    sh:datatype xsd:dateTime ;
+  ] .
+
+iscarb-competency:CompetencyFrameworkShape a sh:NodeShape ;
+  sh:targetClass :CompetencyFramework ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :name ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :version ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :status ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :organizationId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdBy ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :competencies ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-competency:CompetencyDefinitionShape a sh:NodeShape ;
+  sh:targetClass :CompetencyDefinition ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :frameworkId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :name ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :description ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :category ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :level ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :parentId ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :weight ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :updatedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :studentGraphs ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] .
+
+iscarb-competency:CompetencyEvidenceShape a sh:NodeShape ;
+  sh:targetClass :CompetencyEvidence ;
+  sh:property [
+    sh:path :id ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :studentId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :competencyId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :competencyName ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :evidenceType ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :evidenceId ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :evidenceName ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :confidenceScore ;
+    sh:minCount 1 ;
+    sh:datatype xsd:float ;
+  ] ;
+  sh:property [
+    sh:path :earnedAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :verifiedAt ;
+    sh:datatype xsd:dateTime ;
+  ] ;
+  sh:property [
+    sh:path :verifiedBy ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path :createdAt ;
+    sh:minCount 1 ;
+    sh:datatype xsd:dateTime ;
+  ] .
+

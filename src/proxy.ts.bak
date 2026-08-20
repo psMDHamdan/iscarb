@@ -1,0 +1,141 @@
+import { NextRequest, NextResponse } from "next/server";
+
+/**
+ * Page-level auth gate + Security headers (masterplan §6.4, §14).
+ * ===========================================================================
+ * 1. Auth gate: no session cookie → redirect to /login
+ * 2. CORS headers: allow configured origins
+ * 3. CSP headers: Content-Security-Policy for XSS prevention
+ * 4. Additional security headers per OWASP best practices
+ * ===========================================================================
+ */
+const SESSION_COOKIE = "iscarb_session";
+const PUBLIC_PATHS = new Set(["/", "/login", "/signup", "/api/v1/auth/saml/metadata"]);
+const PUBLIC_API_PREFIXES = ["/api/auth", "/api/health", "/api/v1/auth"];
+
+function authDisabled(): boolean {
+  if (process.env.NODE_ENV === "production") return false;
+  return process.env.ISCARB_AUTH_DISABLED !== "false";
+}
+
+/**
+ * Get allowed origins from environment.
+ */
+function getAllowedOrigins(): string[] {
+  const envOrigins = process.env.ALLOWED_ORIGINS || "";
+  const baseOrigins = [
+    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    "http://localhost:3001", // Grafana
+  ];
+  if (envOrigins) {
+    return [...baseOrigins, ...envOrigins.split(",").map((o) => o.trim())];
+  }
+  return baseOrigins;
+}
+
+/**
+ * Add CORS headers to response.
+ */
+function addCORSHeaders(req: NextRequest, res: NextResponse): NextResponse {
+  const origin = req.headers.get("origin") || "";
+  const allowedOrigins = getAllowedOrigins();
+
+  if (allowedOrigins.includes(origin) || allowedOrigins.includes("*")) {
+    res.headers.set("Access-Control-Allow-Origin", origin);
+  }
+
+  res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+  res.headers.set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Request-ID, X-Idempotency-Key");
+  res.headers.set("Access-Control-Allow-Credentials", "true");
+  res.headers.set("Access-Control-Max-Age", "86400");
+
+  return res;
+}
+
+/**
+ * Add Security headers (CSP, X-Frame-Options, etc.)
+ */
+function addSecurityHeaders(res: NextResponse): NextResponse {
+  // Content-Security-Policy
+  const cspDirectives = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Next.js requires unsafe-inline/eval
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https:",
+    "font-src 'self' data:",
+    "connect-src 'self' https://integrate.api.nvidia.com https://api.openai.com",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join("; ");
+
+  res.headers.set("Content-Security-Policy", cspDirectives);
+
+  // Additional security headers
+  res.headers.set("X-Content-Type-Options", "nosniff");
+  res.headers.set("X-Frame-Options", "DENY");
+  res.headers.set("X-XSS-Protection", "1; mode=block");
+  res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+
+  return res;
+}
+
+export function proxy(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  // Handle CORS preflight
+  if (req.method === "OPTIONS") {
+    const res = new NextResponse(null, { status: 204 });
+    return addCORSHeaders(req, res);
+  }
+
+  // API routes: add CORS + security headers + auth check
+  if (pathname.startsWith("/api/")) {
+    // Skip public API prefixes
+    const isPublicApi = PUBLIC_API_PREFIXES.some(p => pathname.startsWith(p));
+    if (!isPublicApi) {
+      const authHeader = req.headers.get("authorization");
+      const apiKeyHeader = req.headers.get("x-iscarb-key");
+      if (!authHeader && !apiKeyHeader) {
+        // In dev, allow through (guard handles dev bypass)
+        if (process.env.NODE_ENV !== "development") {
+          return addCORSHeaders(req, NextResponse.json(
+            { error: "Unauthorized — missing Authorization header or x-iscarb-key" },
+            { status: 401 }
+          ));
+        }
+      }
+    }
+    let res = NextResponse.next();
+    res = addCORSHeaders(req, res);
+    res = addSecurityHeaders(res);
+    return res;
+  }
+
+  // Page routes: auth gate + security headers
+  if (authDisabled()) {
+    let res = NextResponse.next();
+    res = addSecurityHeaders(res);
+    return res;
+  }
+  if (PUBLIC_PATHS.has(pathname)) {
+    let res = NextResponse.next();
+    res = addSecurityHeaders(res);
+    return res;
+  }
+  if (req.cookies.get(SESSION_COOKIE)?.value) {
+    let res = NextResponse.next();
+    res = addSecurityHeaders(res);
+    return res;
+  }
+
+  const login = req.nextUrl.clone();
+  login.pathname = "/login";
+  login.search = pathname === "/" ? "" : `?next=${encodeURIComponent(pathname)}`;
+  return NextResponse.redirect(login);
+}
+
+export const config = {
+  matcher: ["/((?!api|_next|.*\\..*).*)"],
+};

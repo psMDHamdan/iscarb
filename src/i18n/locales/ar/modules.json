@@ -1,0 +1,560 @@
+{
+  "_meta": {
+    "locale": "ar",
+    "direction": "rtl",
+    "description": "Arabic translations for all 47 iSCARB assessment modules",
+    "lastUpdated": "2026-07-11",
+    "dimensions": {
+      "core_professionalism": "الاحتراف المهني (25%)",
+      "business_digital": "الثقافة الرقمية والأعمال (20%)",
+      "job_fit": "الملاءمة الوظيفية (التقنية) (40%)",
+      "growth_potential": "إمكانات النمو (15%)"
+    }
+  },
+
+  "M01": {
+    "code": "M01",
+    "title": "التواصل الاستراتيجي",
+    "titleEn": "Strategic Communication",
+    "dimension": "core_professionalism",
+    "level": "L1-A",
+    "framework": "نموذج ياكوبسون للتواصل + نشاط الاستماع النشط لكارل روجرز",
+    "focus": "توصيل رسالة معقدة أو صعبة بوضوح لجمهور غير تقني.",
+    "saudiContext": "حماية موقف القيادة؛ تأطير الخلل كوضعٍ مُدَرَكٍ منخفض الدراما بدلاً من الاعتراف بالخطأ."
+  },
+
+  "M02": {
+    "code": "M02",
+    "title": "التفكير النقدي وحل المشكلات",
+    "titleEn": "Critical Thinking & Problem-Solving",
+    "dimension": "core_professionalism",
+    "level": "L1-A",
+    "framework": "الست سيجما DMAIC + تحليل الجذر لإيشيكاوا",
+    "focus": "حل المشكلات بشكل منظّم تحت ضغط تشغيلي.",
+    "saudiContext": "تشخيص الأسباب الجذرية بدلاً من لوم السائق يتوائم مع معايير الحفاظ على المظهر؛ الإيجابيات تُقدَّم كفرص تحسين."
+  },
+
+  "M03": {
+    "code": "M03",
+    "title": "العمل الجماعي وحل النزاعات",
+    "titleEn": "Teamwork & Conflict Resolution",
+    "dimension": "core_professionalism",
+    "level": "L1-A",
+    "framework": "نموذج توماس-كيلمان لإدارة النزاعات (TKI)",
+    "focus": "حل النزاعات داخل فريق تقني.",
+    "saudiContext": "بناء الإجماع بشكل خاص، بدلاً من النقاش العام، يتوائم بقوة مع معايير بيئة العمل السعودية."
+  },
+
+  "M04": {
+    "code": "M04",
+    "title": "المرونة والصمود",
+    "titleEn": "Adaptability & Resilience",
+    "dimension": "core_professionalism",
+    "level": "L1-A",
+    "framework": "منحنى التغيير لكوبرلر روس (التكيف التنظيمي)",
+    "focus": "إدارة تغيّر مفاجئ في النطاق أو حزمة التقنيات.",
+    "saudiContext": "يُ communicated التحوّل للأعلى بلباقة، لثبيت ثقة أصحاب المصلحة دون إثارة القلق."
+  },
+
+  "M05": {
+    "code": "M05",
+    "title": "الذكاء العاطفي",
+    "titleEn": "Emotional Intelligence",
+    "dimension": "core_professionalism",
+    "level": "L1-A",
+    "framework": "نموذج غولمان للذكاء العاطفي",
+    "focus": "التعرّف على المشاعر وإدارتها في بيئة العمل.",
+    "saudiContext": "الوعي بالمشاعر في السياق الثقافي السعودي حيث العلاقات والهوية أهمّ من المهام."
+  },
+
+  "M06": {
+    "code": "M06",
+    "title": "المهنية والأخلاق",
+    "titleEn": "Professionalism & Ethics",
+    "dimension": "core_professionalism",
+    "level": "L1-A",
+    "framework": "مبادئ الأخلاق المهنية والنزاهة",
+    "focus": "اتخاذ قرارات أخلاقية في بيئة العمل.",
+    "saudiContext": "الالتزام بالمعايير الأخلاقية المتوائمة مع القيم الوطنية والأنظمة التنظيمية السعودية."
+  },
+
+  "M07": {
+    "code": "M07",
+    "title": "الذكاء العاطفي (متقدم)",
+    "titleEn": "Emotional Intelligence (Advanced)",
+    "dimension": "core_professionalism",
+    "level": "L1-B",
+    "framework": "نظريات الذكاء العاطفي المتقدمة",
+    "focus": "التعامل مع المواقف العاطفية المعقدة في بيئة العمل.",
+    "saudiContext": "إدارة العلاقات المعقدة في بيئة عمل تراعي الهرمية والعلاقات الشخصية."
+  },
+
+  "M08": {
+    "code": "M08",
+    "title": "التكامل الأخلاقي السياقي",
+    "titleEn": "Ethical Context Integration",
+    "dimension": "core_professionalism",
+    "level": "L1-B",
+    "framework": "أخلاقيات الأعمال والنزاهة المهنية",
+    "focus": "حلّ إشكالية الجودة مقابل الموعد النهائي.",
+    "saudiContext": "المقاومة تُقدَّم بشكل أفضل كقيد سياسة أو جودة بدلاً من اتهام، مع الحفاظ على موقف المدير."
+  },
+
+  "M09": {
+    "code": "M09",
+    "title": "البحث عن عمل وتحليل السوق",
+    "titleEn": "Job Search & Market Analysis",
+    "dimension": "core_professionalism",
+    "level": "L1-B",
+    "framework": "تحليل سوق العمل والاستراتيجيات",
+    "focus": "استكشاف فرص العمل وتحليل متطلبات السوق.",
+    "saudiContext": "فهم سوق العمل السعودي ومتطلبات رؤية 2030 للتوظيف."
+  },
+
+  "M10": {
+    "code": "M10",
+    "title": "أدوات التقديم (السيرة الذاتية ورسالة التغطية)",
+    "titleEn": "Application Tools (CV & Cover Letter)",
+    "dimension": "core_professionalism",
+    "level": "L1-B",
+    "framework": "كتابة السيرة الذاتية ورسالة التعريف",
+    "focus": "إعداد وثائق التقديم الفعّالة.",
+    "saudiContext": "تكييف وثائق التقديم مع سوق العمل السعودي والجهات الحكومية والخاصة."
+  },
+
+  "M11": {
+    "code": "M11",
+    "title": "إتقان المقابلة",
+    "titleEn": "Interview Mastery",
+    "dimension": "core_professionalism",
+    "level": "L1-B",
+    "framework": "أسلوب نجم (الوضع، المهمة، الفعل، النتيجة) — STAR",
+    "focus": "إجابة أسئلة المقابلة السلوكية.",
+    "saudiContext": "للخريجين السعوديين الداخليين لسوق العمل، يُظهر الفعل المبادرة اللبقة والاختلاف المحترم بدلاً من تحدّي الهرمية."
+  },
+
+  "M12": {
+    "code": "M12",
+    "title": "التواصل وبناء العلامة الشخصية",
+    "titleEn": "Networking & Personal Branding",
+    "dimension": "core_professionalism",
+    "level": "L1-B",
+    "framework": "استراتيجيات التواصل和个人 البراندينج",
+    "focus": "بناء شبكة علاقات وعلامة شخصية قوية.",
+    "saudiContext": "بناء العلاقات في الثقافة السعودية حيث ال熟人ية والتوصيات الشخصية دوراً محورياً."
+  },
+
+  "M13": {
+    "code": "M13",
+    "title": "التفاوض والعقود",
+    "titleEn": "Negotiation & Contracting",
+    "dimension": "core_professionalism",
+    "level": "L1-B",
+    "framework": "استراتيجيات التفاوض وبنود العقود",
+    "focus": "التفاوض على شروط العمل والعقود.",
+    "saudiContext": "فهم معايير العقود والتفاوض في البيئة التنظيمية السعودية."
+  },
+
+  "M14": {
+    "code": "M14",
+    "title": "التفضيلات السلوكية",
+    "titleEn": "Behavioral Preferences",
+    "dimension": "core_professionalism",
+    "level": "L1-B",
+    "framework": "استبيانات التفضيلات السلوكية",
+    "focus": "فهم الأنماط السلوكية الذاتية في بيئة العمل.",
+    "saudiContext": "الوعي بالأنماط السلوكية في سياق بيئة العمل السعودية متعددة الثقافات."
+  },
+
+  "M15": {
+    "code": "M15",
+    "title": "الوحدة المخصصة المشتركة",
+    "titleEn": "Co-Created Custom Module",
+    "dimension": "core_professionalism",
+    "level": "L1",
+    "framework": "تصميم-modules مخصص بالتعاون",
+    "focus": "وحدة مخصصة تُنشأ بالتعاون بين الطالب والمؤسسة.",
+    "saudiContext": "تكييف المحتوى مع احتياجات المؤسسة والسياق المحلي."
+  },
+
+  "M16": {
+    "code": "M16",
+    "title": "أساسيات إدارة المشاريع",
+    "titleEn": "Project Management Fundamentals",
+    "dimension": "business_digital",
+    "level": "L2",
+    "framework": "الرشيق مقابل الشلال (بيان رشيق، سكرم)",
+    "focus": "اختيار المنهجية وتبريرها.",
+    "saudiContext": "المرشّح المتميّز يقرأ الإشارات اللطيفة؛ قول \"إن شاء الله\" على موعد قد يشير إلى رفض لطيف يتطلب متابعة تُوفّر المظهر."
+  },
+
+  "M17": {
+    "code": "M17",
+    "title": "محو إلمام البيانات وتفسير الرسوم البيانية",
+    "titleEn": "Data Literacy & Chart Interpretation",
+    "dimension": "business_digital",
+    "level": "L2",
+    "framework": "أساسيات البيانات والتحليل البياني",
+    "focus": "قراءة البيانات وتحليل الرسوم البيانية.",
+    "saudiContext": "فهم البيانات في سياق المؤسسات السعودية وال Decision-making المبني على البيانات."
+  },
+
+  "M18": {
+    "code": "M18",
+    "title": "الذكاء الاصطناعي في مكان العمل",
+    "titleEn": "AI in the Workplace",
+    "dimension": "business_digital",
+    "level": "L2",
+    "framework": "مبادئ الذكاء الاصطناعي التوليدي وأخلاقيات البيانات",
+    "focus": "الاستخدام المسؤول والفعّال للذكاء الاصطناعي التوليدي في العمل.",
+    "saudiContext": "الإخراج الافتراضي للذكاء الاصطناعي صريح وغربي النبرة؛ المرشّح القوي يطلب الاحترام للهرمية والمنفعة الجماعية، ويتجنّب إرسال البيانات الشخصية لخوادم الذكاء الاصطناعي الأجنبية، بما يتوائم مع نظام حماية البيانات الشخصية السعودي ومبادئ أخلاقيات الذكاء الاصطناعي لسدايا."
+  },
+
+  "M19": {
+    "code": "M19",
+    "title": "الوعي الأمن السيبراني",
+    "titleEn": "Cybersecurity Awareness",
+    "dimension": "business_digital",
+    "level": "L2",
+    "framework": "علم نفس التأثير لسيالديني (الهندسة الاجتماعية)",
+    "focus": "كشف التصيد الاحتيالي والهندسة الاجتماعية.",
+    "saudiContext": "ضغط السلطة أكثر فاعلية في الثقافات الهرمية؛ التحقق عبر سلسلة القيادة يجب أن يتم بلباقة ولكن بثبات."
+  },
+
+  "M20": {
+    "code": "M20",
+    "title": "أساسيات الأعمال",
+    "titleEn": "Business Fundamentals",
+    "dimension": "business_digital",
+    "level": "L2",
+    "framework": "مبادئ الأعمال والإدارة",
+    "focus": "فهم الأساسيات التشغيلية للشركات.",
+    "saudiContext": "فهم بيئة الأعمال السعودية ومتطلبات رؤية 2030 الاقتصادية."
+  },
+
+  "M21": {
+    "code": "M21",
+    "title": "حل المشكلات التقنية",
+    "titleEn": "Technical Problem-Solving",
+    "dimension": "job_fit",
+    "level": "L3",
+    "framework": "التحليل التقني المنهجي",
+    "focus": "حل المشكلات التقنية في التخصص.",
+    "saudiContext": "حل المشكلات التقنية في بيئة عمل سعودية."
+  },
+
+  "M22": {
+    "code": "M22",
+    "title": "التحليل والبحث المتقدم",
+    "titleEn": "Advanced Analysis & Research",
+    "dimension": "job_fit",
+    "level": "L3",
+    "framework": "منهجيات البحث والتحليل",
+    "focus": "البحث والتحليل المتقدم في مجال التخصص.",
+    "saudiContext": "تطبيق منهجيات البحث في السياق السعودي."
+  },
+
+  "M23": {
+    "code": "M23",
+    "title": "القيادة واتخاذ القرارات",
+    "titleEn": "Leadership & Decision-Making",
+    "dimension": "job_fit",
+    "level": "L3",
+    "framework": "نظريات القيادة واتخاذ القرارات",
+    "focus": "قيادة الفرق واتخاذ القرارات الاستراتيجية.",
+    "saudiContext": "قيادة الفرق في بيئة عمل سعودية تتطلب فهم الهرمية والعلاقات."
+  },
+
+  "M24": {
+    "code": "M24",
+    "title": "إدارة الموارد البشرية",
+    "titleEn": "Human Resource Management",
+    "dimension": "job_fit",
+    "level": "L3",
+    "framework": "مبادئ إدارة الموارد البشرية",
+    "focus": "إدارة الكفاءات والتوظيف والتطوير.",
+    "saudiContext": "إدارة الموارد البشرية وفقاً لأنظمة العمل السعودية ونظام التوطين."
+  },
+
+  "M25": {
+    "code": "M25",
+    "title": "التسويق الرقمي",
+    "titleEn": "Digital Marketing",
+    "dimension": "job_fit",
+    "level": "L3",
+    "framework": "استراتيجيات التسويق الرقمي",
+    "focus": "التخطيط والتنفيذ للحملات الرقمية.",
+    "saudiContext": "التسويق الرقمي في السوق السعودي مع مراعاة الخصوصية الثقافية."
+  },
+
+  "M26": {
+    "code": "M26",
+    "title": "تطوير البرمجيات",
+    "titleEn": "Software Development",
+    "dimension": "job_fit",
+    "level": "L3",
+    "framework": "من.lifecycle تطوير البرمجيات",
+    "focus": "تصميم وتطوير الحلول البرمجية.",
+    "saudiContext": "تطوير البرمجيات وفقاً لمعايير الجودة والأمن السيبراني السعودي."
+  },
+
+  "M27": {
+    "code": "M27",
+    "title": "تحليل البيانات",
+    "titleEn": "Data Analysis",
+    "dimension": "job_fit",
+    "level": "L3",
+    "framework": "تحليل البيانات والاستUIAlertات",
+    "focus": "جمع وتحليل البيانات واستخراج الرؤى.",
+    "saudiContext": "تحليل البيانات في بيئة المؤسسات السعودية واتخاذ القرارات المبنية على البيانات."
+  },
+
+  "M28": {
+    "code": "M28",
+    "title": "إدارة المشاريع التقنية",
+    "titleEn": "Technical Project Management",
+    "dimension": "job_fit",
+    "level": "L3",
+    "framework": "إدارة المشاريع التقنية (AGILE, Scrum)",
+    "focus": "إدارة المشاريع التقنية من البداية إلى النهاية.",
+    "saudiContext": "إدارة المشاريع التقنية وفقاً لمعايير الجودة والامتثال السعودي."
+  },
+
+  "M29": {
+    "code": "M29",
+    "title": "الأمن السيبراني المتقدم",
+    "titleEn": "Advanced Cybersecurity",
+    "dimension": "job_fit",
+    "level": "L3",
+    "framework": "إطار NCA للأمن السيبراني",
+    "focus": "تأمين الأنظمة والشبكات والبيانات.",
+    "saudiContext": "تطبيق معايير NCA ECC-1 والأنظمة السيبرانية السعودية."
+  },
+
+  "M30": {
+    "code": "M30",
+    "title": "SQL والإحصاء",
+    "titleEn": "SQL & Statistics",
+    "dimension": "job_fit",
+    "level": "L3-D",
+    "framework": "الجبر الrelationي (SQL joins) + الإحصاء الوصفي",
+    "focus": "منطق استعلام البيانات.",
+    "saudiContext": "وحدة تقنية؛ التقييم محايد ثقافياً."
+  },
+
+  "M31": {
+    "code": "M31",
+    "title": "إدارة المالية والميزانية",
+    "titleEn": "Financial Management & Budgeting",
+    "dimension": "job_fit",
+    "level": "L3",
+    "framework": "مبادئ الإدارة المالية",
+    "focus": "التخطيط المالي وإدارة الميزانيات.",
+    "saudiContext": "إدارة المالية وفقاً لأنظمة هيئة السوق المالية و standards المحاسبة السعودية."
+  },
+
+  "M32": {
+    "code": "M32",
+    "title": "تحسين العمليات",
+    "titleEn": "Operations Optimization",
+    "dimension": "job_fit",
+    "level": "L3",
+    "framework": "التحسين المستمر وست سيجما",
+    "focus": "تحسين الكفاءة التشغيلية.",
+    "saudiContext": "تحسين العمليات في بيئة المؤسسات السعودية."
+  },
+
+  "M33": {
+    "code": "M33",
+    "title": "جودة البرمجيات (مراجعة الكود)",
+    "titleEn": "Software Quality (Code Review)",
+    "dimension": "job_fit",
+    "level": "L3-F",
+    "framework": "مبادئ الكود النظيف",
+    "focus": "اكتشاف الممارسات السيئة في الكود القديم.",
+    "saudiContext": "وحدة تقنية؛ التقييم محايد ثقافياً."
+  },
+
+  "M34": {
+    "code": "M34",
+    "title": "منطق البرمجة (JavaScript)",
+    "titleEn": "Programming Logic (JavaScript)",
+    "dimension": "job_fit",
+    "level": "L3-F",
+    "framework": "خوارزميات ومعايير ES6",
+    "focus": "التفكير الخوارزمي في JavaScript.",
+    "saudiContext": "وحدة تقنية؛ التقييم محايد ثقافياً."
+  },
+
+  "M35": {
+    "code": "M35",
+    "title": "تقييم الائتمان",
+    "titleEn": "Credit-Quality Assessment",
+    "dimension": "job_fit",
+    "level": "L3-FIN",
+    "framework": "تحليل النسب + مبادئ الائتمان الخمسة",
+    "focus": "قراءة البيانات المالية لاتخاذ قرار الإقراض.",
+    "saudiContext": "إطار التوصية وفقاً لمعايير الإفصاح لهيئة السوق المالية ومعايير الهيئة السعودية للمحاسبين."
+  },
+
+  "M36": {
+    "code": "M36",
+    "title": "تحليل انحرافات الميزانية",
+    "titleEn": "Budget Variance Analysis",
+    "dimension": "job_fit",
+    "level": "L3-FIN",
+    "framework": "تحليل انحرافات الميزنة المرنة",
+    "focus": "تفسير تجاوز الميزانية للإدارة غير المالية.",
+    "saudiContext": "تقديم الانحرافات السلبية كبنود تحسين مُدَرَكة بدلاً من لوم."
+  },
+
+  "M37": {
+    "code": "M37",
+    "title": "الرقابة الداخلية والامتثال",
+    "titleEn": "Internal Controls & Compliance",
+    "dimension": "job_fit",
+    "level": "L3-FIN",
+    "framework": "الفصل بين الواجبات + الإفصاح SOCPA/CMA",
+    "focus": "اكتشاف نقاط الضعف في الرقابة.",
+    "saudiContext": "الرجوع لإفصاح هيئة السوق المالية ومعايير SOCPA عند الاقتضاء."
+  },
+
+  "M38": {
+    "code": "M38",
+    "title": "الاستجابة للحوادث السيبرانية",
+    "titleEn": "Incident Triage & Response",
+    "dimension": "job_fit",
+    "level": "L3-SEC",
+    "framework": "دورة حياة الاستجابة للحوادث NIST",
+    "focus": "الاستجابة في الساعة الأولى لrupture مشتبه به.",
+    "saudiContext": "ربط الاحتواء والإبلاغ بمعايير NCA ECC-1؛ حفظ الأدلة."
+  },
+
+  "M39": {
+    "code": "M39",
+    "title": "التمكين والريادة",
+    "titleEn": "Empowerment & Initiative",
+    "dimension": "growth_potential",
+    "level": "L4",
+    "framework": "مبادئ التمكين والمبادرة الذاتية",
+    "focus": "المبادرة والتمكين الذاتي في العمل.",
+    "saudiContext": "المبادرة الذاتية في بيئة عمل هرمية تتطلب لباقة واحتراماً."
+  },
+
+  "M40": {
+    "code": "M40",
+    "title": "التفكير الإبداعي والابتكار",
+    "titleEn": "Creative Thinking & Innovation",
+    "dimension": "growth_potential",
+    "level": "L4",
+    "framework": "مبادئ الابتكار والتفكير الإبداعي",
+    "focus": "تطبيق التفكير الإبداعي لحل المشكلات.",
+    "saudiContext": "الابتكار في سياق رؤية 2030 والتحول الرقمي."
+  },
+
+  "M41": {
+    "code": "M41",
+    "title": "القدرة على التكيّف المهني",
+    "titleEn": "Career Adaptability",
+    "dimension": "growth_potential",
+    "level": "L4",
+    "framework": "قادرية التكيّف المهني لسافيكاس — الأربعة Cs",
+    "focus": "الاستجابة التكيّفية لعدم اليقين المهني والتغيير.",
+    "saudiContext": "في بيئة هرمية، تُبَدَّى القدرة على السيطرة بالاستعداد الاستباقي والمبادرة المحترمة بدلاً من تحدّي إعادة التعيين."
+  },
+
+  "M42": {
+    "code": "M42",
+    "title": "التفكير النقدي المتقدم",
+    "titleEn": "Advanced Critical Thinking",
+    "dimension": "growth_potential",
+    "level": "L4",
+    "framework": "التفكير النقدي المتقدم والتحليل",
+    "focus": "تطبيق التفكير النقدي في مواقف معقدة.",
+    "saudiContext": "التفكير النقدي في سياق بيئة عمل سعودية تتطلب التوازن بين النقاش والحذر."
+  },
+
+  "M43": {
+    "code": "M43",
+    "title": "القيادة التحويلية",
+    "titleEn": "Transformational Leadership",
+    "dimension": "growth_potential",
+    "level": "L4",
+    "framework": "نظرية القيادة التحويلية",
+    "focus": "قيادة التغيير والتحول التنظيمي.",
+    "saudiContext": "قيادة التغيير في بيئة مؤسسية سعودية مع مراعاة القيم الثقافية."
+  },
+
+  "M44": {
+    "code": "M44",
+    "title": "العمل الجماعي متعدد الثقافات",
+    "titleEn": "Cross-Cultural Teamwork",
+    "dimension": "growth_potential",
+    "level": "L4",
+    "framework": "خريطة ثقافات إيرين ماير",
+    "focus": "العمل الفعّال في بيئات العمل متعددة الثقافات.",
+    "saudiContext": "السعودية بلد عالي السياق يراعي العلاقات أولاً والهرمية؛ أفضل الإجابات تُفضّل الملاحظات الخاصة وحفظ المظهر."
+  },
+
+  "M45": {
+    "code": "M45",
+    "title": "التفكير entrepreneuri",
+    "titleEn": "Entrepreneurial Thinking",
+    "dimension": "growth_potential",
+    "level": "L4",
+    "framework": "مبادئ ريادة الأعمال والابتكار",
+    "focus": "تطبيق عقلية ريادة الأعمال في العمل.",
+    "saudiContext": "ريادة الأعمال في سياق رؤية 2030 وبيئة الأعمال السعودية."
+  },
+
+  "M46": {
+    "code": "M46",
+    "title": "الخطة المهنية والدافعية",
+    "titleEn": "Career Plan & Motivation",
+    "dimension": "growth_potential",
+    "level": "L4",
+    "framework": "بناء المهنة لسافيكاس + تحديد الأهداف لوك-ليثام",
+    "focus": "وضوح وواقعية الخطة المهنية لمدة 3 إلى 5 سنوات.",
+    "saudiContext": "خطة تربط النمو الشخصي بالمساهمة في الفريق وأهداف التنمية الوطنية (رؤية 2030) تُقرأ كموائمة جيدة في السياق المؤسسي السعودي."
+  },
+
+  "M47": {
+    "code": "M47",
+    "title": "الوعي بين الثقافات",
+    "titleEn": "Intercultural Awareness",
+    "dimension": "growth_potential",
+    "level": "L4",
+    "framework": "خريطة ثقافات إيرين ماير (حكم المواقف)",
+    "focus": "التعامل مع المواقف بين الثقافات وعالية السياق.",
+    "saudiContext": "السعودية ثقافة عالية السياق تراعي العلاقات أولاً والهرمية؛ أفضل الإجابات تُفضّل الملاحظات الخاصة ولغة حفظ المظهر والعلاقة قبل المهمة."
+  },
+
+  "_jobFit": {
+    "description": "وحدات الملاءمة الوظيفية تختلف حسب التخصص. كل تخصص يحصل على 3 وحدات تقنية محددة.",
+    "computerScience": {
+      "sqlJoins": "SQL والإحصاء",
+      "jsAlgorithms": "منطق البرمجة (JavaScript)",
+      "codeReview": "جودة البرمجيات (مراجعة الكود)"
+    },
+    "accounting": {
+      "creditAnalysis": "تقييم جودة الائتمان",
+      "varianceAnalysis": "تحليل انحرافات الميزانية",
+      "controlsCompliance": "الرقابة الداخلية والامتثال"
+    },
+    "cybersecurity": {
+      "incidentTriage": "تصنيف الحوادث والاستجابة",
+      "accessControl": "التحكم في الوصول والحد الأدنى من الامتياز",
+      "phishingDeepdive": "تحليل التهديدات (حملة التصيد)"
+    },
+    "healthManagement": {
+      "clinicalRisk": "تقييم المخاطر السريرية",
+      "patientFlow": "تدفق المرضى والقدرة الاستيعابية",
+      "healthDataPrivacy": "خصوصية البيانات الصحية"
+    },
+    "ai": {
+      "modelEvaluation": "تقييم النموذج في حالة عدم التوازن",
+      "dataLeakage": "تسريب البيانات والتحقق",
+      "responsibleAi": "الذكاء الاصطناعي المسؤول والتحيز"
+    }
+  }
+}

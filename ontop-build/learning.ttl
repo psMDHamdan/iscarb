@@ -1,0 +1,662 @@
+@prefix : <https://iscarb.edu/ontology/learning/> .
+@prefix iscarb-learning: <https://iscarb.edu/ontology/learning/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+### Ontology Version 1.0.0 ###
+
+### Class: Course
+iscarb-learning:Course a owl:Class ;
+  rdfs:label "Course" .
+
+iscarb-learning:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Course .
+
+iscarb-learning:code a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Course .
+
+iscarb-learning:name a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Course .
+
+iscarb-learning:nameAr a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Course .
+
+iscarb-learning:credits a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Course .
+
+iscarb-learning:programType a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Course .
+
+iscarb-learning:nqfLevel a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Course .
+
+iscarb-learning:bloomTarget a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Course .
+
+iscarb-learning:domains a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Course .
+
+iscarb-learning:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Course .
+
+iscarb-learning:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Course .
+
+iscarb-learning:universityRef a owl:ObjectProperty ;
+  rdfs:domain iscarb-learning:Course ;
+  rdfs:range <https://iscarb.edu/ontology/core/University> .
+
+iscarb-learning:concepts a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Course .
+
+iscarb-learning:enrollments a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Course .
+
+iscarb-learning:grades a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Course .
+
+iscarb-learning:units a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Course .
+
+iscarb-learning:adaptiveDifficultyLevels a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Course .
+
+iscarb-learning:aiTutoringSessions a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Course .
+
+### Class: Unit
+iscarb-learning:Unit a owl:Class ;
+  rdfs:label "Unit" .
+
+iscarb-learning:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Unit .
+
+iscarb-learning:courseId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Unit .
+
+iscarb-learning:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Unit .
+
+iscarb-learning:content a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Unit .
+
+iscarb-learning:order a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Unit .
+
+iscarb-learning:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Unit .
+
+iscarb-learning:aiPrompts a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Unit .
+
+iscarb-learning:simulations a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Unit .
+
+iscarb-learning:course a owl:ObjectProperty ;
+  rdfs:domain iscarb-learning:Unit ;
+  rdfs:range <https://iscarb.edu/ontology/core/Course> .
+
+### Class: Simulation
+iscarb-learning:Simulation a owl:Class ;
+  rdfs:label "Simulation" .
+
+iscarb-learning:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Simulation .
+
+iscarb-learning:unitId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Simulation .
+
+iscarb-learning:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Simulation .
+
+iscarb-learning:context a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Simulation .
+
+iscarb-learning:opening a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Simulation .
+
+iscarb-learning:successCriteria a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Simulation .
+
+iscarb-learning:company a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Simulation .
+
+iscarb-learning:role a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Simulation .
+
+iscarb-learning:payload a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Simulation .
+
+iscarb-learning:confidence a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Simulation .
+
+iscarb-learning:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Simulation .
+
+iscarb-learning:unit a owl:ObjectProperty ;
+  rdfs:domain iscarb-learning:Simulation ;
+  rdfs:range <https://iscarb.edu/ontology/core/Unit> .
+
+### Class: Project
+iscarb-learning:Project a owl:Class ;
+  rdfs:label "Project" .
+
+iscarb-learning:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Project .
+
+iscarb-learning:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Project .
+
+iscarb-learning:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Project .
+
+iscarb-learning:type a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Project .
+
+iscarb-learning:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Project .
+
+iscarb-learning:skillsJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Project .
+
+iscarb-learning:contentJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Project .
+
+iscarb-learning:evalScore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Project .
+
+iscarb-learning:evalConfidence a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Project .
+
+iscarb-learning:evalRubricJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Project .
+
+iscarb-learning:evalModel a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Project .
+
+iscarb-learning:evaluatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Project .
+
+iscarb-learning:artifactUrl a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Project .
+
+iscarb-learning:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Project .
+
+iscarb-learning:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:Project .
+
+iscarb-learning:student a owl:ObjectProperty ;
+  rdfs:domain iscarb-learning:Project ;
+  rdfs:range <https://iscarb.edu/ontology/core/Student> .
+
+### Class: CommunityPost
+iscarb-learning:CommunityPost a owl:Class ;
+  rdfs:label "CommunityPost" .
+
+iscarb-learning:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CommunityPost .
+
+iscarb-learning:authorId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CommunityPost .
+
+iscarb-learning:authorName a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CommunityPost .
+
+iscarb-learning:authorRole a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CommunityPost .
+
+iscarb-learning:category a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CommunityPost .
+
+iscarb-learning:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CommunityPost .
+
+iscarb-learning:content a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CommunityPost .
+
+iscarb-learning:tagsJson a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CommunityPost .
+
+iscarb-learning:upvotes a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CommunityPost .
+
+iscarb-learning:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CommunityPost .
+
+iscarb-learning:replies a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CommunityPost .
+
+### Class: CommunityReply
+iscarb-learning:CommunityReply a owl:Class ;
+  rdfs:label "CommunityReply" .
+
+iscarb-learning:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CommunityReply .
+
+iscarb-learning:postId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CommunityReply .
+
+iscarb-learning:authorName a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CommunityReply .
+
+iscarb-learning:authorRole a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CommunityReply .
+
+iscarb-learning:content a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CommunityReply .
+
+iscarb-learning:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CommunityReply .
+
+iscarb-learning:post a owl:ObjectProperty ;
+  rdfs:domain iscarb-learning:CommunityReply ;
+  rdfs:range <https://iscarb.edu/ontology/core/CommunityPost> .
+
+### Class: CourseConcept
+iscarb-learning:CourseConcept a owl:Class ;
+  rdfs:label "CourseConcept" .
+
+iscarb-learning:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseConcept .
+
+iscarb-learning:courseId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseConcept .
+
+iscarb-learning:conceptId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseConcept .
+
+iscarb-learning:concept a owl:ObjectProperty ;
+  rdfs:domain iscarb-learning:CourseConcept ;
+  rdfs:range <https://iscarb.edu/ontology/core/Concept> .
+
+iscarb-learning:course a owl:ObjectProperty ;
+  rdfs:domain iscarb-learning:CourseConcept ;
+  rdfs:range <https://iscarb.edu/ontology/core/Course> .
+
+### Class: CurriculumCourse
+iscarb-learning:CurriculumCourse a owl:Class ;
+  rdfs:label "CurriculumCourse" .
+
+iscarb-learning:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CurriculumCourse .
+
+iscarb-learning:curriculumId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CurriculumCourse .
+
+iscarb-learning:courseId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CurriculumCourse .
+
+iscarb-learning:isCore a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CurriculumCourse .
+
+iscarb-learning:credits a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CurriculumCourse .
+
+iscarb-learning:semester a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CurriculumCourse .
+
+iscarb-learning:order a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CurriculumCourse .
+
+iscarb-learning:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CurriculumCourse .
+
+iscarb-learning:curriculum a owl:ObjectProperty ;
+  rdfs:domain iscarb-learning:CurriculumCourse ;
+  rdfs:range <https://iscarb.edu/ontology/core/Curriculum> .
+
+### Class: CourseOutcome
+iscarb-learning:CourseOutcome a owl:Class ;
+  rdfs:label "CourseOutcome" .
+
+iscarb-learning:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseOutcome .
+
+iscarb-learning:courseId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseOutcome .
+
+iscarb-learning:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseOutcome .
+
+iscarb-learning:bloomsLevel a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseOutcome .
+
+iscarb-learning:order a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseOutcome .
+
+iscarb-learning:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseOutcome .
+
+### Class: CourseResource
+iscarb-learning:CourseResource a owl:Class ;
+  rdfs:label "CourseResource" .
+
+iscarb-learning:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseResource .
+
+iscarb-learning:courseId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseResource .
+
+iscarb-learning:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseResource .
+
+iscarb-learning:type a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseResource .
+
+iscarb-learning:url a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseResource .
+
+iscarb-learning:filePath a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseResource .
+
+iscarb-learning:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseResource .
+
+iscarb-learning:order a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseResource .
+
+iscarb-learning:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseResource .
+
+### Class: CourseAllocation
+iscarb-learning:CourseAllocation a owl:Class ;
+  rdfs:label "CourseAllocation" .
+
+iscarb-learning:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseAllocation .
+
+iscarb-learning:courseId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseAllocation .
+
+iscarb-learning:semesterId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseAllocation .
+
+iscarb-learning:sectionId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseAllocation .
+
+iscarb-learning:facultyId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseAllocation .
+
+iscarb-learning:classroomId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseAllocation .
+
+iscarb-learning:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseAllocation .
+
+iscarb-learning:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseAllocation .
+
+iscarb-learning:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseAllocation .
+
+### Class: CourseRegistration
+iscarb-learning:CourseRegistration a owl:Class ;
+  rdfs:label "CourseRegistration" .
+
+iscarb-learning:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseRegistration .
+
+iscarb-learning:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseRegistration .
+
+iscarb-learning:courseId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseRegistration .
+
+iscarb-learning:semesterId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseRegistration .
+
+iscarb-learning:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseRegistration .
+
+iscarb-learning:registeredAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseRegistration .
+
+iscarb-learning:droppedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseRegistration .
+
+iscarb-learning:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseRegistration .
+
+iscarb-learning:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseRegistration .
+
+### Class: ResearchProject
+iscarb-learning:ResearchProject a owl:Class ;
+  rdfs:label "ResearchProject" .
+
+iscarb-learning:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:ResearchProject .
+
+iscarb-learning:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:ResearchProject .
+
+iscarb-learning:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:ResearchProject .
+
+iscarb-learning:principalInvestigatorId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:ResearchProject .
+
+iscarb-learning:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:ResearchProject .
+
+iscarb-learning:startDate a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:ResearchProject .
+
+iscarb-learning:endDate a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:ResearchProject .
+
+iscarb-learning:budget a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:ResearchProject .
+
+iscarb-learning:fundingSource a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:ResearchProject .
+
+iscarb-learning:organizationId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:ResearchProject .
+
+iscarb-learning:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:ResearchProject .
+
+iscarb-learning:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:ResearchProject .
+
+iscarb-learning:experiments a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:ResearchProject .
+
+iscarb-learning:experimentDesigns a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:ResearchProject .
+
+iscarb-learning:grantApplications a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:ResearchProject .
+
+iscarb-learning:goals a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:ResearchProject .
+
+iscarb-learning:hypotheses a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:ResearchProject .
+
+iscarb-learning:notebook a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:ResearchProject .
+
+iscarb-learning:tasks a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:ResearchProject .
+
+### Class: GrantOpportunity
+iscarb-learning:GrantOpportunity a owl:Class ;
+  rdfs:label "GrantOpportunity" .
+
+iscarb-learning:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:GrantOpportunity .
+
+iscarb-learning:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:GrantOpportunity .
+
+iscarb-learning:provider a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:GrantOpportunity .
+
+iscarb-learning:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:GrantOpportunity .
+
+iscarb-learning:amount a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:GrantOpportunity .
+
+iscarb-learning:currency a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:GrantOpportunity .
+
+iscarb-learning:deadline a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:GrantOpportunity .
+
+iscarb-learning:eligibility a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:GrantOpportunity .
+
+iscarb-learning:category a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:GrantOpportunity .
+
+iscarb-learning:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:GrantOpportunity .
+
+iscarb-learning:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:GrantOpportunity .
+
+iscarb-learning:updatedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:GrantOpportunity .
+
+iscarb-learning:applications a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:GrantOpportunity .
+
+### Class: SimulationScenario
+iscarb-learning:SimulationScenario a owl:Class ;
+  rdfs:label "SimulationScenario" .
+
+iscarb-learning:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:SimulationScenario .
+
+iscarb-learning:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:SimulationScenario .
+
+iscarb-learning:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:SimulationScenario .
+
+iscarb-learning:scenarioType a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:SimulationScenario .
+
+iscarb-learning:scenarioName a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:SimulationScenario .
+
+iscarb-learning:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:SimulationScenario .
+
+iscarb-learning:startedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:SimulationScenario .
+
+iscarb-learning:completedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:SimulationScenario .
+
+iscarb-learning:outcome a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:SimulationScenario .
+
+### Class: CapstoneProject
+iscarb-learning:CapstoneProject a owl:Class ;
+  rdfs:label "CapstoneProject" .
+
+iscarb-learning:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CapstoneProject .
+
+iscarb-learning:universityId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CapstoneProject .
+
+iscarb-learning:studentId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CapstoneProject .
+
+iscarb-learning:title a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CapstoneProject .
+
+iscarb-learning:description a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CapstoneProject .
+
+iscarb-learning:focusArea a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CapstoneProject .
+
+iscarb-learning:status a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CapstoneProject .
+
+iscarb-learning:startDate a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CapstoneProject .
+
+iscarb-learning:targetCompletionDate a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CapstoneProject .
+
+iscarb-learning:completedAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CapstoneProject .
+
+iscarb-learning:mentorId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CapstoneProject .
+
+iscarb-learning:teamMembers a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CapstoneProject .
+
+iscarb-learning:deliverables a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CapstoneProject .
+
+iscarb-learning:milestones a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CapstoneProject .
+
+### Class: CourseContent
+iscarb-learning:CourseContent a owl:Class ;
+  rdfs:label "CourseContent" .
+
+iscarb-learning:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseContent .
+
+iscarb-learning:courseId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseContent .
+
+iscarb-learning:fileName a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseContent .
+
+iscarb-learning:fileUrl a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseContent .
+
+iscarb-learning:textContent a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseContent .
+
+iscarb-learning:chunks a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseContent .
+
+iscarb-learning:uploadedBy a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseContent .
+
+iscarb-learning:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseContent .
+
+### Class: CourseLearningOutcome
+iscarb-learning:CourseLearningOutcome a owl:Class ;
+  rdfs:label "CourseLearningOutcome" .
+
+iscarb-learning:id a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseLearningOutcome .
+
+iscarb-learning:courseId a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseLearningOutcome .
+
+iscarb-learning:number a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseLearningOutcome .
+
+iscarb-learning:text a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseLearningOutcome .
+
+iscarb-learning:textAr a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseLearningOutcome .
+
+iscarb-learning:bloomLevel a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseLearningOutcome .
+
+iscarb-learning:weight a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseLearningOutcome .
+
+iscarb-learning:createdAt a owl:DatatypeProperty ;
+  rdfs:domain iscarb-learning:CourseLearningOutcome .
+

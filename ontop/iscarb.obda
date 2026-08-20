@@ -1,0 +1,43 @@
+[PrefixDeclaration]
+:		http://iscarb.edu/ontology/
+iscarb:		https://iscarb.edu/ontology/
+xsd:		http://www.w3.org/2001/XMLSchema#
+owl:		http://www.w3.org/2002/07/owl#
+rdf:		http://www.w3.org/1999/02/22-rdf-syntax-ns#
+rdfs:		http://www.w3.org/2000/01/rdf-schema#
+reg:            https://iscarb.edu/ontology/reg/
+
+[MappingDeclaration] @collection [[
+mappingId	student-mapping
+target		iscarb:student/{id} a iscarb:Student ; iscarb:hasId {id} ; iscarb:hasName {name} ; iscarb:specialization {program} . 
+source		SELECT id, name, program FROM "Student"
+
+mappingId	university-mapping
+target		iscarb:university/{id} a iscarb:University ; iscarb:hasId {id} ; iscarb:hasName {name} ; iscarb:hasCode {code} . 
+source		SELECT id, name, code FROM "University"
+
+mappingId	course-mapping
+target		iscarb:course/{id} a iscarb:Course ; iscarb:hasId {id} ; iscarb:hasName {name} ; iscarb:hasCode {code} . 
+source		SELECT id, name, code FROM "Course"
+
+mappingId	employability-mapping
+target		iscarb:student/{studentId} iscarb:composite {composite} ; iscarb:band iscarb:{band} ; iscarb:readinessScore {readiness} ; iscarb:coreProfessionalism {core_prof} ; iscarb:businessDigital {bus_dig} ; iscarb:jobFit {job_fit} ; iscarb:growthPotential {growth} .
+source		SELECT "studentId", composite, composite AS readiness, REPLACE(band, ' ', '') AS band, 
+		  CAST("dimensionsJson"::jsonb->>'core_professionalism' AS FLOAT) AS core_prof,
+		  CAST("dimensionsJson"::jsonb->>'business_digital' AS FLOAT) AS bus_dig,
+		  CAST("dimensionsJson"::jsonb->>'job_fit' AS FLOAT) AS job_fit,
+		  CAST("dimensionsJson"::jsonb->>'growth_potential' AS FLOAT) AS growth
+		FROM "EmployabilityProfile"
+
+mappingId	assessment-mapping
+target		iscarb:response/{id} a iscarb:AssessmentResponse ; iscarb:hasId {id} ; iscarb:score {score} ; iscarb:dimension iscarb:{dimension} ; iscarb:module iscarb:module/{moduleCode} ; iscarb:student iscarb:student/{studentId} ; iscarb:rawResponse {rawResponse} ; iscarb:feedback {feedback} ; iscarb:model {model} ; iscarb:latencyMs {latencyMs} ; iscarb:submittedAt {createdAt} ; iscarb:scoringSource iscarb:AI .
+source		SELECT id, score, REPLACE(dimension, '_', '') AS dimension, "moduleCode", "studentId", "rawResponse", feedback, model, "latencyMs", "createdAt" FROM "AssessmentResponse"
+
+mappingId       student-has-response-mapping
+target          iscarb:student/{studentId} iscarb:hasResponse iscarb:response/{id} .
+source          SELECT id, "studentId" FROM "AssessmentResponse"
+
+mappingId       criterion-score-mapping
+target          iscarb:response/{id} iscarb:hasCriterionScore iscarb:crit_score/{id}_{critId} . iscarb:crit_score/{id}_{critId} iscarb:criterion iscarb:crit/{critId} ; iscarb:value {val} .
+source          SELECT id, d.key as "critId", CAST(d.value AS FLOAT) as val FROM "AssessmentResponse", jsonb_each_text("perCriterionJson"::jsonb) d WHERE "perCriterionJson" LIKE '{%'
+]]

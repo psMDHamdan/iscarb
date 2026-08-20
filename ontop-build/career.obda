@@ -1,0 +1,238 @@
+[PrefixDeclaration]
+:		https://iscarb.edu/ontology/career/
+iscarb-career:	https://iscarb.edu/ontology/career/
+xsd:		http://www.w3.org/2001/XMLSchema#
+owl:		http://www.w3.org/2002/07/owl#
+rdf:		http://www.w3.org/1999/02/22-rdf-syntax-ns#
+rdfs:		http://www.w3.org/2000/01/rdf-schema#
+
+[MappingDeclaration] @collection [[
+mappingId	careermapping-mapping
+target		iscarb-career:careermapping/{id} a iscarb-career:CareerMapping ; iscarb-career:id {id} ; iscarb-career:studentId {studentId} ; iscarb-career:generatedTitle {generatedTitle} ; iscarb-career:titleAr {titleAr} ; iscarb-career:cluster {cluster} ; iscarb-career:sscoCode {sscoCode} ; iscarb-career:iscoMajorGroup {iscoMajorGroup} ; iscarb-career:alignment {alignment} ; iscarb-career:matchScore {matchScore} ; iscarb-career:skillsEvidence {skillsEvidence} ; iscarb-career:createdAt {createdAt} .
+source		SELECT "id", "studentId", "generatedTitle", "titleAr", "cluster", "sscoCode", "iscoMajorGroup", "alignment", "matchScore", "skillsEvidence", "createdAt" FROM "CareerMapping"
+
+mappingId	careermapping-has-ssco
+target		iscarb-career:careermapping/{id} iscarb-career:ssco <https://iscarb.edu/ontology/core/ssccooccupation/{sscoCode}> .
+source		SELECT "id", "sscoCode" FROM "CareerMapping" WHERE "sscoCode" IS NOT NULL
+
+mappingId	careermapping-has-student
+target		iscarb-career:careermapping/{id} iscarb-career:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "CareerMapping" WHERE "studentId" IS NOT NULL
+
+mappingId	careerpath-mapping
+target		iscarb-career:careerpath/{id} a iscarb-career:CareerPath ; iscarb-career:id {id} ; iscarb-career:studentId {studentId} ; iscarb-career:titleEn {titleEn} ; iscarb-career:titleAr {titleAr} ; iscarb-career:targetSscoCode {targetSscoCode} ; iscarb-career:targetComposite {targetComposite} ; iscarb-career:rationaleEn {rationaleEn} ; iscarb-career:rationaleAr {rationaleAr} ; iscarb-career:source {source} ; iscarb-career:model {model} ; iscarb-career:createdAt {createdAt} .
+source		SELECT "id", "studentId", "titleEn", "titleAr", "targetSscoCode", "targetComposite", "rationaleEn", "rationaleAr", "source", "model", "createdAt" FROM "CareerPath"
+
+mappingId	careerpath-has-student
+target		iscarb-career:careerpath/{id} iscarb-career:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "CareerPath" WHERE "studentId" IS NOT NULL
+
+mappingId	careerstage-mapping
+target		iscarb-career:careerstage/{id} a iscarb-career:CareerStage ; iscarb-career:id {id} ; iscarb-career:pathId {pathId} ; iscarb-career:order {order} ; iscarb-career:titleEn {titleEn} ; iscarb-career:titleAr {titleAr} ; iscarb-career:focusEn {focusEn} ; iscarb-career:focusAr {focusAr} ; iscarb-career:activitiesJson {activitiesJson} ; iscarb-career:targetComposite {targetComposite} .
+source		SELECT "id", "pathId", "order", "titleEn", "titleAr", "focusEn", "focusAr", "activitiesJson", "targetComposite" FROM "CareerStage"
+
+mappingId	careerstage-has-path
+target		iscarb-career:careerstage/{id} iscarb-career:path <https://iscarb.edu/ontology/core/careerpath/{pathId}> .
+source		SELECT "id", "pathId" FROM "CareerStage" WHERE "pathId" IS NOT NULL
+
+mappingId	jobposting-mapping
+target		iscarb-career:jobposting/{id} a iscarb-career:JobPosting ; iscarb-career:id {id} ; iscarb-career:title {title} ; iscarb-career:titleAr {titleAr} ; iscarb-career:description {description} ; iscarb-career:employer {employer} ; iscarb-career:sector {sector} ; iscarb-career:industry {industry} ; iscarb-career:sscoCode {sscoCode} ; iscarb-career:minComposite {minComposite} ; iscarb-career:skillsJson {skillsJson} ; iscarb-career:skills {skills} ; iscarb-career:salaryMin {salaryMin} ; iscarb-career:salaryMax {salaryMax} ; iscarb-career:currency {currency} ; iscarb-career:jobType {jobType} ; iscarb-career:location {location} ; iscarb-career:remote {remote} ; iscarb-career:vision2030 {vision2030} ; iscarb-career:status {status} ; iscarb-career:views {views} ; iscarb-career:source {source} ; iscarb-career:externalId {externalId} ; iscarb-career:postedAt {postedAt} ; iscarb-career:deadline {deadline} ; iscarb-career:closedAt {closedAt} ; iscarb-career:createdAt {createdAt} ; iscarb-career:updatedAt {updatedAt} ; iscarb-career:recruiterId {recruiterId} .
+source		SELECT "id", "title", "titleAr", "description", "employer", "sector", "industry", "sscoCode", "minComposite", "skillsJson", "skills", "salaryMin", "salaryMax", "currency", "jobType", "location", "remote", "vision2030", "status", "views", "source", "externalId", "postedAt", "deadline", "closedAt", "createdAt", "updatedAt", "recruiterId" FROM "JobPosting"
+
+mappingId	jobposting-has-recruiter
+target		iscarb-career:jobposting/{id} iscarb-career:recruiter <https://iscarb.edu/ontology/core/recruiter/{recruiterId}> .
+source		SELECT "id", "recruiterId" FROM "JobPosting" WHERE "recruiterId" IS NOT NULL
+
+mappingId	jobposting-has-ssco
+target		iscarb-career:jobposting/{id} iscarb-career:ssco <https://iscarb.edu/ontology/core/ssccooccupation/{sscoCode}> .
+source		SELECT "id", "sscoCode" FROM "JobPosting" WHERE "sscoCode" IS NOT NULL
+
+mappingId	jobmatch-mapping
+target		iscarb-career:jobmatch/{id} a iscarb-career:JobMatch ; iscarb-career:id {id} ; iscarb-career:studentId {studentId} ; iscarb-career:jobId {jobId} ; iscarb-career:matchScore {matchScore} ; iscarb-career:sscoScore {sscoScore} ; iscarb-career:compositeScore {compositeScore} ; iscarb-career:skillsScore {skillsScore} ; iscarb-career:vision2030Bonus {vision2030Bonus} ; iscarb-career:breakdownJson {breakdownJson} ; iscarb-career:computedAt {computedAt} .
+source		SELECT "id", "studentId", "jobId", "matchScore", "sscoScore", "compositeScore", "skillsScore", "vision2030Bonus", "breakdownJson", "computedAt" FROM "JobMatch"
+
+mappingId	jobmatch-has-job
+target		iscarb-career:jobmatch/{id} iscarb-career:job <https://iscarb.edu/ontology/core/jobposting/{jobId}> .
+source		SELECT "id", "jobId" FROM "JobMatch" WHERE "jobId" IS NOT NULL
+
+mappingId	jobmatch-has-student
+target		iscarb-career:jobmatch/{id} iscarb-career:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "JobMatch" WHERE "studentId" IS NOT NULL
+
+mappingId	recruiter-mapping
+target		iscarb-career:recruiter/{id} a iscarb-career:Recruiter ; iscarb-career:id {id} ; iscarb-career:userId {userId} ; iscarb-career:name {name} ; iscarb-career:email {email} ; iscarb-career:employer {employer} ; iscarb-career:employerLogo {employerLogo} ; iscarb-career:title {title} ; iscarb-career:status {status} ; iscarb-career:preferences {preferences} ; iscarb-career:verified {verified} ; iscarb-career:createdAt {createdAt} .
+source		SELECT "id", "userId", "name", "email", "employer", "employerLogo", "title", "status", "preferences", "verified", "createdAt" FROM "Recruiter"
+
+mappingId	recruiteractivity-mapping
+target		iscarb-career:recruiteractivity/{id} a iscarb-career:RecruiterActivity ; iscarb-career:id {id} ; iscarb-career:recruiterId {recruiterId} ; iscarb-career:studentId {studentId} ; iscarb-career:action {action} ; iscarb-career:metadataJson {metadataJson} ; iscarb-career:createdAt {createdAt} .
+source		SELECT "id", "recruiterId", "studentId", "action", "metadataJson", "createdAt" FROM "RecruiterActivity"
+
+mappingId	recruiteractivity-has-recruiter
+target		iscarb-career:recruiteractivity/{id} iscarb-career:recruiter <https://iscarb.edu/ontology/core/recruiter/{recruiterId}> .
+source		SELECT "id", "recruiterId" FROM "RecruiterActivity" WHERE "recruiterId" IS NOT NULL
+
+mappingId	recruiteractivity-has-student
+target		iscarb-career:recruiteractivity/{id} iscarb-career:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "RecruiterActivity" WHERE "studentId" IS NOT NULL
+
+mappingId	careercard-mapping
+target		iscarb-career:careercard/{id} a iscarb-career:CareerCard ; iscarb-career:id {id} ; iscarb-career:slug {slug} ; iscarb-career:titleEn {titleEn} ; iscarb-career:titleAr {titleAr} ; iscarb-career:employer {employer} ; iscarb-career:sector {sector} ; iscarb-career:sscoCode {sscoCode} ; iscarb-career:cluster {cluster} ; iscarb-career:dayInLifeEn {dayInLifeEn} ; iscarb-career:dayInLifeAr {dayInLifeAr} ; iscarb-career:skillsJson {skillsJson} ; iscarb-career:salaryRangeSAR {salaryRangeSAR} ; iscarb-career:vision2030 {vision2030} ; iscarb-career:demandIndex {demandIndex} ; iscarb-career:createdAt {createdAt} .
+source		SELECT "id", "slug", "titleEn", "titleAr", "employer", "sector", "sscoCode", "cluster", "dayInLifeEn", "dayInLifeAr", "skillsJson", "salaryRangeSAR", "vision2030", "demandIndex", "createdAt" FROM "CareerCard"
+
+mappingId	careercard-has-ssco
+target		iscarb-career:careercard/{id} iscarb-career:ssco <https://iscarb.edu/ontology/core/ssccooccupation/{sscoCode}> .
+source		SELECT "id", "sscoCode" FROM "CareerCard" WHERE "sscoCode" IS NOT NULL
+
+mappingId	careerinterest-mapping
+target		iscarb-career:careerinterest/{id} a iscarb-career:CareerInterest ; iscarb-career:id {id} ; iscarb-career:studentId {studentId} ; iscarb-career:cardId {cardId} ; iscarb-career:status {status} ; iscarb-career:createdAt {createdAt} .
+source		SELECT "id", "studentId", "cardId", "status", "createdAt" FROM "CareerInterest"
+
+mappingId	careerinterest-has-student
+target		iscarb-career:careerinterest/{id} iscarb-career:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "CareerInterest" WHERE "studentId" IS NOT NULL
+
+mappingId	internship-mapping
+target		iscarb-career:internship/{id} a iscarb-career:Internship ; iscarb-career:id {id} ; iscarb-career:studentId {studentId} ; iscarb-career:employer {employer} ; iscarb-career:role {role} ; iscarb-career:startDate {startDate} ; iscarb-career:endDate {endDate} ; iscarb-career:supervisorName {supervisorName} ; iscarb-career:supervisorEmail {supervisorEmail} ; iscarb-career:learningOutcomesJson {learningOutcomesJson} ; iscarb-career:skillsJson {skillsJson} ; iscarb-career:evaluationScore {evaluationScore} ; iscarb-career:evaluationNotes {evaluationNotes} ; iscarb-career:status {status} ; iscarb-career:projectId {projectId} ; iscarb-career:createdAt {createdAt} ; iscarb-career:updatedAt {updatedAt} .
+source		SELECT "id", "studentId", "employer", "role", "startDate", "endDate", "supervisorName", "supervisorEmail", "learningOutcomesJson", "skillsJson", "evaluationScore", "evaluationNotes", "status", "projectId", "createdAt", "updatedAt" FROM "Internship"
+
+mappingId	internship-has-student
+target		iscarb-career:internship/{id} iscarb-career:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "Internship" WHERE "studentId" IS NOT NULL
+
+mappingId	interviewprep-mapping
+target		iscarb-career:interviewprep/{id} a iscarb-career:InterviewPrep ; iscarb-career:id {id} ; iscarb-career:studentId {studentId} ; iscarb-career:targetSsco {targetSsco} ; iscarb-career:targetTitle {targetTitle} ; iscarb-career:sessionsJson {sessionsJson} ; iscarb-career:readiness {readiness} ; iscarb-career:createdAt {createdAt} ; iscarb-career:updatedAt {updatedAt} .
+source		SELECT "id", "studentId", "targetSsco", "targetTitle", "sessionsJson", "readiness", "createdAt", "updatedAt" FROM "InterviewPrep"
+
+mappingId	interviewprep-has-student
+target		iscarb-career:interviewprep/{id} iscarb-career:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "InterviewPrep" WHERE "studentId" IS NOT NULL
+
+mappingId	portfoliocareerprofile-mapping
+target		iscarb-career:portfoliocareerprofile/{id} a iscarb-career:PortfolioCareerProfile ; iscarb-career:id {id} ; iscarb-career:portfolioId {portfolioId} ; iscarb-career:targetRoles {targetRoles} ; iscarb-career:preferredLocations {preferredLocations} ; iscarb-career:salaryMin {salaryMin} ; iscarb-career:salaryMax {salaryMax} ; iscarb-career:yearsExperience {yearsExperience} ; iscarb-career:industryPreferences {industryPreferences} ; iscarb-career:workType {workType} ; iscarb-career:openToRemote {openToRemote} ; iscarb-career:visaSponsorship {visaSponsorship} ; iscarb-career:createdAt {createdAt} ; iscarb-career:updatedAt {updatedAt} .
+source		SELECT "id", "portfolioId", "targetRoles", "preferredLocations", "salaryMin", "salaryMax", "yearsExperience", "industryPreferences", "workType", "openToRemote", "visaSponsorship", "createdAt", "updatedAt" FROM "PortfolioCareerProfile"
+
+mappingId	portfoliocareerprofile-has-portfolio
+target		iscarb-career:portfoliocareerprofile/{id} iscarb-career:portfolio <https://iscarb.edu/ontology/core/portfolio/{portfolioId}> .
+source		SELECT "id", "portfolioId" FROM "PortfolioCareerProfile" WHERE "portfolioId" IS NOT NULL
+
+mappingId	jobopening-mapping
+target		iscarb-career:jobopening/{id} a iscarb-career:JobOpening ; iscarb-career:id {id} ; iscarb-career:employerId {employerId} ; iscarb-career:employer {employer} ; iscarb-career:title {title} ; iscarb-career:description {description} ; iscarb-career:requiredCompetencies {requiredCompetencies} ; iscarb-career:salaryMin {salaryMin} ; iscarb-career:salaryMax {salaryMax} ; iscarb-career:location {location} ; iscarb-career:status {status} ; iscarb-career:focusAreasJson {focusAreasJson} ; iscarb-career:createdAt {createdAt} ; iscarb-career:updatedAt {updatedAt} .
+source		SELECT "id", "employerId", "employer", "title", "description", "requiredCompetencies", "salaryMin", "salaryMax", "location", "status", "focusAreasJson", "createdAt", "updatedAt" FROM "JobOpening"
+
+mappingId	jobtemplate-mapping
+target		iscarb-career:jobtemplate/{id} a iscarb-career:JobTemplate ; iscarb-career:id {id} ; iscarb-career:employerId {employerId} ; iscarb-career:title {title} ; iscarb-career:description {description} ; iscarb-career:competencies {competencies} ; iscarb-career:salaryMin {salaryMin} ; iscarb-career:salaryMax {salaryMax} ; iscarb-career:location {location} ; iscarb-career:createdAt {createdAt} ; iscarb-career:updatedAt {updatedAt} .
+source		SELECT "id", "employerId", "title", "description", "competencies", "salaryMin", "salaryMax", "location", "createdAt", "updatedAt" FROM "JobTemplate"
+
+mappingId	interview-mapping
+target		iscarb-career:interview/{id} a iscarb-career:Interview ; iscarb-career:id {id} ; iscarb-career:submissionId {submissionId} ; iscarb-career:scheduledBy {scheduledBy} ; iscarb-career:candidateId {candidateId} ; iscarb-career:startTime {startTime} ; iscarb-career:endTime {endTime} ; iscarb-career:meetingUrl {meetingUrl} ; iscarb-career:status {status} ; iscarb-career:notes {notes} ; iscarb-career:createdAt {createdAt} .
+source		SELECT "id", "submissionId", "scheduledBy", "candidateId", "startTime", "endTime", "meetingUrl", "status", "notes", "createdAt" FROM "Interview"
+
+mappingId	jobtitle-mapping
+target		iscarb-career:jobtitle/{id} a iscarb-career:JobTitle ; iscarb-career:id {id} ; iscarb-career:organizationId {organizationId} ; iscarb-career:title {title} ; iscarb-career:level {level} ; iscarb-career:description {description} ; iscarb-career:category {category} ; iscarb-career:salaryRangeMin {salaryRangeMin} ; iscarb-career:salaryRangeMax {salaryRangeMax} ; iscarb-career:status {status} ; iscarb-career:metadata {metadata} .
+source		SELECT "id", "organizationId", "title", "level", "description", "category", "salaryRangeMin", "salaryRangeMax", "status", "metadata" FROM "JobTitle"
+
+mappingId	knowledgeingestionjob-mapping
+target		iscarb-career:knowledgeingestionjob/{id} a iscarb-career:KnowledgeIngestionJob ; iscarb-career:id {id} ; iscarb-career:sourceId {sourceId} ; iscarb-career:status {status} ; iscarb-career:startedAt {startedAt} ; iscarb-career:completedAt {completedAt} ; iscarb-career:documentsCount {documentsCount} ; iscarb-career:errors {errors} ; iscarb-career:metadata {metadata} ; iscarb-career:createdAt {createdAt} .
+source		SELECT "id", "sourceId", "status", "startedAt", "completedAt", "documentsCount", "errors", "metadata", "createdAt" FROM "KnowledgeIngestionJob"
+
+mappingId	knowledgeingestionjob-has-source
+target		iscarb-career:knowledgeingestionjob/{id} iscarb-career:source <https://iscarb.edu/ontology/core/knowledgesource/{sourceId}> .
+source		SELECT "id", "sourceId" FROM "KnowledgeIngestionJob" WHERE "sourceId" IS NOT NULL
+
+mappingId	careerprofile-mapping
+target		iscarb-career:careerprofile/{id} a iscarb-career:CareerProfile ; iscarb-career:id {id} ; iscarb-career:studentId {studentId} ; iscarb-career:headline {headline} ; iscarb-career:bio {bio} ; iscarb-career:targetRoles {targetRoles} ; iscarb-career:locationPref {locationPref} ; iscarb-career:salaryExpectMin {salaryExpectMin} ; iscarb-career:salaryExpectMax {salaryExpectMax} ; iscarb-career:workTypePref {workTypePref} ; iscarb-career:openToRemote {openToRemote} ; iscarb-career:linkedinUrl {linkedinUrl} ; iscarb-career:portfolioUrl {portfolioUrl} ; iscarb-career:websiteUrl {websiteUrl} ; iscarb-career:digitalCvHtml {digitalCvHtml} ; iscarb-career:createdAt {createdAt} ; iscarb-career:updatedAt {updatedAt} .
+source		SELECT "id", "studentId", "headline", "bio", "targetRoles", "locationPref", "salaryExpectMin", "salaryExpectMax", "workTypePref", "openToRemote", "linkedinUrl", "portfolioUrl", "websiteUrl", "digitalCvHtml", "createdAt", "updatedAt" FROM "CareerProfile"
+
+mappingId	careerprofile-has-student
+target		iscarb-career:careerprofile/{id} iscarb-career:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "CareerProfile" WHERE "studentId" IS NOT NULL
+
+mappingId	careergoal-mapping
+target		iscarb-career:careergoal/{id} a iscarb-career:CareerGoal ; iscarb-career:id {id} ; iscarb-career:studentId {studentId} ; iscarb-career:title {title} ; iscarb-career:titleAr {titleAr} ; iscarb-career:description {description} ; iscarb-career:descriptionAr {descriptionAr} ; iscarb-career:category {category} ; iscarb-career:priority {priority} ; iscarb-career:targetDate {targetDate} ; iscarb-career:status {status} ; iscarb-career:progress {progress} ; iscarb-career:completedAt {completedAt} ; iscarb-career:createdAt {createdAt} ; iscarb-career:updatedAt {updatedAt} .
+source		SELECT "id", "studentId", "title", "titleAr", "description", "descriptionAr", "category", "priority", "targetDate", "status", "progress", "completedAt", "createdAt", "updatedAt" FROM "CareerGoal"
+
+mappingId	careergoal-has-student
+target		iscarb-career:careergoal/{id} iscarb-career:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "CareerGoal" WHERE "studentId" IS NOT NULL
+
+mappingId	interviewsession-mapping
+target		iscarb-career:interviewsession/{id} a iscarb-career:InterviewSession ; iscarb-career:id {id} ; iscarb-career:studentId {studentId} ; iscarb-career:type {type} ; iscarb-career:employerKey {employerKey} ; iscarb-career:targetRole {targetRole} ; iscarb-career:questionsJson {questionsJson} ; iscarb-career:overallScore {overallScore} ; iscarb-career:confidenceScore {confidenceScore} ; iscarb-career:communicationScore {communicationScore} ; iscarb-career:feedback {feedback} ; iscarb-career:improvementPlan {improvementPlan} ; iscarb-career:durationMs {durationMs} ; iscarb-career:status {status} ; iscarb-career:createdAt {createdAt} ; iscarb-career:completedAt {completedAt} .
+source		SELECT "id", "studentId", "type", "employerKey", "targetRole", "questionsJson", "overallScore", "confidenceScore", "communicationScore", "feedback", "improvementPlan", "durationMs", "status", "createdAt", "completedAt" FROM "InterviewSession"
+
+mappingId	interviewsession-has-student
+target		iscarb-career:interviewsession/{id} iscarb-career:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "InterviewSession" WHERE "studentId" IS NOT NULL
+
+mappingId	careerintelligencesnapshot-mapping
+target		iscarb-career:careerintelligencesnapshot/{id} a iscarb-career:CareerIntelligenceSnapshot ; iscarb-career:id {id} ; iscarb-career:studentId {studentId} ; iscarb-career:targetRole {targetRole} ; iscarb-career:readinessScore {readinessScore} ; iscarb-career:gapsJson {gapsJson} ; iscarb-career:recommendationsJson {recommendationsJson} ; iscarb-career:jobMatchCount {jobMatchCount} ; iscarb-career:estimatedTimeWeeks {estimatedTimeWeeks} ; iscarb-career:computedAt {computedAt} .
+source		SELECT "id", "studentId", "targetRole", "readinessScore", "gapsJson", "recommendationsJson", "jobMatchCount", "estimatedTimeWeeks", "computedAt" FROM "CareerIntelligenceSnapshot"
+
+mappingId	careerintelligencesnapshot-has-student
+target		iscarb-career:careerintelligencesnapshot/{id} iscarb-career:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "CareerIntelligenceSnapshot" WHERE "studentId" IS NOT NULL
+
+mappingId	integrationsyncjob-mapping
+target		iscarb-career:integrationsyncjob/{id} a iscarb-career:IntegrationSyncJob ; iscarb-career:id {id} ; iscarb-career:instanceId {instanceId} ; iscarb-career:direction {direction} ; iscarb-career:status {status} ; iscarb-career:entitiesSynced {entitiesSynced} ; iscarb-career:errors {errors} ; iscarb-career:startedAt {startedAt} ; iscarb-career:completedAt {completedAt} ; iscarb-career:createdAt {createdAt} .
+source		SELECT "id", "instanceId", "direction", "status", "entitiesSynced", "errors", "startedAt", "completedAt", "createdAt" FROM "IntegrationSyncJob"
+
+mappingId	integrationsyncjob-has-instance
+target		iscarb-career:integrationsyncjob/{id} iscarb-career:instance <https://iscarb.edu/ontology/core/integrationinstance/{instanceId}> .
+source		SELECT "id", "instanceId" FROM "IntegrationSyncJob" WHERE "instanceId" IS NOT NULL
+
+mappingId	jobapplication-mapping
+target		iscarb-career:jobapplication/{id} a iscarb-career:JobApplication ; iscarb-career:id {id} ; iscarb-career:studentId {studentId} ; iscarb-career:jobId {jobId} ; iscarb-career:status {status} ; iscarb-career:stage {stage} ; iscarb-career:source {source} ; iscarb-career:notes {notes} ; iscarb-career:appliedAt {appliedAt} ; iscarb-career:reviewedAt {reviewedAt} ; iscarb-career:interviewedAt {interviewedAt} ; iscarb-career:decisionAt {decisionAt} ; iscarb-career:coverLetter {coverLetter} ; iscarb-career:customAnswers {customAnswers} .
+source		SELECT "id", "studentId", "jobId", "status", "stage", "source", "notes", "appliedAt", "reviewedAt", "interviewedAt", "decisionAt", "coverLetter", "customAnswers" FROM "JobApplication"
+
+mappingId	joboffer-mapping
+target		iscarb-career:joboffer/{id} a iscarb-career:JobOffer ; iscarb-career:id {id} ; iscarb-career:studentId {studentId} ; iscarb-career:jobId {jobId} ; iscarb-career:salary {salary} ; iscarb-career:currency {currency} ; iscarb-career:startDate {startDate} ; iscarb-career:benefits {benefits} ; iscarb-career:expiresAt {expiresAt} ; iscarb-career:status {status} ; iscarb-career:createdAt {createdAt} ; iscarb-career:updatedAt {updatedAt} .
+source		SELECT "id", "studentId", "jobId", "salary", "currency", "startDate", "benefits", "expiresAt", "status", "createdAt", "updatedAt" FROM "JobOffer"
+
+mappingId	joboffer-has-student
+target		iscarb-career:joboffer/{id} iscarb-career:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "JobOffer" WHERE "studentId" IS NOT NULL
+
+mappingId	joboffer-has-job
+target		iscarb-career:joboffer/{id} iscarb-career:job <https://iscarb.edu/ontology/core/jobposting/{jobId}> .
+source		SELECT "id", "jobId" FROM "JobOffer" WHERE "jobId" IS NOT NULL
+
+mappingId	careerdevelopmentplan-mapping
+target		iscarb-career:careerdevelopmentplan/{id} a iscarb-career:CareerDevelopmentPlan ; iscarb-career:id {id} ; iscarb-career:studentId {studentId} ; iscarb-career:targetRole {targetRole} ; iscarb-career:targetIndustry {targetIndustry} ; iscarb-career:timeline {timeline} ; iscarb-career:shortTermGoals {shortTermGoals} ; iscarb-career:longTermGoals {longTermGoals} ; iscarb-career:skillsToAcquire {skillsToAcquire} ; iscarb-career:actionItems {actionItems} ; iscarb-career:lastReviewDate {lastReviewDate} ; iscarb-career:nextReviewDate {nextReviewDate} ; iscarb-career:universityId {universityId} ; iscarb-career:createdAt {createdAt} ; iscarb-career:updatedAt {updatedAt} .
+source		SELECT "id", "studentId", "targetRole", "targetIndustry", "timeline", "shortTermGoals", "longTermGoals", "skillsToAcquire", "actionItems", "lastReviewDate", "nextReviewDate", "universityId", "createdAt", "updatedAt" FROM "CareerDevelopmentPlan"
+
+mappingId	careerdevelopmentplan-has-student
+target		iscarb-career:careerdevelopmentplan/{id} iscarb-career:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "CareerDevelopmentPlan" WHERE "studentId" IS NOT NULL
+
+mappingId	careerresourceaccess-mapping
+target		iscarb-career:careerresourceaccess/{id} a iscarb-career:CareerResourceAccess ; iscarb-career:id {id} ; iscarb-career:studentId {studentId} ; iscarb-career:resourceType {resourceType} ; iscarb-career:resourceTitle {resourceTitle} ; iscarb-career:resourceUrl {resourceUrl} ; iscarb-career:accessedAt {accessedAt} ; iscarb-career:bookmarked {bookmarked} ; iscarb-career:universityId {universityId} .
+source		SELECT "id", "studentId", "resourceType", "resourceTitle", "resourceUrl", "accessedAt", "bookmarked", "universityId" FROM "CareerResourceAccess"
+
+mappingId	careerresourceaccess-has-student
+target		iscarb-career:careerresourceaccess/{id} iscarb-career:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "CareerResourceAccess" WHERE "studentId" IS NOT NULL
+
+mappingId	careeraiinsight-mapping
+target		iscarb-career:careeraiinsight/{id} a iscarb-career:CareerAIInsight ; iscarb-career:id {id} ; iscarb-career:studentId {studentId} ; iscarb-career:insightType {insightType} ; iscarb-career:title {title} ; iscarb-career:description {description} ; iscarb-career:confidenceScore {confidenceScore} ; iscarb-career:relatedJobs {relatedJobs} ; iscarb-career:relatedSkills {relatedSkills} ; iscarb-career:actionable {actionable} ; iscarb-career:dismissed {dismissed} ; iscarb-career:generatedAt {generatedAt} ; iscarb-career:universityId {universityId} .
+source		SELECT "id", "studentId", "insightType", "title", "description", "confidenceScore", "relatedJobs", "relatedSkills", "actionable", "dismissed", "generatedAt", "universityId" FROM "CareerAIInsight"
+
+mappingId	careeraiinsight-has-student
+target		iscarb-career:careeraiinsight/{id} iscarb-career:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "CareerAIInsight" WHERE "studentId" IS NOT NULL
+
+mappingId	careermockinterview-mapping
+target		iscarb-career:careermockinterview/{id} a iscarb-career:CareerMockInterview ; iscarb-career:id {id} ; iscarb-career:studentId {studentId} ; iscarb-career:interviewType {interviewType} ; iscarb-career:targetRole {targetRole} ; iscarb-career:targetCompany {targetCompany} ; iscarb-career:questions {questions} ; iscarb-career:performanceScore {performanceScore} ; iscarb-career:duration {duration} ; iscarb-career:startedAt {startedAt} ; iscarb-career:completedAt {completedAt} ; iscarb-career:aiGeneratedFeedback {aiGeneratedFeedback} ; iscarb-career:recommendations {recommendations} ; iscarb-career:universityId {universityId} .
+source		SELECT "id", "studentId", "interviewType", "targetRole", "targetCompany", "questions", "performanceScore", "duration", "startedAt", "completedAt", "aiGeneratedFeedback", "recommendations", "universityId" FROM "CareerMockInterview"
+
+mappingId	careermockinterview-has-student
+target		iscarb-career:careermockinterview/{id} iscarb-career:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "CareerMockInterview" WHERE "studentId" IS NOT NULL
+
+mappingId	jobalertsubscription-mapping
+target		iscarb-career:jobalertsubscription/{id} a iscarb-career:JobAlertSubscription ; iscarb-career:id {id} ; iscarb-career:studentId {studentId} ; iscarb-career:keywords {keywords} ; iscarb-career:industries {industries} ; iscarb-career:locations {locations} ; iscarb-career:jobTypes {jobTypes} ; iscarb-career:minSalary {minSalary} ; iscarb-career:maxSalary {maxSalary} ; iscarb-career:frequency {frequency} ; iscarb-career:active {active} ; iscarb-career:lastAlertSent {lastAlertSent} ; iscarb-career:universityId {universityId} ; iscarb-career:createdAt {createdAt} ; iscarb-career:updatedAt {updatedAt} .
+source		SELECT "id", "studentId", "keywords", "industries", "locations", "jobTypes", "minSalary", "maxSalary", "frequency", "active", "lastAlertSent", "universityId", "createdAt", "updatedAt" FROM "JobAlertSubscription"
+
+mappingId	jobalertsubscription-has-student
+target		iscarb-career:jobalertsubscription/{id} iscarb-career:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "JobAlertSubscription" WHERE "studentId" IS NOT NULL
+
+]]

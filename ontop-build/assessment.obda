@@ -1,0 +1,118 @@
+[PrefixDeclaration]
+:		https://iscarb.edu/ontology/assessment/
+iscarb-assessment:	https://iscarb.edu/ontology/assessment/
+xsd:		http://www.w3.org/2001/XMLSchema#
+owl:		http://www.w3.org/2002/07/owl#
+rdf:		http://www.w3.org/1999/02/22-rdf-syntax-ns#
+rdfs:		http://www.w3.org/2000/01/rdf-schema#
+
+[MappingDeclaration] @collection [[
+mappingId	assessmentmodule-mapping
+target		iscarb-assessment:assessmentmodule/{id} a iscarb-assessment:AssessmentModule ; iscarb-assessment:id {id} ; iscarb-assessment:code {code} ; iscarb-assessment:title {title} ; iscarb-assessment:dimension {dimension} ; iscarb-assessment:specialization {specialization} ; iscarb-assessment:level {level} ; iscarb-assessment:framework {framework} ; iscarb-assessment:generated {generated} ; iscarb-assessment:rubricJson {rubricJson} ; iscarb-assessment:version {version} ; iscarb-assessment:signOffState {signOffState} ; iscarb-assessment:authorId {authorId} ; iscarb-assessment:createdAt {createdAt} .
+source		SELECT "id", "code", "title", "dimension", "specialization", "level", "framework", "generated", "rubricJson", "version", "signOffState", "authorId", "createdAt" FROM "AssessmentModule"
+
+mappingId	assessmentresponse-mapping
+target		iscarb-assessment:assessmentresponse/{id} a iscarb-assessment:AssessmentResponse ; iscarb-assessment:id {id} ; iscarb-assessment:studentId {studentId} ; iscarb-assessment:moduleCode {moduleCode} ; iscarb-assessment:dimension {dimension} ; iscarb-assessment:specialization {specialization} ; iscarb-assessment:score {score} ; iscarb-assessment:band {band} ; iscarb-assessment:passed {passed} ; iscarb-assessment:perCriterionJson {perCriterionJson} ; iscarb-assessment:feedback {feedback} ; iscarb-assessment:strengthsJson {strengthsJson} ; iscarb-assessment:improvementsJson {improvementsJson} ; iscarb-assessment:validationPassed {validationPassed} ; iscarb-assessment:model {model} ; iscarb-assessment:source {source} ; iscarb-assessment:rawResponse {rawResponse} ; iscarb-assessment:latencyMs {latencyMs} ; iscarb-assessment:createdAt {createdAt} ; iscarb-assessment:universityId {universityId} ; iscarb-assessment:tokensInput {tokensInput} ; iscarb-assessment:tokensOutput {tokensOutput} ; iscarb-assessment:costUsd {costUsd} ; iscarb-assessment:processingStatus {processingStatus} ; iscarb-assessment:validationReview {validationReview} .
+source		SELECT "id", "studentId", "moduleCode", "dimension", "specialization", "score", "band", "passed", "perCriterionJson", "feedback", "strengthsJson", "improvementsJson", "validationPassed", "model", "source", "rawResponse", "latencyMs", "createdAt", "universityId", "tokensInput", "tokensOutput", "costUsd", "processingStatus", "validationReview" FROM "AssessmentResponse"
+
+mappingId	assessmentresponse-has-student
+target		iscarb-assessment:assessmentresponse/{id} iscarb-assessment:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "AssessmentResponse" WHERE "studentId" IS NOT NULL
+
+mappingId	assessmentsnapshot-mapping
+target		iscarb-assessment:assessmentsnapshot/{id} a iscarb-assessment:AssessmentSnapshot ; iscarb-assessment:id {id} ; iscarb-assessment:studentId {studentId} ; iscarb-assessment:dataJson {dataJson} ; iscarb-assessment:createdAt {createdAt} .
+source		SELECT "id", "studentId", "dataJson", "createdAt" FROM "AssessmentSnapshot"
+
+mappingId	assessmentsnapshot-has-student
+target		iscarb-assessment:assessmentsnapshot/{id} iscarb-assessment:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "AssessmentSnapshot" WHERE "studentId" IS NOT NULL
+
+mappingId	assessmentvalidationreview-mapping
+target		iscarb-assessment:assessmentvalidationreview/{id} a iscarb-assessment:AssessmentValidationReview ; iscarb-assessment:id {id} ; iscarb-assessment:responseId {responseId} ; iscarb-assessment:status {status} ; iscarb-assessment:originalScore {originalScore} ; iscarb-assessment:originalBand {originalBand} ; iscarb-assessment:overriddenScore {overriddenScore} ; iscarb-assessment:overriddenBand {overriddenBand} ; iscarb-assessment:facultyId {facultyId} ; iscarb-assessment:createdAt {createdAt} ; iscarb-assessment:resolvedAt {resolvedAt} .
+source		SELECT "id", "responseId", "status", "originalScore", "originalBand", "overriddenScore", "overriddenBand", "facultyId", "createdAt", "resolvedAt" FROM "AssessmentValidationReview"
+
+mappingId	assessmentvalidationreview-has-response
+target		iscarb-assessment:assessmentvalidationreview/{id} iscarb-assessment:response <https://iscarb.edu/ontology/core/assessmentresponse/{responseId}> .
+source		SELECT "id", "responseId" FROM "AssessmentValidationReview" WHERE "responseId" IS NOT NULL
+
+mappingId	assessmentcalibrationreview-mapping
+target		iscarb-assessment:assessmentcalibrationreview/{id} a iscarb-assessment:AssessmentCalibrationReview ; iscarb-assessment:id {id} ; iscarb-assessment:responseId {responseId} ; iscarb-assessment:facultyId {facultyId} ; iscarb-assessment:aiScore {aiScore} ; iscarb-assessment:facultyScore {facultyScore} ; iscarb-assessment:absoluteError {absoluteError} ; iscarb-assessment:createdAt {createdAt} .
+source		SELECT "id", "responseId", "facultyId", "aiScore", "facultyScore", "absoluteError", "createdAt" FROM "AssessmentCalibrationReview"
+
+mappingId	assessmentcalibrationreview-has-response
+target		iscarb-assessment:assessmentcalibrationreview/{id} iscarb-assessment:response <https://iscarb.edu/ontology/core/assessmentresponse/{responseId}> .
+source		SELECT "id", "responseId" FROM "AssessmentCalibrationReview" WHERE "responseId" IS NOT NULL
+
+mappingId	assessment-mapping
+target		iscarb-assessment:assessment/{id} a iscarb-assessment:Assessment ; iscarb-assessment:id {id} ; iscarb-assessment:universityId {universityId} ; iscarb-assessment:title {title} ; iscarb-assessment:description {description} ; iscarb-assessment:instructions {instructions} ; iscarb-assessment:status {status} ; iscarb-assessment:timeLimit {timeLimit} ; iscarb-assessment:randomizeQuestions {randomizeQuestions} ; iscarb-assessment:randomizeAnswers {randomizeAnswers} ; iscarb-assessment:passPercentage {passPercentage} ; iscarb-assessment:createdBy {createdBy} ; iscarb-assessment:publishedAt {publishedAt} ; iscarb-assessment:createdAt {createdAt} ; iscarb-assessment:updatedAt {updatedAt} ; iscarb-assessment:rubric {rubric} .
+source		SELECT "id", "universityId", "title", "description", "instructions", "status", "timeLimit", "randomizeQuestions", "randomizeAnswers", "passPercentage", "createdBy", "publishedAt", "createdAt", "updatedAt", "rubric" FROM "Assessment"
+
+mappingId	assessmentquestion-mapping
+target		iscarb-assessment:assessmentquestion/{id} a iscarb-assessment:AssessmentQuestion ; iscarb-assessment:id {id} ; iscarb-assessment:assessmentId {assessmentId} ; iscarb-assessment:order {order} ; iscarb-assessment:type {type} ; iscarb-assessment:prompt {prompt} ; iscarb-assessment:instructionsJson {instructionsJson} ; iscarb-assessment:pointsPossible {pointsPossible} ; iscarb-assessment:rubricCriterionId {rubricCriterionId} ; iscarb-assessment:optionsJson {optionsJson} ; iscarb-assessment:scenarioContext {scenarioContext} ; iscarb-assessment:branchingRules {branchingRules} ; iscarb-assessment:createdAt {createdAt} .
+source		SELECT "id", "assessmentId", "order", "type", "prompt", "instructionsJson", "pointsPossible", "rubricCriterionId", "optionsJson", "scenarioContext", "branchingRules", "createdAt" FROM "AssessmentQuestion"
+
+mappingId	assessmentquestion-has-assessment
+target		iscarb-assessment:assessmentquestion/{id} iscarb-assessment:assessment <https://iscarb.edu/ontology/core/assessment/{assessmentId}> .
+source		SELECT "id", "assessmentId" FROM "AssessmentQuestion" WHERE "assessmentId" IS NOT NULL
+
+mappingId	assessmentquestion-has-rubricCriterion
+target		iscarb-assessment:assessmentquestion/{id} iscarb-assessment:rubricCriterion <https://iscarb.edu/ontology/core/rubriccriterion/{rubricCriterionId}> .
+source		SELECT "id", "rubricCriterionId" FROM "AssessmentQuestion" WHERE "rubricCriterionId" IS NOT NULL
+
+mappingId	assessmentsubmission-mapping
+target		iscarb-assessment:assessmentsubmission/{id} a iscarb-assessment:AssessmentSubmission ; iscarb-assessment:id {id} ; iscarb-assessment:assessmentId {assessmentId} ; iscarb-assessment:studentId {studentId} ; iscarb-assessment:universityId {universityId} ; iscarb-assessment:status {status} ; iscarb-assessment:startedAt {startedAt} ; iscarb-assessment:submittedAt {submittedAt} ; iscarb-assessment:scoredAt {scoredAt} ; iscarb-assessment:totalScore {totalScore} ; iscarb-assessment:totalPoints {totalPoints} ; iscarb-assessment:percentageScore {percentageScore} ; iscarb-assessment:submissionToken {submissionToken} ; iscarb-assessment:attemptNumber {attemptNumber} ; iscarb-assessment:sessionId {sessionId} ; iscarb-assessment:lastActivityAt {lastActivityAt} ; iscarb-assessment:aiGeneratedFeedback {aiGeneratedFeedback} ; iscarb-assessment:keyWeaknesses {keyWeaknesses} ; iscarb-assessment:nextRecommendedAction {nextRecommendedAction} .
+source		SELECT "id", "assessmentId", "studentId", "universityId", "status", "startedAt", "submittedAt", "scoredAt", "totalScore", "totalPoints", "percentageScore", "submissionToken", "attemptNumber", "sessionId", "lastActivityAt", "aiGeneratedFeedback", "keyWeaknesses", "nextRecommendedAction" FROM "AssessmentSubmission"
+
+mappingId	assessmentsubmission-has-assessment
+target		iscarb-assessment:assessmentsubmission/{id} iscarb-assessment:assessment <https://iscarb.edu/ontology/core/assessment/{assessmentId}> .
+source		SELECT "id", "assessmentId" FROM "AssessmentSubmission" WHERE "assessmentId" IS NOT NULL
+
+mappingId	assessmentquestionresponse-mapping
+target		iscarb-assessment:assessmentquestionresponse/{id} a iscarb-assessment:AssessmentQuestionResponse ; iscarb-assessment:id {id} ; iscarb-assessment:submissionId {submissionId} ; iscarb-assessment:questionId {questionId} ; iscarb-assessment:responseText {responseText} ; iscarb-assessment:selectedAnswer {selectedAnswer} ; iscarb-assessment:fileUrl {fileUrl} ; iscarb-assessment:sequenceNumber {sequenceNumber} ; iscarb-assessment:idempotencyKey {idempotencyKey} ; iscarb-assessment:savedAt {savedAt} ; iscarb-assessment:submittedAt {submittedAt} .
+source		SELECT "id", "submissionId", "questionId", "responseText", "selectedAnswer", "fileUrl", "sequenceNumber", "idempotencyKey", "savedAt", "submittedAt" FROM "AssessmentQuestionResponse"
+
+mappingId	assessmentquestionresponse-has-question
+target		iscarb-assessment:assessmentquestionresponse/{id} iscarb-assessment:question <https://iscarb.edu/ontology/core/assessmentquestion/{questionId}> .
+source		SELECT "id", "questionId" FROM "AssessmentQuestionResponse" WHERE "questionId" IS NOT NULL
+
+mappingId	assessmentquestionresponse-has-submission
+target		iscarb-assessment:assessmentquestionresponse/{id} iscarb-assessment:submission <https://iscarb.edu/ontology/core/assessmentsubmission/{submissionId}> .
+source		SELECT "id", "submissionId" FROM "AssessmentQuestionResponse" WHERE "submissionId" IS NOT NULL
+
+mappingId	rubric-mapping
+target		iscarb-assessment:rubric/{id} a iscarb-assessment:Rubric ; iscarb-assessment:id {id} ; iscarb-assessment:assessmentId {assessmentId} ; iscarb-assessment:title {title} ; iscarb-assessment:description {description} ; iscarb-assessment:createdAt {createdAt} .
+source		SELECT "id", "assessmentId", "title", "description", "createdAt" FROM "Rubric"
+
+mappingId	rubric-has-assessment
+target		iscarb-assessment:rubric/{id} iscarb-assessment:assessment <https://iscarb.edu/ontology/core/assessment/{assessmentId}> .
+source		SELECT "id", "assessmentId" FROM "Rubric" WHERE "assessmentId" IS NOT NULL
+
+mappingId	rubriccriterion-mapping
+target		iscarb-assessment:rubriccriterion/{id} a iscarb-assessment:RubricCriterion ; iscarb-assessment:id {id} ; iscarb-assessment:rubricId {rubricId} ; iscarb-assessment:name {name} ; iscarb-assessment:description {description} ; iscarb-assessment:weight {weight} ; iscarb-assessment:maxScore {maxScore} ; iscarb-assessment:keywords {keywords} ; iscarb-assessment:order {order} ; iscarb-assessment:createdAt {createdAt} .
+source		SELECT "id", "rubricId", "name", "description", "weight", "maxScore", "keywords", "order", "createdAt" FROM "RubricCriterion"
+
+mappingId	rubriccriterion-has-rubric
+target		iscarb-assessment:rubriccriterion/{id} iscarb-assessment:rubric <https://iscarb.edu/ontology/core/rubric/{rubricId}> .
+source		SELECT "id", "rubricId" FROM "RubricCriterion" WHERE "rubricId" IS NOT NULL
+
+mappingId	assessmentscore-mapping
+target		iscarb-assessment:assessmentscore/{id} a iscarb-assessment:AssessmentScore ; iscarb-assessment:id {id} ; iscarb-assessment:submissionId {submissionId} ; iscarb-assessment:criterionId {criterionId} ; iscarb-assessment:score {score} ; iscarb-assessment:maxScore {maxScore} ; iscarb-assessment:provider {provider} ; iscarb-assessment:confidence {confidence} ; iscarb-assessment:feedback {feedback} ; iscarb-assessment:scoredBy {scoredBy} ; iscarb-assessment:scoredAt {scoredAt} .
+source		SELECT "id", "submissionId", "criterionId", "score", "maxScore", "provider", "confidence", "feedback", "scoredBy", "scoredAt" FROM "AssessmentScore"
+
+mappingId	assessmentscore-has-criterion
+target		iscarb-assessment:assessmentscore/{id} iscarb-assessment:criterion <https://iscarb.edu/ontology/core/rubriccriterion/{criterionId}> .
+source		SELECT "id", "criterionId" FROM "AssessmentScore" WHERE "criterionId" IS NOT NULL
+
+mappingId	assessmentscore-has-submission
+target		iscarb-assessment:assessmentscore/{id} iscarb-assessment:submission <https://iscarb.edu/ontology/core/assessmentsubmission/{submissionId}> .
+source		SELECT "id", "submissionId" FROM "AssessmentScore" WHERE "submissionId" IS NOT NULL
+
+mappingId	academicmodule-mapping
+target		iscarb-assessment:academicmodule/{id} a iscarb-assessment:AcademicModule ; iscarb-assessment:id {id} ; iscarb-assessment:courseId {courseId} ; iscarb-assessment:title {title} ; iscarb-assessment:description {description} ; iscarb-assessment:order {order} ; iscarb-assessment:createdAt {createdAt} ; iscarb-assessment:updatedAt {updatedAt} .
+source		SELECT "id", "courseId", "title", "description", "order", "createdAt", "updatedAt" FROM "AcademicModule"
+
+mappingId	readinessassessment-mapping
+target		iscarb-assessment:readinessassessment/{id} a iscarb-assessment:ReadinessAssessment ; iscarb-assessment:id {id} ; iscarb-assessment:universityId {universityId} ; iscarb-assessment:studentId {studentId} ; iscarb-assessment:assessmentType {assessmentType} ; iscarb-assessment:categories {categories} .
+source		SELECT "id", "universityId", "studentId", "assessmentType", "categories" FROM "ReadinessAssessment"
+
+]]

@@ -1,0 +1,50 @@
+[PrefixDeclaration]
+:		https://iscarb.edu/ontology/finance/
+iscarb-finance:	https://iscarb.edu/ontology/finance/
+xsd:		http://www.w3.org/2001/XMLSchema#
+owl:		http://www.w3.org/2002/07/owl#
+rdf:		http://www.w3.org/1999/02/22-rdf-syntax-ns#
+rdfs:		http://www.w3.org/2000/01/rdf-schema#
+
+[MappingDeclaration] @collection [[
+mappingId	equityledger-mapping
+target		iscarb-finance:equityledger/{id} a iscarb-finance:EquityLedger ; iscarb-finance:id {id} ; iscarb-finance:studentId {studentId} ; iscarb-finance:estimatedValue {estimatedValue} ; iscarb-finance:equityScore {equityScore} ; iscarb-finance:learningHours {learningHours} ; iscarb-finance:projectsScore {projectsScore} ; iscarb-finance:challengesScore {challengesScore} ; iscarb-finance:skillsCount {skillsCount} ; iscarb-finance:breakdownJson {breakdownJson} ; iscarb-finance:updatedAt {updatedAt} ; iscarb-finance:createdAt {createdAt} ; iscarb-finance:universityId {universityId} .
+source		SELECT "id", "studentId", "estimatedValue", "equityScore", "learningHours", "projectsScore", "challengesScore", "skillsCount", "breakdownJson", "updatedAt", "createdAt", "universityId" FROM "EquityLedger"
+
+mappingId	equityledger-has-student
+target		iscarb-finance:equityledger/{id} iscarb-finance:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "EquityLedger" WHERE "studentId" IS NOT NULL
+
+mappingId	equityevent-mapping
+target		iscarb-finance:equityevent/{id} a iscarb-finance:EquityEvent ; iscarb-finance:id {id} ; iscarb-finance:ledgerId {ledgerId} ; iscarb-finance:source {source} ; iscarb-finance:label {label} ; iscarb-finance:valueDelta {valueDelta} ; iscarb-finance:scoreDelta {scoreDelta} ; iscarb-finance:metaJson {metaJson} ; iscarb-finance:createdAt {createdAt} .
+source		SELECT "id", "ledgerId", "source", "label", "valueDelta", "scoreDelta", "metaJson", "createdAt" FROM "EquityEvent"
+
+mappingId	equityevent-has-ledger
+target		iscarb-finance:equityevent/{id} iscarb-finance:ledger <https://iscarb.edu/ontology/core/equityledger/{ledgerId}> .
+source		SELECT "id", "ledgerId" FROM "EquityEvent" WHERE "ledgerId" IS NOT NULL
+
+mappingId	fundingprogram-mapping
+target		iscarb-finance:fundingprogram/{id} a iscarb-finance:FundingProgram ; iscarb-finance:id {id} ; iscarb-finance:code {code} ; iscarb-finance:provider {provider} ; iscarb-finance:nameEn {nameEn} ; iscarb-finance:nameAr {nameAr} ; iscarb-finance:descriptionEn {descriptionEn} ; iscarb-finance:descriptionAr {descriptionAr} ; iscarb-finance:type {type} ; iscarb-finance:stage {stage} ; iscarb-finance:sector {sector} ; iscarb-finance:amountNote {amountNote} ; iscarb-finance:url {url} ; iscarb-finance:active {active} ; iscarb-finance:createdAt {createdAt} .
+source		SELECT "id", "code", "provider", "nameEn", "nameAr", "descriptionEn", "descriptionAr", "type", "stage", "sector", "amountNote", "url", "active", "createdAt" FROM "FundingProgram"
+
+mappingId	fundingsave-mapping
+target		iscarb-finance:fundingsave/{id} a iscarb-finance:FundingSave ; iscarb-finance:id {id} ; iscarb-finance:studentId {studentId} ; iscarb-finance:programId {programId} ; iscarb-finance:status {status} ; iscarb-finance:notes {notes} ; iscarb-finance:createdAt {createdAt} ; iscarb-finance:updatedAt {updatedAt} .
+source		SELECT "id", "studentId", "programId", "status", "notes", "createdAt", "updatedAt" FROM "FundingSave"
+
+mappingId	fundingsave-has-program
+target		iscarb-finance:fundingsave/{id} iscarb-finance:program <https://iscarb.edu/ontology/core/fundingprogram/{programId}> .
+source		SELECT "id", "programId" FROM "FundingSave" WHERE "programId" IS NOT NULL
+
+mappingId	fundingsave-has-student
+target		iscarb-finance:fundingsave/{id} iscarb-finance:student <https://iscarb.edu/ontology/core/student/{studentId}> .
+source		SELECT "id", "studentId" FROM "FundingSave" WHERE "studentId" IS NOT NULL
+
+mappingId	researchfundingmetric-mapping
+target		iscarb-finance:researchfundingmetric/{id} a iscarb-finance:ResearchFundingMetric ; iscarb-finance:id {id} ; iscarb-finance:organizationId {organizationId} ; iscarb-finance:totalFunding {totalFunding} ; iscarb-finance:activeGrants {activeGrants} ; iscarb-finance:completedGrants {completedGrants} ; iscarb-finance:period {period} ; iscarb-finance:calculatedAt {calculatedAt} .
+source		SELECT "id", "organizationId", "totalFunding", "activeGrants", "completedGrants", "period", "calculatedAt" FROM "ResearchFundingMetric"
+
+mappingId	fundingapplication-mapping
+target		iscarb-finance:fundingapplication/{id} a iscarb-finance:FundingApplication ; iscarb-finance:id {id} ; iscarb-finance:studentId {studentId} ; iscarb-finance:fundingId {fundingId} ; iscarb-finance:status {status} ; iscarb-finance:appliedAt {appliedAt} ; iscarb-finance:reviewedAt {reviewedAt} ; iscarb-finance:decisionAt {decisionAt} ; iscarb-finance:essayResponses {essayResponses} .
+source		SELECT "id", "studentId", "fundingId", "status", "appliedAt", "reviewedAt", "decisionAt", "essayResponses" FROM "FundingApplication"
+
+]]
