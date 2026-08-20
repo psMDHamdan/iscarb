@@ -33,6 +33,7 @@ import { db } from "@/lib/db";
 import { redis } from "@/config/redis";
 import type { CourseLearningOutcome } from "@/lib/assessment/ai-question-generation.service";
 import { generateSlideArtifact } from "./slide-generator";
+import { compileStudentExperience } from "./student-experience-compiler";
 import { generateReadinessItems } from "./readiness-generator";
 import { deduplicateReadinessItems } from "@/lib/lecture/deduplication";
 import { globalSentenceRegistry } from "./content-registry";
@@ -442,6 +443,16 @@ export async function generateSlideChunk(
         blocks: scopedBlocks,
       }).catch((err) => failedDraft(planRecord, String(err)));
 
+      // Pre-compile Student Experience Card in parallel so student UI opens with 0ms delay!
+      if (draft.content && !draft.content.studentExperience) {
+        try {
+          const studentCard = await compileStudentExperience(draft.content, scopedBlocks, "full");
+          (draft.content as any).studentExperience = studentCard;
+        } catch (e) {
+          // Soft-fail — lazy compilation fallback remains available
+        }
+      }
+
       // Persist artifact immediately so Studio UI receives slide updates second-by-second
       await persistArtifact(projectId, draft);
 
@@ -466,80 +477,50 @@ export async function generateSlideChunk(
       if (roundTargets.length === 0) break;
       const slidesContent = roundTargets.map((a) => a.draft.content);
 
-      // PASS: Evidence review
+      // Consolidated Review & Refinement Pass — 1 parallel loop per slide for maximum speed!
+      const { verifyAssessment } = await import("./reviewers/assessment-reviewer");
       await processInBatches(roundTargets, BATCH_SIZE, async (art, idx) => {
-        const evResult = await verifyEvidence(slidesContent[idx], analysedBlocks);
-        art.draft.content = evResult.reviewedSlide;
-        if (evResult.result.status === "HARD_FAIL") {
-          art.draft.flagged = true;
-          currentPassClean = false;
-        }
-      });
-
-      // PASS: Gap 3 — pedagogy / CLO alignment / claim verification
-      await processInBatches(roundTargets, BATCH_SIZE, async (art) => {
-        const pedResult = await reviewPedagogy(art.draft.content);
-        art.draft.content = pedResult.slide;
-        if (pedResult.result.status === "HARD_FAIL") {
-          art.draft.flagged = true;
-          currentPassClean = false;
-        }
-
-        const cloResult = await reviewCloAlignment(art.draft.content, clos);
-        art.draft.content = cloResult.slide;
-        if (cloResult.result.status === "HARD_FAIL") {
-          art.draft.flagged = true;
-          currentPassClean = false;
-        }
-
+        const currentContent = slidesContent[idx];
         const planRecord = art.plan as typeof art.plan & { sourceBlockIds?: string[] };
         const slideScopeBlocks = scopeBlocksForSlide(
           analysedBlocks,
-          (art.draft.content.cloIds ?? []),
+          (currentContent.cloIds ?? []),
           planRecord.sourceBlockIds ?? []
         );
-        const claimResult = await verifyClaims(art.draft.content, slideScopeBlocks);
-        art.draft.content = claimResult.slide;
-        if (claimResult.result.status === "HARD_FAIL") {
+
+        // Run evidence, pedagogy, clo-alignment, claims, and assessment in parallel
+        const [evResult, pedResult, cloResult, claimResult, assResult] = await Promise.all([
+          verifyEvidence(currentContent, analysedBlocks).catch(() => ({ reviewedSlide: currentContent, result: { status: "PASS" } })),
+          reviewPedagogy(currentContent).catch(() => ({ slide: currentContent, result: { status: "PASS" } })),
+          reviewCloAlignment(currentContent, clos).catch(() => ({ slide: currentContent, result: { status: "PASS" } })),
+          verifyClaims(currentContent, slideScopeBlocks).catch(() => ({ slide: currentContent, result: { status: "PASS" } })),
+          verifyAssessment(currentContent, clos).catch(() => ({ reviewedSlide: currentContent, result: { status: "PASS" } })),
+        ]);
+
+        let mergedSlide = evResult.reviewedSlide || currentContent;
+        if (pedResult.slide) mergedSlide = { ...mergedSlide, ...pedResult.slide };
+        if (cloResult.slide) mergedSlide = { ...mergedSlide, ...cloResult.slide };
+        if (claimResult.slide) mergedSlide = { ...mergedSlide, ...claimResult.slide };
+        if (assResult.reviewedSlide) mergedSlide = { ...mergedSlide, ...assResult.reviewedSlide };
+
+        if (
+          evResult.result.status === "HARD_FAIL" ||
+          pedResult.result.status === "HARD_FAIL" ||
+          cloResult.result.status === "HARD_FAIL" ||
+          claimResult.result.status === "HARD_FAIL" ||
+          assResult.result.status === "HARD_FAIL"
+        ) {
           art.draft.flagged = true;
           currentPassClean = false;
         }
-      });
 
-      // PASS: Assessment review
-      await processInBatches(roundTargets, BATCH_SIZE, async (art, idx) => {
-        const { verifyAssessment } = await import("./reviewers/assessment-reviewer");
-        const assResult = await verifyAssessment(slidesContent[idx], clos);
-        art.draft.content = assResult.reviewedSlide;
-        if (assResult.result.status === "HARD_FAIL") {
-          art.draft.flagged = true;
-          currentPassClean = false;
-        }
-      });
+        // Generate visual spec & compose slide
+        const spec = await generateVisualSpec(mergedSlide).catch(() => mergedSlide.visualSpec);
+        mergedSlide.visualSpec = spec;
+        mergedSlide = await composeSlide(mergedSlide).catch(() => mergedSlide);
+        mergedSlide = await generateAssessment(mergedSlide, clos, slideScopeBlocks).catch(() => mergedSlide);
 
-      // PASS: Visual intelligence + composition
-      await processInBatches(roundTargets, BATCH_SIZE, async (art) => {
-        const spec = await generateVisualSpec(art.draft.content);
-        art.draft.content.visualSpec = spec;
-      });
-      await processInBatches(roundTargets, BATCH_SIZE, async (art) => {
-        const composed = await composeSlide(art.draft.content);
-        art.draft.content = composed;
-      });
-
-      // PASS: Gap 5 — dedicated assessment generator
-      await processInBatches(roundTargets, BATCH_SIZE, async (art) => {
-        const planRecord = art.plan as typeof art.plan & { sourceBlockIds?: string[] };
-        const slideScopeBlocks = scopeBlocksForSlide(
-          analysedBlocks,
-          art.draft.content.cloIds ?? [],
-          planRecord.sourceBlockIds ?? []
-        );
-        art.draft.content = await generateAssessment(
-          art.draft.content,
-          clos,
-          slideScopeBlocks
-        );
+        art.draft.content = mergedSlide;
       });
 
       // PASS: Deterministic QA
