@@ -80,7 +80,15 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
   const { data, isLoading, error } = useApiQuery<ArtifactsResponse>(
     ["lecture", "artifacts", id],
     `/api/iscarb/lecture/projects/${id}/artifacts`,
-    { enabled: !jobId, staleTime: 0 },
+    {
+      enabled: !!id,
+      staleTime: 0,
+      refetchInterval: (query) => {
+        if (query.state.status === "error" || query.state.error) return false;
+        const artifacts = query.state.data?.artifacts ?? [];
+        return !!jobId || (artifacts.length > 0 && artifacts.length < 20) ? 1500 : false;
+      },
+    },
   );
 
   // Live student projection — the SAME API + view model the student player renders,
@@ -88,7 +96,14 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
   const experienceQuery = useApiQuery<StudentExperienceViewModel>(
     ["lecture", "experience", id],
     `/api/iscarb/lecture/experience/PREVIEW_${id}`,
-    { enabled: !!id, staleTime: 0 },
+    {
+      enabled: !!id,
+      staleTime: 0,
+      refetchInterval: (query) => {
+        if (query.state.status === "error" || query.state.error) return false;
+        return !!jobId ? 2000 : false;
+      },
+    },
   );
   const currentStudentConcept = useMemo(() => {
     const exp = experienceQuery.data;
@@ -1040,7 +1055,7 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => router.push(`/faculty/lecture/${id}/inbox`)}
+                        onClick={() => { window.location.href = `/faculty/lecture/${id}/inbox`; }}
                         className="text-xs font-extrabold border-amber-300 text-amber-900 hover:bg-amber-100/60 rounded-xl h-9"
                       >
                         <ExternalLink className="mr-1.5 h-3.5 w-3.5 text-amber-700" />

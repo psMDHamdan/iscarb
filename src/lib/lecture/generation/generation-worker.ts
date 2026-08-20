@@ -230,7 +230,7 @@ function cleanRawBlocks(
   project: LectureProjectWithRelations
 ): { id: string; locator: string; text: string; criticality: string }[] {
   return project.sourceBlocks
-    .map((b) => {
+    .map((b: { id: string; locator: string; text: string; criticality: string }) => {
       const cleanedText = b.text
         .replace(
           /^(References|Table of Contents|Contents|Index|Foreword|Part [IVX]+|\d+\.\d+ References)[\s\S]*/i,
@@ -247,7 +247,7 @@ function cleanRawBlocks(
         criticality: b.criticality,
       };
     })
-    .filter((b) => {
+    .filter((b: { text: string }) => {
       const lower = b.text.toLowerCase();
       const isNoise =
         /^(references|table of contents|index|bibliography|foreword)\b/i.test(
@@ -295,7 +295,18 @@ async function getOrCreateAnalysis(
   if (Array.isArray(cached) && cached.length > 0) {
     return cached;
   }
-  let analysedBlocks: AnalysedBlock[] = rawBlocks;
+  let analysedBlocks: AnalysedBlock[] = rawBlocks.map((b) => ({
+    id: b.id,
+    locator: b.locator,
+    text: b.text,
+    criticality: b.criticality,
+    canonicalConcept: b.text.slice(0, 60),
+    conceptType: "definition" as const,
+    importance: (b.criticality === "critical" ? "critical" : "supporting") as ImportanceLevel,
+    prerequisiteConcepts: [],
+    likelyCloIds: [],
+    analysisNotes: "",
+  }));
   try {
     analysedBlocks = await analyseSourceBlocks(project.id, rawBlocks, clos);
   } catch (err) {
@@ -350,7 +361,7 @@ export async function generateSlideChunk(
       throw new Error(`Expected 20 approved slide plans, found ${slidePlans.length}`);
     }
 
-    const targets = slidePlans.filter((s) => slideNos.includes(s.slideNo));
+    const targets = slidePlans.filter((s: { slideNo: number }) => slideNos.includes(s.slideNo));
     if (targets.length === 0) return;
 
     const clos = cloList(project);
@@ -365,22 +376,22 @@ export async function generateSlideChunk(
       where: { projectId, disposition: "omitted" },
       select: { blockId: true },
     });
-    const omittedIds = new Set(omittedLinks.map((l) => l.blockId));
+    const omittedIds = new Set<string>(omittedLinks.map((l: { blockId: string }) => l.blockId));
     const boundPlans = bindUnmappedSourceBlocks(
-      slidePlans.map((p) => ({
+      slidePlans.map((p: any) => ({
         slideNo: p.slideNo,
         function: p.function,
         sourceBlockIds: [...((p as { sourceBlockIds?: string[] }).sourceBlockIds ?? [])],
       })),
-      analysedBlocks.map((b) => ({
+      analysedBlocks.map((b: AnalysedBlock) => ({
         id: b.id,
-        criticality: b.criticality === "critical" || b.importance === "critical" ? "critical" : b.criticality,
+        criticality: b.criticality === "critical" || b.importance === "critical" ? "critical" : b.criticality || "standard",
       })),
       omittedIds,
       slideNos,
     );
     for (const bound of boundPlans) {
-      const original = slidePlans.find((p) => p.slideNo === bound.slideNo);
+      const original = slidePlans.find((p: any) => p.slideNo === bound.slideNo);
       if (!original) continue;
       const before = JSON.stringify((original as { sourceBlockIds?: string[] }).sourceBlockIds ?? []);
       const after = JSON.stringify(bound.sourceBlockIds);
@@ -392,13 +403,19 @@ export async function generateSlideChunk(
       (original as { sourceBlockIds: string[] }).sourceBlockIds = bound.sourceBlockIds;
     }
 
-    let generatedArtifacts: { plan: (typeof targets)[0]; draft: SlideArtifactDraft }[] = [];
+    let generatedArtifacts: { plan: any; draft: SlideArtifactDraft }[] = [];
     let needsFacultyReview = false;
 
     // ── Core generation: each slide gets SCOPED blocks (Gap 4) ────────────
-    generatedArtifacts = await processInBatches(targets, BATCH_SIZE, async (plan, idx) => {
+    generatedArtifacts = await processInBatches(targets, BATCH_SIZE, async (plan: any, idx: number) => {
       // Gap 4: scope blocks to this slide only
-      const planRecord = plan as typeof plan & {
+      const planRecord = plan as {
+        id: string;
+        slideNo: number;
+        function: string;
+        title: string;
+        interactionType: string | null;
+        visualIntent: string | null;
         cloIds?: string[];
         sourceBlockIds?: string[];
       };
@@ -410,10 +427,13 @@ export async function generateSlideChunk(
         slideSourceBlockIds
       );
 
-      const draft = await generateSlideArtifact(project, plan, {
+      const draft = await generateSlideArtifact(project, planRecord, {
         clos,
         blocks: scopedBlocks,
-      }).catch((err) => failedDraft(plan, String(err)));
+      }).catch((err) => failedDraft(planRecord, String(err)));
+
+      // Persist artifact immediately so Studio UI receives slide updates second-by-second
+      await persistArtifact(projectId, draft);
 
       await setProgress(projectId, {
         status: "generating_slides",

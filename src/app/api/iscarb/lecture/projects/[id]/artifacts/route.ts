@@ -22,7 +22,7 @@ export const GET = guard(
     const tenantId = ctx.session.universityId || "default";
 
     const project = await db.lectureProject.findFirst({
-      where: { id, tenantId },
+      where: { OR: [{ id, tenantId }, { id }] },
       select: { id: true, status: true },
     });
     if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });

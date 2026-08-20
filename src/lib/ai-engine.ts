@@ -4,7 +4,7 @@ import "server-only";
 // iSCARB standardises on DeepSeek via the NVIDIA catalog. Override per-call
 // with the `model` option, or globally with OPENAI_CHAT_MODEL.
 export const DEFAULT_AI_MODEL =
-  process.env.OPENAI_CHAT_MODEL || "nvidia/nvidia-nemotron-nano-9b-v2";
+  process.env.OPENAI_CHAT_MODEL || "meta/llama-3.1-8b-instruct";
 
 // ─── NVIDIA Multi-Key Round-Robin Load Balancer ─────────────────────────
 let globalNvidiaKeyCounter = 0;
@@ -86,7 +86,7 @@ const MAX_RETRIES = RETRY_BASE_DELAYS_MS.length;
 // Serverless-friendly: a single model call must never burn the whole function
 // budget on a stall. 30s bounds the worst case while still allowing long
 // generation calls to complete on capable models.
-const FETCH_TIMEOUT_MS = 30_000;
+const FETCH_TIMEOUT_MS = 12_000;
 
 function getRetryDelay(attempt: number, retryAfter?: number): number {
   if (retryAfter && retryAfter > 0) {

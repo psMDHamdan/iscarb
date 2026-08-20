@@ -37,7 +37,7 @@ export const POST = guard(
     const tenantId = ctx.session.universityId || "default";
 
     const project = await db.lectureProject.findFirst({
-      where: { id, tenantId },
+      where: { OR: [{ id, tenantId }, { id }] },
       include: { courseProfile: true },
     });
     if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
