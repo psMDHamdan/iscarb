@@ -137,7 +137,12 @@ export function EmployabilityDetailedReportView({
     );
   }, [attempt.dimensionChapters, attempt.results, profile.dimensions]);
 
-  const certUrl = `/api/iscarb/assessment/certificate?studentId=${encodeURIComponent(attempt.studentId)}${specialization ? `&specialization=${encodeURIComponent(specialization)}` : ""}&score=${encodeURIComponent(attempt.profile.composite)}&name=${encodeURIComponent(studentName)}`;
+  // Prefer attempt-bound certificate when we have a real attempt id.
+  // Synthetic `live_*` ids come from toAttemptSnapshotView without a DB attempt.
+  const certUrl =
+    attempt.id && !attempt.id.startsWith("live_")
+      ? `/api/iscarb/assessment/attempts/${encodeURIComponent(attempt.id)}/certificate`
+      : `/api/iscarb/assessment/certificate`;
 
   const [isDownloading, setIsDownloading] = useState(false);
   const [openDimension, setOpenDimension] = useState<string | null>(null);

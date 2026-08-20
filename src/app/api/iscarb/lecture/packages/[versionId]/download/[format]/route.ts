@@ -24,6 +24,7 @@ import { renderPDF } from "@/lib/lecture/renderer/pdf-renderer";
 import { renderInstructorGuideDOCX } from "@/lib/lecture/renderer/instructor-guide-renderer";
 import { renderEvidencePackPDF } from "@/lib/lecture/renderer/evidence-pack-renderer";
 import { deduplicateSlideArtifacts, deduplicateReadinessItems } from "@/lib/lecture/deduplication";
+import { getScopedProject } from "@/lib/lecture/review/tenant-guard";
 
 async function buildEvidenceData(
   projectId: string,
@@ -82,19 +83,19 @@ export const GET = guard(
     { params }: { params: Promise<{ versionId: string; format: string }> }
   ) => {
     const { versionId, format: formatId } = await params;
-    const tenantId = ctx.session.universityId ?? null;
+    const tenantId = ctx.session.universityId || "default";
 
     const version = await db.lecturePackageVersion.findUnique({
       where: { id: versionId },
-      include: { project: { select: { tenantId: true, title: true, courseProfileId: true } } },
+      include: { project: { select: { id: true, tenantId: true, title: true, courseProfileId: true } } },
     });
 
     if (!version) {
       return NextResponse.json({ error: "Package version not found" }, { status: 404 });
     }
 
-    // Tenant scoping (AC-11): university members scoped, unscoped sessions pass.
-    if (tenantId && version.project.tenantId !== tenantId && version.project.tenantId !== "default") {
+    const scoped = await getScopedProject(version.projectId, tenantId, ctx.session.userId);
+    if (!scoped) {
       return NextResponse.json({ error: "Package version not found" }, { status: 404 });
     }
 

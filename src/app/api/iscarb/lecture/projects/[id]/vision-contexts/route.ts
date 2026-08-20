@@ -12,6 +12,7 @@ import { NextResponse } from "next/server";
 import { guard, type GuardContext } from "@/lib/api-guard";
 import { db } from "@/lib/db";
 import { fetchVisionContexts } from "@/lib/lecture/generation/vision-context-fetcher";
+import { getScopedProject } from "@/lib/lecture/review/tenant-guard";
 
 /** True when a REAL, approved vision2030 snapshot exists (AC-17). */
 async function hasApprovedVisionSnapshot(): Promise<boolean> {
@@ -56,11 +57,11 @@ export const GET = guard(
     const { id } = await params;
     const tenantId = ctx.session.universityId || "default";
 
-    const project = await db.lectureProject.findFirst({ where: { id } });
+    const scoped = await getScopedProject(id, tenantId, ctx.session.userId);
+    if (!scoped) return NextResponse.json({ error: "Project not found" }, { status: 404 });
+
+    const project = await db.lectureProject.findFirst({ where: { id: scoped.id } });
     if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
-    if (project.tenantId && project.tenantId !== tenantId && tenantId !== "default" && project.tenantId !== "default") {
-      return NextResponse.json({ error: "Unauthorized tenant access" }, { status: 403 });
-    }
 
     let contexts = await db.lectureVisionContext.findMany({
       where: { projectId: id },
@@ -156,14 +157,14 @@ export const POST = guard(
     const { id } = await params;
     const tenantId = ctx.session.universityId || "default";
 
+    const scoped = await getScopedProject(id, tenantId, ctx.session.userId);
+    if (!scoped) return NextResponse.json({ error: "Project not found" }, { status: 404 });
+
     const project = await db.lectureProject.findFirst({
-      where: { id },
+      where: { id: scoped.id },
       include: { courseProfile: true },
     });
     if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
-    if (project.tenantId && project.tenantId !== tenantId && tenantId !== "default" && project.tenantId !== "default") {
-      return NextResponse.json({ error: "Unauthorized tenant access" }, { status: 403 });
-    }
 
     const synced = await hasApprovedVisionSnapshot();
     if (!synced) {

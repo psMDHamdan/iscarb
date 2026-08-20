@@ -12,6 +12,7 @@ import { db } from "@/lib/db";
 import { deduplicateReadinessItems } from "@/lib/lecture/deduplication";
 import { generateReadinessItems } from "@/lib/lecture/generation/readiness-generator";
 import type { ReadinessItemJson } from "@/lib/lecture/generation/types";
+import { getScopedProject } from "@/lib/lecture/review/tenant-guard";
 
 export const GET = guard(
   { tier: "read", roles: ["faculty", "admin"] },
@@ -23,14 +24,14 @@ export const GET = guard(
     const { id } = await params;
     const tenantId = ctx.session.universityId || "default";
 
+    const scoped = await getScopedProject(id, tenantId, ctx.session.userId);
+    if (!scoped) return NextResponse.json({ error: "Project not found" }, { status: 404 });
+
     const project = await db.lectureProject.findFirst({
-      where: { id },
-      select: { id: true, tenantId: true, nationalAlignmentMode: true },
+      where: { id: scoped.id },
+      select: { id: true, nationalAlignmentMode: true },
     });
     if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
-    if (project.tenantId && project.tenantId !== tenantId && tenantId !== "default" && project.tenantId !== "default") {
-      return NextResponse.json({ error: "Unauthorized tenant access" }, { status: 403 });
-    }
 
     const rawItems = await db.lectureReadinessItem.findMany({
       where: { projectId: id },
@@ -68,8 +69,11 @@ export const POST = guard(
     const { id } = await params;
     const tenantId = ctx.session.universityId || "default";
 
+    const scoped = await getScopedProject(id, tenantId, ctx.session.userId);
+    if (!scoped) return NextResponse.json({ error: "Project not found" }, { status: 404 });
+
     const project = await db.lectureProject.findFirst({
-      where: { id },
+      where: { id: scoped.id },
       include: {
         courseProfile: true,
         sourceBlocks: true,
@@ -80,9 +84,6 @@ export const POST = guard(
 
     if (!project) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
-    }
-    if (project.tenantId && project.tenantId !== tenantId && tenantId !== "default" && project.tenantId !== "default") {
-      return NextResponse.json({ error: "Unauthorized tenant access" }, { status: 403 });
     }
 
     // Generate readiness items using the engine

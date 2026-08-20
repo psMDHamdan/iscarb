@@ -19,6 +19,7 @@ import { z } from "zod";
 import { generationJobKey } from "@/lib/lecture/generation/generation-worker";
 import { enqueueGeneration } from "@/lib/lecture/queue";
 import { redis } from "@/config/redis";
+import { getScopedProject } from "@/lib/lecture/review/tenant-guard";
 
 const bodySchema = z.object({
   slideNos: z.array(z.number().int().min(1).max(20)).optional(),
@@ -36,8 +37,11 @@ export const POST = guard(
     const { id } = await params;
     const tenantId = ctx.session.universityId || "default";
 
+    const scoped = await getScopedProject(id, tenantId, ctx.session.userId);
+    if (!scoped) return NextResponse.json({ error: "Project not found" }, { status: 404 });
+
     const project = await db.lectureProject.findFirst({
-      where: { OR: [{ id, tenantId }, { id }] },
+      where: { id: scoped.id },
       include: { courseProfile: true },
     });
     if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });

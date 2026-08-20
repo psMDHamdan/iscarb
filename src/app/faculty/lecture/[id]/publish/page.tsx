@@ -110,10 +110,7 @@ export default function PublishPage({
       let vid = versionId || lastPublishedId;
       if (!vid) {
         try {
-          const result = await publish.mutateAsync({
-            approveAll: true,
-            force: true,
-          });
+          const result = await publish.mutateAsync({});
           vid = result?.versionId;
         } catch {
           // If version exists, proceed to download
@@ -238,9 +235,7 @@ export default function PublishPage({
 
               <div className="shrink-0">
                 <Button
-                  onClick={() =>
-                    publish.mutate({ approveAll: true, force: true })
-                  }
+                  onClick={() => publish.mutate({})}
                   disabled={
                     publish.isPending ||
                     (!r.canPublish && r.projectStatus !== "approved")

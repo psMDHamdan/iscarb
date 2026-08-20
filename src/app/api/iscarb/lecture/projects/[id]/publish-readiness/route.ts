@@ -38,7 +38,7 @@ export const GET = guard(
       // Get all gate results for summary
       db.lectureGateResult.findMany({
         where: { projectId: id },
-        orderBy: { createdAt: "desc" },
+        orderBy: { checkedAt: "desc" },
         select: {
           gateKey: true,
           status: true,
@@ -88,10 +88,11 @@ export const GET = guard(
 
     // Gate summary
     const gateSummary = {
-      total: allGates.length,      pass: allGates.filter((g: { status: string }) => g.status === "pass").length,
-        fail: allGates.filter((g: { status: string }) => g.status === "fail").length,
-        warn: allGates.filter((g: { status: string }) => g.status === "warn").length,
-        waive: allGates.filter((g: { status: string }) => g.status === "waive").length,
+      total: allGates.length,
+      pass: allGates.filter((g: { status: string }) => g.status === "pass").length,
+      fail: allGates.filter((g: { status: string }) => g.status === "fail").length,
+      warn: allGates.filter((g: { severity: string }) => g.severity === "warning").length,
+      waive: allGates.filter((g: { status: string }) => g.status === "waived").length,
     };
 
     // Artifact summary
@@ -118,7 +119,7 @@ export const GET = guard(
       gateSummary,
       artifactSummary,
       readinessSummary,
-      versions: versions.map((v: { id: string; version: number; status: string; manifestHash: string | null; approvedAt: Date | null; approvedBy: string }) => ({
+      versions: versions.map((v: { id: string; version: number; status: string; manifestHash: string | null; approvedAt: Date | null; approvedBy: string | null }) => ({
         id: v.id,
         version: v.version,
         status: v.status,

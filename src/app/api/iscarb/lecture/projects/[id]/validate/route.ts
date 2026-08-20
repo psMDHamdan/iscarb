@@ -18,9 +18,9 @@
 import { NextResponse } from "next/server";
 import { guard, type GuardContext } from "@/lib/api-guard";
 import { z } from "zod";
-import { db } from "@/lib/db";
 import { runAllGates } from "@/lib/lecture/quality/gate-runner";
 import { type GateKey, type GateResult, GATE_KEYS } from "@/lib/lecture/quality/types";
+import { getScopedProject } from "@/lib/lecture/review/tenant-guard";
 
 const bodySchema = z.object({
   gates: z.array(z.enum(GATE_KEYS as unknown as [string, ...string[]])).optional(),
@@ -37,14 +37,8 @@ export const POST = guard(
       const { id } = await params;
       const tenantId = ctx.session.universityId || "default";
 
-      const project = await db.lectureProject.findFirst({
-        where: { id },
-        select: { id: true, tenantId: true },
-      });
-      if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
-      if (project.tenantId && project.tenantId !== tenantId && tenantId !== "default" && project.tenantId !== "default") {
-        return NextResponse.json({ error: "Unauthorized tenant access" }, { status: 403 });
-      }
+      const scoped = await getScopedProject(id, tenantId, ctx.session.userId);
+      if (!scoped) return NextResponse.json({ error: "Project not found" }, { status: 404 });
 
       const body = await req.json().catch(() => ({}));
       const parsed = bodySchema.safeParse(body ?? {});

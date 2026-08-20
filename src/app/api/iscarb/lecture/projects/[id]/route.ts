@@ -10,6 +10,7 @@ import { guard, type GuardContext } from "@/lib/api-guard";
 import { db } from "@/lib/db";
 import { z } from "zod";
 import { resolveJaheziahMode } from "@/lib/lecture/planner/jaheziah-resolver";
+import { getScopedProject } from "@/lib/lecture/review/tenant-guard";
 
 const updateSchema = z.object({
   title: z.string().min(1).max(200).optional(),
@@ -22,15 +23,12 @@ const updateSchema = z.object({
 
 async function getProject(ctx: GuardContext, id: string) {
   const tenantId = ctx.session.universityId || "default";
-  const project = await db.lectureProject.findFirst({
-    where: { id },
+  const scoped = await getScopedProject(id, tenantId, ctx.session.userId);
+  if (!scoped) return null;
+  return db.lectureProject.findFirst({
+    where: { id: scoped.id },
     include: { courseProfile: true, sourceDocuments: true },
   });
-  if (!project) return null;
-  if (project.tenantId && project.tenantId !== tenantId && tenantId !== "default" && project.tenantId !== "default") {
-    return null;
-  }
-  return project;
 }
 
 export const GET = guard(

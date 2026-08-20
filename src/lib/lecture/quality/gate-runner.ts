@@ -57,7 +57,6 @@ async function loadGateData(projectId: string): Promise<GateData> {
       select: {
         id: true,
         slideNo: true,
-        status: true,
         approved: true,
         createdAt: true,
         updatedAt: true,
@@ -74,28 +73,10 @@ async function loadGateData(projectId: string): Promise<GateData> {
     }).catch(() => []),
   ]);
 
-  let uniqueArtifacts = deduplicateSlideArtifacts(artifacts);
-  let uniqueReadiness = deduplicateReadinessItems(readinessItems);
+  const uniqueArtifacts = deduplicateSlideArtifacts(artifacts);
+  const uniqueReadiness = deduplicateReadinessItems(readinessItems);
 
-  if (uniqueReadiness.length === 0) {
-    try {
-      await db.lectureReadinessItem.createMany({
-        data: [
-          { projectId, slideNo: 6, alignmentMode: "COURSE_READINESS", stem: "Which key requirement protects site-specific control?", options: ["Targeting precision", "Random insertion", "Unregulated cleavage", "Manual assembly"], correctIndex: 0, difficulty: "intermediate", rationale: "Precision ensures off-target effects are minimized." },
-          { projectId, slideNo: 10, alignmentMode: "COURSE_READINESS", stem: "How do we evaluate trade-offs in experimental design?", options: ["Quantify risk vs return", "Ignore side effects", "Skip validation", "Rely on intuition"], correctIndex: 0, difficulty: "intermediate", rationale: "Risk quantification is critical for clinical translation." },
-          { projectId, slideNo: 14, alignmentMode: "COURSE_READINESS", stem: "What is the primary action during workshop practice?", options: ["Active protocol execution", "Passive reading", "Memorization", "Hypothetical guessing"], correctIndex: 0, difficulty: "advanced", rationale: "Active execution solidifies conceptual understanding." },
-          { projectId, slideNo: 20, alignmentMode: "COURSE_READINESS", stem: "Final Capstone Gate: Which evidence best proves mastery?", options: ["Triangulation of product, process & explanation", "Single quiz score", "Attendance record", "Slide count"], correctIndex: 0, difficulty: "advanced", rationale: "iSCARB requires product, process, and explanation evidence." },
-        ],
-      });
-      const freshReadiness = await db.lectureReadinessItem.findMany({
-        where: { projectId },
-        select: { id: true, slideNo: true, status: true, approved: true, createdAt: true, updatedAt: true },
-      });
-      uniqueReadiness = deduplicateReadinessItems(freshReadiness);
-    } catch {
-      uniqueReadiness = [{ slideNo: 6 }, { slideNo: 10 }, { slideNo: 14 }, { slideNo: 20 }] as any;
-    }
-  }
+  // BRD honesty: never invent readiness items. Empty set → GATE-08 fails.
 
   return {
     plans: (plans as any[]).map((p) => ({

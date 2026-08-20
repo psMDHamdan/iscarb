@@ -8,6 +8,7 @@ import { NextResponse } from "next/server";
 import { guard, type GuardContext } from "@/lib/api-guard";
 import { db } from "@/lib/db";
 import { resolveJaheziahMode, type StandardSnapshot } from "@/lib/lecture/planner/jaheziah-resolver";
+import { getScopedProject } from "@/lib/lecture/review/tenant-guard";
 
 /**
  * Honesty contract (NFR-11/12, AC-17): a Jaheziah standard is only a real
@@ -19,15 +20,9 @@ async function loadRealStandards(): Promise<StandardSnapshot[]> {
     where: { sourceKey: "jaheziah", approvalStatus: "approved" },
     select: { id: true },
   });
-  if (approved.length === 0) {
-    return [
-      { specialtyKey: "Biotechnology & Life Sciences (SKU 4.1)", createdAt: new Date() },
-      { specialtyKey: "Software Engineering (SKU 8.2)", createdAt: new Date() },
-      { specialtyKey: "Cybersecurity & Information Assurance", createdAt: new Date() },
-      { specialtyKey: "Computer Science & Artificial Intelligence", createdAt: new Date() },
-      { specialtyKey: "General Academic", createdAt: new Date() },
-    ];
-  }
+  // AC-17 / NFR-11: no approved snapshots ⇒ empty list only.
+  // resolveJaheziahMode([]) yields COURSE_READINESS — never fabricate specialties.
+  if (approved.length === 0) return [];
   const ids = approved.map((s: { id: string }) => s.id);
   return db.nationalStandard.findMany({
     where: { snapshotId: { in: ids } },
@@ -43,9 +38,13 @@ export const GET = guard(
     { params }: { params: Promise<{ id: string }> }
   ) => {
     const { id } = await params;
+    const tenantId = ctx.session.universityId || "default";
+
+    const scoped = await getScopedProject(id, tenantId, ctx.session.userId);
+    if (!scoped) return NextResponse.json({ error: "Project not found" }, { status: 404 });
 
     const project = await db.lectureProject.findUnique({
-      where: { id },
+      where: { id: scoped.id },
       include: { courseProfile: true },
     });
     if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
@@ -102,9 +101,13 @@ export const POST = guard(
     { params }: { params: Promise<{ id: string }> }
   ) => {
     const { id } = await params;
+    const tenantId = ctx.session.universityId || "default";
+
+    const scoped = await getScopedProject(id, tenantId, ctx.session.userId);
+    if (!scoped) return NextResponse.json({ error: "Project not found" }, { status: 404 });
 
     const project = await db.lectureProject.findUnique({
-      where: { id },
+      where: { id: scoped.id },
       include: { courseProfile: true },
     });
     if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });

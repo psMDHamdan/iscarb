@@ -17,6 +17,7 @@ import { db } from "@/lib/db";
 import { z } from "zod";
 import { assertClosApproved } from "@/lib/lecture/planner/clo-validator";
 import { enqueuePlan } from "@/lib/lecture/queue";
+import { getScopedProject } from "@/lib/lecture/review/tenant-guard";
 
 const bodySchema = z.object({
   regenerate: z.boolean().optional(),
@@ -33,8 +34,11 @@ export const GET = guard(
     const { id } = await params;
     const tenantId = ctx.session.universityId || "default";
 
+    const scoped = await getScopedProject(id, tenantId, ctx.session.userId);
+    if (!scoped) return NextResponse.json({ error: "Project not found" }, { status: 404 });
+
     const project = await db.lectureProject.findUnique({
-      where: { id },
+      where: { id: scoped.id },
       include: { courseProfile: true },
     });
     if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
@@ -67,8 +71,11 @@ export const POST = guard(
     const { id } = await params;
     const tenantId = ctx.session.universityId || "default";
 
+    const scoped = await getScopedProject(id, tenantId, ctx.session.userId);
+    if (!scoped) return NextResponse.json({ error: "Project not found" }, { status: 404 });
+
     const project = await db.lectureProject.findUnique({
-      where: { id },
+      where: { id: scoped.id },
       include: { courseProfile: true },
     });
     if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });

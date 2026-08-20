@@ -10,6 +10,7 @@ import { NextResponse } from "next/server";
 import { guard, type GuardContext } from "@/lib/api-guard";
 import { db } from "@/lib/db";
 import { deduplicateSlideArtifacts } from "@/lib/lecture/deduplication";
+import { getScopedProject } from "@/lib/lecture/review/tenant-guard";
 
 export const GET = guard(
   { tier: "read", roles: ["faculty", "admin"] },
@@ -21,8 +22,11 @@ export const GET = guard(
     const { id } = await params;
     const tenantId = ctx.session.universityId || "default";
 
+    const scoped = await getScopedProject(id, tenantId, ctx.session.userId);
+    if (!scoped) return NextResponse.json({ error: "Project not found" }, { status: 404 });
+
     const project = await db.lectureProject.findFirst({
-      where: { OR: [{ id, tenantId }, { id }] },
+      where: { id: scoped.id },
       select: { id: true, status: true },
     });
     if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
@@ -52,17 +56,22 @@ export const PATCH = guard(
     { params }: { params: Promise<{ id: string }> }
   ) => {
     const { id } = await params;
+    const tenantId = ctx.session.universityId || "default";
+
+    const scoped = await getScopedProject(id, tenantId, ctx.session.userId);
+    if (!scoped) return NextResponse.json({ error: "Project not found" }, { status: 404 });
+
     const body = await req.json();
     const { artifactId, slideNo, visualSpec, contentJson } = body;
 
     let artifact = null;
     if (artifactId) {
-      artifact = await db.lectureSlideArtifact.findUnique({
-        where: { id: artifactId },
+      artifact = await db.lectureSlideArtifact.findFirst({
+        where: { id: artifactId, projectId: scoped.id },
       });
     } else if (slideNo !== undefined) {
       artifact = await db.lectureSlideArtifact.findFirst({
-        where: { projectId: id, slideNo: Number(slideNo) },
+        where: { projectId: scoped.id, slideNo: Number(slideNo) },
         orderBy: { version: "desc" },
       });
     }
