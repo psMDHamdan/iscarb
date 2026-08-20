@@ -85,11 +85,8 @@ export function guard(
         }
       }
       // 2.5. Pre-validate session fields required by student routes
-      // Only when the caller IS a student (not when student is merely an allowed role).
-      if (session.role === "student" && !session.studentId) {
-        log.warn({ route, method }, "student role missing studentId");
-        return jsonError("Student ID not found in session", 400);
-      }
+      // Bypassed: We now rely on enrichSessionStudentId to lazily auto-create and bind student rows
+      // so new student sign-ups don't crash before their JWT gets updated.
       // 2.6. Set tenant context for RLS policies (Section 11.1.1)
       await setTenantContext(session.universityId);
       // 3. Rate limit
