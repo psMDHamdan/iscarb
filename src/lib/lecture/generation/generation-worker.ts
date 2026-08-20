@@ -54,7 +54,7 @@ import { reviewCloAlignment } from "./reviewers/clo-alignment-reviewer";
 import { verifyClaims } from "./reviewers/claim-verifier";
 
 // New pipeline steps
-import { analyseSourceBlocks, scopeBlocksForSlide, type AnalysedBlock } from "./source-analyst";
+import { analyseSourceBlocks, scopeBlocksForSlide, type AnalysedBlock, type ImportanceLevel } from "./source-analyst";
 import { generateAssessment } from "./assessment-generator";
 import { bindUnmappedSourceBlocks, persistHandoffsFromGenerate } from "./persist-handoffs";
 import { applyGenerateQualityPass } from "./generate-quality-pass";
