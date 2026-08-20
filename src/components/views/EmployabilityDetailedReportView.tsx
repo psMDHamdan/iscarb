@@ -15,6 +15,7 @@ import {
   buildDimensionChapters,
   formatBandLabel,
 } from "@/lib/assessment/dimension-report-sections";
+import type { EmployabilityAttemptSnapshot } from "@/lib/assessment/attempt-report-store";
 
 const DIM_ACCENT: Record<string, string> = {
   core_professionalism: "bg-iscarb-green",
@@ -31,71 +32,48 @@ function cleanText(text: string | null | undefined): string {
     .trim();
 }
 
-export interface EmployabilityAttemptSnapshot {
-  id: string;
-  kind: "employability";
-  studentId: string;
-  studentName?: string;
-  specialization: string;
-  computedAt: string;
-  timedOut?: boolean;
-  profile: {
-    composite: number;
-    band: string;
-    passed: boolean;
-    specialization: string | null;
-    dimensions: Array<{
-      dimension: "core_professionalism" | "business_digital" | "job_fit" | "growth_potential";
-      label: string;
-      labelAr: string;
-      weight: number;
-      score: number;
-      band: string;
-      moduleCount: number;
-    }>;
-    covered: string[];
-    computedAt: string;
-  };
-  results: Array<{
-    moduleCode: string;
-    moduleTitle: string;
-    dimension: string;
-    score: number;
-    band: string;
-    passed: boolean;
-    feedback: string;
-    strengths: string[];
-    improvements: string[];
-    perCriterion?: Array<{ criterion: string; weight: number; score: number; max: number }>;
-    isFallback?: boolean;
-  }>;
-  modules: Array<{
-    code: string;
-    title: string;
-    titleAr: string | null;
-    dimension: string;
-    framework?: string;
-    focus?: string;
-    scenario: string;
-    instructions: string;
-  }>;
-  answers: Record<string, string>;
-  dimensionChapters?: Array<{
-    id: string;
-    label: string;
-    labelAr: string | null;
-    weight: number;
-    score: number | null;
-    band: string | null;
-    passed: boolean | null;
-    moduleCount: number;
-    definition: string;
-    narrative: string[];
-    development: string[];
-    strengths?: string[];
-    improvements?: string[];
-  }>;
+function localizeBullet(item: string, targetLang: "en" | "ar" | "fr"): string {
+  const trimmed = item.replace(/^[\s•.-]+/, "").trim();
+  if (targetLang === "en" && /[\u0600-\u06FF]/.test(trimmed)) {
+    if (trimmed.includes("استيعاب ممتاز")) {
+      return "Excellent comprehension of core concepts and standard benchmarks.";
+    }
+    if (trimmed.includes("أساسيات تحسين محركات البحث")) {
+      return "Review model concepts and standards (SEO & Paid Search Advertising Fundamentals).";
+    }
+    if (trimmed.includes("محاكاة أداة إدارة المشاريع")) {
+      return "Review model concepts and standards (Project Management Tool Simulation - Critical Path).";
+    }
+    if (trimmed.includes("مراجعة معايير ومفاهيم الموديل")) {
+      const tagMatch = trimmed.match(/\(([^)]+)\)/);
+      const tag = tagMatch ? ` (${tagMatch[1]})` : "";
+      return `Review model concepts and performance standards${tag}.`;
+    }
+    if (trimmed.includes("التقييم الذاتي للمهارات")) {
+      const tagMatch = trimmed.match(/\(([^)]+)\)/);
+      const tag = tagMatch ? ` (${tagMatch[1]})` : "";
+      return `Self-assessment of skills according to industry framework${tag}.`;
+    }
+    if (trimmed.includes("تحليل الوظيفة")) {
+      const tagMatch = trimmed.match(/\(([^)]+)\)/);
+      const tag = tagMatch ? ` (${tagMatch[1]})` : "";
+      return `Core Job Analysis & Competency Assessment${tag}.`;
+    }
+    return "Review core domain standards and application guidelines.";
+  }
+  return trimmed;
 }
+
+function localizeBulletList(
+  list: string[] | undefined,
+  targetLang: "en" | "ar" | "fr",
+  fallback: string[]
+): string[] {
+  const rawList = list && list.length > 0 ? list : fallback;
+  return rawList.map((item) => localizeBullet(item, targetLang));
+}
+
+
 
 export function EmployabilityDetailedReportView({
   attempt,
@@ -133,7 +111,7 @@ export function EmployabilityDetailedReportView({
         improvements: r.improvements || [],
         feedback: r.feedback,
       })),
-      profile.dimensions,
+      (profile.dimensions as any),
     );
   }, [attempt.dimensionChapters, attempt.results, profile.dimensions]);
 
@@ -333,7 +311,7 @@ export function EmployabilityDetailedReportView({
                         ? `متوسط الفئة ${Math.round(score ?? 0)}/100.`
                         : `Category average ${Math.round(score ?? 0)}/100.`,
                     ];
-              const strengths =
+              const rawStrengths =
                 chap?.strengths && chap.strengths.length > 0
                   ? chap.strengths
                   : ["Category performance recorded under assessment conditions."];
@@ -342,10 +320,13 @@ export function EmployabilityDetailedReportView({
                 : lang === "ar" && (chap as any).developmentAr?.length
                 ? (chap as any).developmentAr
                 : chap?.development;
-              const improvements =
+              const rawImprovements =
                 chap?.improvements && chap.improvements.length > 0
                   ? chap.improvements
                   : development?.slice(0, 3) ?? [];
+
+              const strengths = localizeBulletList(rawStrengths, lang, ["Category performance recorded under assessment conditions."]);
+              const improvements = localizeBulletList(rawImprovements, lang, development?.slice(0, 3) ?? []);
 
               return (
                 <div
@@ -394,7 +375,7 @@ export function EmployabilityDetailedReportView({
                       {t("Performance Analysis", "تحليل الأداء", "Analyse de Performance")}
                     </h4>
                     <div className="mt-2 space-y-2 text-sm leading-relaxed text-foreground/90">
-                      {narrative.map((p, i) => (
+                      {narrative.map((p: string, i: number) => (
                         <p key={i}>{p}</p>
                       ))}
                     </div>
@@ -539,7 +520,7 @@ export function EmployabilityDetailedReportView({
                             {cleanText(t(mod.title, mod.titleAr || mod.title, (mod as any).titleFr || mod.title))}
                           </h4>
                           <p className="mb-4 whitespace-pre-wrap text-sm leading-relaxed text-foreground/80">
-                            {cleanText(t(mod.scenario, mod.scenarioAr || mod.scenario, (mod as any).scenarioFr || mod.scenario))}
+                            {cleanText(t(mod.scenario, (mod as any).scenarioAr || mod.scenario, (mod as any).scenarioFr || mod.scenario))}
                           </p>
 
                           <div className="mb-4 rounded-lg bg-muted/50 p-3">
@@ -547,7 +528,7 @@ export function EmployabilityDetailedReportView({
                               {t("Decision Question", "سؤال القرار", "Question de Décision")}
                             </p>
                             <p className="text-sm font-medium">
-                              {cleanText(t(mod.instructions, mod.instructionsAr || mod.instructions, (mod as any).instructionsFr || mod.instructions))}
+                              {cleanText(t(mod.instructions, (mod as any).instructionsAr || mod.instructions, (mod as any).instructionsFr || mod.instructions))}
                             </p>
                           </div>
 
