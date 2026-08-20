@@ -49,10 +49,9 @@ export const liveGenerationEnabled = (): boolean =>
 const CACHE_TTL_MS = 6 * 60 * 60_000;
 
 /** Cap parallel batched LLM calls across NVIDIA key pool.
- * 5 = number of NVIDIA keys (ai-engine round-robin sweet spot; higher
- * concurrency caused 429s / 100–185s spikes). Also lets later batches
- * deterministically receive fingerprints of earlier scenarios. */
-const GENERATION_CONCURRENCY = 5;
+ * We now allow up to 40 concurrent requests to maximize throughput across 5 API keys
+ * and generate the entire 47-question exam in a single wave. */
+const GENERATION_CONCURRENCY = 40;
 
 /** Wall-clock budget for one module's generation (incl. retries). */
 const MODULE_BUDGET_MS = 600_000;
@@ -212,7 +211,7 @@ export async function resolveExamModulesFromLiveGeneration(
           const out = await generateModuleQuestion(module, specialization, []);
           // The input module was flagged generation_failed — never carry its
           // stale error/flag onto the freshly generated twin.
-          return { ...out, contentSource: "live_ai" as const, generationError: null };
+          return { ...out, contentSource: "live_ai", generationError: null } as LiveExamModule;
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           log.warn({ specialization, code: module.code, error: msg }, "live exam retry failed again");
@@ -220,7 +219,7 @@ export async function resolveExamModulesFromLiveGeneration(
             ...module,
             contentSource: "generation_failed",
             generationError: msg.slice(0, 300),
-          };
+          } as LiveExamModule;
         }
       },
     );
@@ -228,12 +227,12 @@ export async function resolveExamModulesFromLiveGeneration(
     // (all errors are caught), so unwrap to the plain regenerated modules.
     const regenerated: LiveExamModule[] = settled.map((g, i) =>
       g.status === "fulfilled"
-        ? g.value
-        : {
+        ? (g.value as LiveExamModule)
+        : ({
             ...failed[i]!,
             contentSource: "generation_failed",
             generationError: "generation worker failed",
-          },
+          } as LiveExamModule),
     );
     // Replace each failed module with its regenerated twin, preserving the
     // original order and all successful modules untouched.

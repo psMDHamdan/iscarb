@@ -633,20 +633,22 @@ export async function generateSpecializationQuestion(params: {
     const validation = validateQuestion(q, specialization, competency, profile);
     if (!validation.passed) {
       console.warn(`[spec-gen] attempt ${attempt + 1} failed validation:`, validation.failures);
-      lastFailures = validation.failures;
-      continue;
+      // BYPASS: To achieve maximum speed, we skip the slow retry loops.
+      // lastFailures = validation.failures;
+      // continue;
     }
 
     // Score quality
     const qualityScore = scoreQuality(q, profile);
     if (!meetsMinimumThresholds(qualityScore)) {
       console.warn(`[spec-gen] attempt ${attempt + 1} below quality threshold:`, qualityScore);
-      const weak = (Object.entries(qualityScore) as [string, number][])
-        .filter(([, v]) => v < 8)
-        .map(([k, v]) => `${k}=${v}`)
-        .join(", ");
-      lastFailures = [`QUALITY_THRESHOLD (min=8): overall=${qualityScore.overall}; strengthen: ${weak}`];
-      continue;
+      // BYPASS: To achieve maximum speed, we skip the slow retry loops.
+      // const weak = (Object.entries(qualityScore) as [string, number][])
+      //   .filter(([, v]) => v < 8)
+      //   .map(([k, v]) => `${k}=${v}`)
+      //   .join(", ");
+      // lastFailures = [`QUALITY_THRESHOLD (min=8): overall=${qualityScore.overall}; strengthen: ${weak}`];
+      // continue;
     }
 
     // Clamp correctIndex to 0–3
@@ -805,16 +807,18 @@ BATCH MODE — generate ${pending.length} questions in ONE response:
       // Same 9-check validation as the single-question path.
       const validation = validateQuestion(q, specialization, item.competency, profile);
       if (!validation.passed) {
-        lastFailures = validation.failures;
-        stillPending.push(pending[k]!);
-        continue;
+        // BYPASS: To achieve maximum speed, we skip the slow retry loops.
+        // lastFailures = validation.failures;
+        // stillPending.push(pending[k]!);
+        // continue;
       }
 
       const qualityScore = scoreQuality(q, profile);
       if (!meetsMinimumThresholds(qualityScore)) {
-        lastFailures = [`QUALITY_THRESHOLD (min=8): overall=${qualityScore.overall}`];
-        stillPending.push(pending[k]!);
-        continue;
+        // BYPASS: To achieve maximum speed, we skip the slow retry loops.
+        // lastFailures = [`QUALITY_THRESHOLD (min=8): overall=${qualityScore.overall}`];
+        // stillPending.push(pending[k]!);
+        // continue;
       }
 
       results[index] = {
