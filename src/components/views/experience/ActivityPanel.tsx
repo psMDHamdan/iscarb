@@ -1,34 +1,46 @@
 "use client";
 
 /**
- * ActivityPanel — right-panel for the learning player.
+ * ActivityPanel — right panel of the 3-panel learning player.
  *
- * Context-sensitive: renders one of three modes based on the current concept:
- *   1. Activity prompt (Predict / Calculate / Analyze) with progressive hints
- *   2. Assessment MCQ (4 options, NO correct answer revealed)
- *   3. AI Coach placeholder ("I don't understand" button)
+ * Design philosophy: every interaction must be purposeful.
  *
- * When neither activity nor assessment is present, shows a contextual
- * "Key Takeaway" view so the panel is never empty.
+ * Modes (auto-selected based on what the concept has):
+ *   1. Poll / MCQ      — structured question with 4 options, reveal after answer
+ *   2. Calculation     — worked problem with step-by-step reveal
+ *   3. Reflection      — open-ended written response
+ *   4. Activity prompt — free-form task with progressive hints
+ *   5. Key Takeaway    — fallback summary when no interaction is set
+ *
+ * The AI Tutor tab is always available as a fallback.
+ *
+ * Rules:
+ * - Never show "correct answer" before the student has answered.
+ * - Always show WHY after answering — not just "correct" / "incorrect".
+ * - Hints are progressive: vague → partial → near-answer.
+ * - The panel must never be empty or confusing.
  */
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  HelpCircle,
-  Lightbulb,
   CheckCircle2,
+  XCircle,
+  Lightbulb,
   MessageCircle,
-  ChevronDown,
   Sparkles,
-  Users,
+  ChevronDown,
+  ChevronRight,
+  Send,
+  RotateCcw,
+  HelpCircle,
+  BookMarked,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { StemRenderer } from "@/components/ui/StemRenderer";
+import { AiConceptTutor } from "./AiConceptTutor";
 
 import type { StudentConceptViewModel } from "@/lib/lecture/projections/types";
-
-import { AiConceptTutor } from "./AiConceptTutor";
-import { StemRenderer } from "@/components/ui/StemRenderer";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -37,18 +49,20 @@ import { StemRenderer } from "@/components/ui/StemRenderer";
 export interface ActivityPanelProps {
   concept: StudentConceptViewModel;
   ar: boolean;
-  /** Learning-experience id used by the server-side answer check. */
   experienceId: string;
-  /** Called when the student selects an MCQ option */
   onAssessmentAnswer?: (assessmentId: string, optionId: string) => void;
-  /** Called when the student clicks "I don't understand" */
   onRequestHelp?: (conceptId: string) => void;
-  /** Called when the student submits a free-text activity */
   onActivitySubmit?: (conceptId: string, answer: string) => void;
 }
 
 // ---------------------------------------------------------------------------
-// ActivityPanel
+// Tab type
+// ---------------------------------------------------------------------------
+
+type ActiveTab = "task" | "tutor";
+
+// ---------------------------------------------------------------------------
+// ActivityPanel — root
 // ---------------------------------------------------------------------------
 
 export function ActivityPanel({
@@ -56,108 +70,98 @@ export function ActivityPanel({
   ar,
   experienceId,
   onAssessmentAnswer,
-  onRequestHelp,
   onActivitySubmit,
 }: ActivityPanelProps) {
-  const dir = ar ? "rtl" : "ltr";
-  const hasAssessment = !!concept.assessment;
-  const hasActivity = !!concept.activity;
+  const [activeTab, setActiveTab] = useState<ActiveTab>("task");
 
-  // Default to task if activity/assessment present, otherwise tutor
-  const [activeTab, setActiveTab] = useState<"task" | "tutor">("task");
-
-  // Auto-switch to task when navigating to a concept with active task
+  // Reset to task tab whenever concept changes
   React.useEffect(() => {
     setActiveTab("task");
   }, [concept.id]);
 
+  const hasAssessment = !!concept.assessment;
+  const hasActivity = !!concept.activity;
+  const hasInteractive = !!concept.interactive;
+
+  const taskLabel = hasAssessment || hasInteractive
+    ? (ar ? "اختبر نفسك" : "Test Yourself")
+    : hasActivity
+      ? (ar ? "المهمة" : "Your Task")
+      : (ar ? "المحتوى" : "Key Points");
+
   return (
     <div
-      className="flex flex-col h-full overflow-hidden bg-white border-l border-emerald-100"
-      dir={dir}
+      className="flex flex-col h-full bg-white dark:bg-slate-900 border-l border-slate-200/80 dark:border-slate-700/40 overflow-hidden"
+      dir={ar ? "rtl" : "ltr"}
     >
-      {/* ── Top Navigation Tabs (Green & White) ── */}
-      <div className="p-3 border-b border-emerald-100 bg-gradient-to-r from-emerald-50/70 to-white flex items-center gap-2 shrink-0">
-        <button
-          type="button"
+      {/* ── Tab Bar ─────────────────────────────────────────────────── */}
+      <div className="flex gap-1.5 p-2.5 border-b border-slate-200/80 dark:border-slate-700/40 bg-slate-50/80 dark:bg-slate-800/40 shrink-0">
+        <TabButton
+          active={activeTab === "task"}
           onClick={() => setActiveTab("task")}
-          className={cn(
-            "flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold transition-all shadow-xs",
-            activeTab === "task"
-              ? "bg-[#0E6C3C] text-white shadow-sm"
-              : "bg-white text-slate-600 hover:bg-emerald-50/80 border border-emerald-200/70"
-          )}
-        >
-          <Sparkles className="h-3.5 w-3.5" />
-          {hasAssessment
-            ? (ar ? "الاختبار التفاعلي" : "Interactive Quiz")
-            : (ar ? "مهمتك التفاعلية" : "Your Active Task")}
-        </button>
-
-        <button
-          type="button"
+          icon={<Sparkles className="h-3.5 w-3.5" />}
+          label={taskLabel}
+        />
+        <TabButton
+          active={activeTab === "tutor"}
           onClick={() => setActiveTab("tutor")}
-          className={cn(
-            "flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold transition-all shadow-xs",
-            activeTab === "tutor"
-              ? "bg-[#0E6C3C] text-white shadow-sm"
-              : "bg-white text-slate-600 hover:bg-emerald-50/80 border border-emerald-200/70"
-          )}
-        >
-          <MessageCircle className="h-3.5 w-3.5 text-emerald-600" />
-          {ar ? "المعلم الذكي" : "AI Concept Tutor"}
-        </button>
+          icon={<MessageCircle className="h-3.5 w-3.5" />}
+          label={ar ? "اسأل المعلم" : "Ask AI Tutor"}
+        />
       </div>
 
-      {/* ── Panel Body ── */}
-      <div className="flex-1 p-3.5 lg:p-4 overflow-y-auto bg-white">
+      {/* ── Panel Body ──────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto">
         <AnimatePresence mode="wait">
           {activeTab === "task" ? (
             <motion.div
               key={`task-${concept.id}`}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-4"
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -8 }}
+              transition={{ duration: 0.18 }}
+              className="p-3.5 space-y-3"
             >
-              {hasAssessment ? (
-                <AssessmentMCQ
-                  assessment={concept.assessment!}
+              {/* Interactive compiler output takes highest priority */}
+              {hasInteractive && concept.interactive ? (
+                <InteractiveCard
+                  interactive={concept.interactive}
                   concept={concept}
                   ar={ar}
                   experienceId={experienceId}
-                  onAnswer={(optionId) =>
-                    onAssessmentAnswer?.(concept.assessment!.id, optionId)
-                  }
+                  onSubmit={(ans) => onActivitySubmit?.(concept.id, ans)}
                 />
-              ) : hasActivity ? (
-                <ActivityPrompt
-                  activity={concept.activity!}
-                  ar={ar}
-                  onSubmit={(answer) => onActivitySubmit?.(concept.id, answer)}
-                />
-              ) : (
-                <DefaultTaskPrompt
+              ) : hasAssessment && concept.assessment ? (
+                <AssessmentMCQ
+                  assessment={concept.assessment}
                   concept={concept}
                   ar={ar}
-                  onSubmit={(answer) => onActivitySubmit?.(concept.id, answer)}
+                  experienceId={experienceId}
+                  onAnswer={(optionId) => onAssessmentAnswer?.(concept.assessment!.id, optionId)}
                 />
+              ) : hasActivity && concept.activity ? (
+                <ActivityPrompt
+                  activity={concept.activity}
+                  ar={ar}
+                  onSubmit={(ans) => onActivitySubmit?.(concept.id, ans)}
+                />
+              ) : (
+                <KeyPointsSummary concept={concept} ar={ar} />
               )}
             </motion.div>
           ) : (
             <motion.div
               key={`tutor-${concept.id}`}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -8 }}
+              transition={{ duration: 0.18 }}
               className="h-full min-h-[440px]"
             >
               <AiConceptTutor
                 concept={concept}
                 ar={ar}
-                onCompleteInteraction={() => onActivitySubmit?.(concept.id, "Completed AI Tutor Discussion")}
+                onCompleteInteraction={() => onActivitySubmit?.(concept.id, "AI Tutor")}
                 className="h-full"
               />
             </motion.div>
@@ -169,206 +173,274 @@ export function ActivityPanel({
 }
 
 // ---------------------------------------------------------------------------
-// DefaultTaskPrompt — fallback interactive task when no custom activity set
+// TabButton helper
 // ---------------------------------------------------------------------------
 
-function DefaultTaskPrompt({
-  concept,
-  ar,
-  onSubmit,
+function TabButton({
+  active,
+  onClick,
+  icon,
+  label,
 }: {
-  concept: StudentConceptViewModel;
-  ar: boolean;
-  onSubmit?: (answer: string) => void;
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
 }) {
-  const [answer, setAnswer] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
   return (
-    <div className="space-y-4 rounded-2xl border border-emerald-200/80 bg-gradient-to-b from-emerald-50/30 to-white p-4.5 shadow-sm">
-      <div className="flex items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest bg-emerald-100 text-emerald-800">
-          <Sparkles className="h-3 w-3 text-emerald-700" />
-          {ar ? "مهمة الفهم" : "Comprehension Task"}
-        </span>
-      </div>
-
-      <p className="text-sm font-bold text-slate-800 leading-relaxed">
-        <StemRenderer content={concept.title} inline />
-      </p>
-
-      <div className="text-xs text-slate-600 leading-relaxed font-medium">
-        <StemRenderer
-          content={
-            ar
-              ? `كيف يمكنك تطبيق هذا المفهوم أو شرح دوره في ${concept.title}؟ شارك تحليلك أدناه:`
-              : `In your own words, summarize how this mechanism functions or why this principle is critical in ${concept.title}:`
-          }
-        />
-      </div>
-
-      {!submitted ? (
-        <div className="space-y-2 mt-3">
-          <textarea
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            placeholder={ar ? "اكتب إجابتك هنا..." : "Type your explanation or response here..."}
-            className="w-full min-h-[90px] p-3 text-xs rounded-xl border border-emerald-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors shadow-xs"
-            dir={ar ? "rtl" : "ltr"}
-          />
-          <button
-            type="button"
-            disabled={!answer.trim()}
-            onClick={() => {
-              setSubmitted(true);
-              onSubmit?.(answer);
-            }}
-            className="w-full py-2.5 bg-[#0E6C3C] hover:bg-[#0E6C3C]/90 disabled:bg-slate-300 text-white rounded-xl text-xs font-bold transition-colors shadow-sm"
-          >
-            {ar ? "إرسال الإجابة" : "Submit Answer"}
-          </button>
-        </div>
-      ) : (
-        <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-medium flex items-center justify-center gap-1.5">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-          {ar ? "✓ تم حفظ إجابتك بنجاح!" : "✓ Your answer has been saved!"}
-        </div>
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-bold transition-all",
+        active
+          ? "bg-[#0E6C3C] text-white shadow-sm"
+          : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-emerald-50 dark:hover:bg-slate-700/50 border border-slate-200 dark:border-slate-700"
       )}
-    </div>
+    >
+      {icon}
+      {label}
+    </button>
   );
 }
 
 // ---------------------------------------------------------------------------
-// ActivityPrompt — renders interactive activity with progressive hints (Green & White)
+// InteractiveCard — renders concept.interactive (from StudentExperienceCompiler)
+// Handles poll, calculation, reflection, drag_drop types.
 // ---------------------------------------------------------------------------
 
-function ActivityPrompt({
-  activity,
+function InteractiveCard({
+  interactive,
+  concept,
   ar,
+  experienceId,
   onSubmit,
 }: {
-  activity: NonNullable<StudentConceptViewModel["activity"]>;
+  interactive: NonNullable<StudentConceptViewModel["interactive"]>;
+  concept: StudentConceptViewModel;
   ar: boolean;
+  experienceId: string;
   onSubmit?: (answer: string) => void;
 }) {
-  const [hintsRevealed, setHintsRevealed] = useState(0);
-  const [answer, setAnswer] = useState("");
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [textAnswer, setTextAnswer] = useState("");
   const [submitted, setSubmitted] = useState(false);
-  const maxHints = activity.progressiveHints?.length || 0;
+  const [hintsShown, setHintsShown] = useState(0);
+  const [showReveal, setShowReveal] = useState(false);
+
+  const isPoll = interactive.type === "poll" && Array.isArray(interactive.options) && interactive.options.length > 0;
+  const isCalc = interactive.type === "calculation";
+  const isReflection = interactive.type === "reflection" || interactive.type === "drag_drop";
+
+  const handleSubmit = () => {
+    if (isPoll && !selectedOption) return;
+    if (!isPoll && !textAnswer.trim()) return;
+    setSubmitted(true);
+    onSubmit?.(selectedOption || textAnswer);
+  };
+
+  const reset = () => {
+    setSelectedOption(null);
+    setTextAnswer("");
+    setSubmitted(false);
+    setHintsShown(0);
+    setShowReveal(false);
+  };
 
   return (
-    <div className="space-y-4 rounded-2xl border border-emerald-200/80 bg-gradient-to-b from-emerald-50/30 to-white p-4.5 shadow-sm">
+    <div className="space-y-3">
       {/* Header */}
-      <div className="space-y-1.5">
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest bg-emerald-100 text-emerald-800">
-            <Sparkles className="h-3 w-3 text-emerald-700" />
-            {activity.actionVerb || (ar ? "نشاط تفاعلي" : "Apply")}
-          </span>
-        </div>
-        <h3 className="text-base font-bold text-slate-900 leading-snug">
-          <StemRenderer content={activity.title} inline />
-        </h3>
+      <div className="flex items-center gap-2">
+        <span className={cn(
+          "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest",
+          isPoll ? "bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300" :
+          isCalc ? "bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300" :
+          "bg-teal-100 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300"
+        )}>
+          <Sparkles className="h-3 w-3" />
+          {isPoll ? (ar ? "تصويت" : "Poll") : isCalc ? (ar ? "احسب" : "Calculate") : (ar ? "تأمل" : "Reflect")}
+        </span>
       </div>
 
-      {/* Prompt */}
-      <div className="rounded-xl border border-emerald-100 bg-white p-3.5 shadow-xs">
-        <div className="text-xs text-slate-800 leading-relaxed font-semibold">
-          <StemRenderer content={ar && activity.promptAr ? activity.promptAr : activity.prompt} />
+      {/* Question prompt */}
+      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-3.5">
+        <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-relaxed">
+          <StemRenderer content={interactive.prompt} />
         </div>
       </div>
 
-      {/* Student Input Area */}
-      {!submitted ? (
-        <div className="space-y-2 mt-3">
-          <textarea
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            placeholder={ar ? "اكتب إجابتك هنا..." : "Type your answer here..."}
-            className="w-full min-h-[90px] p-3 text-xs rounded-xl border border-emerald-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors shadow-xs"
-            dir={ar ? "rtl" : "ltr"}
-          />
-          <button
-            type="button"
-            disabled={!answer.trim()}
-            onClick={() => {
-              setSubmitted(true);
-              onSubmit?.(answer);
-            }}
-            className="w-full py-2.5 bg-[#0E6C3C] hover:bg-[#0E6C3C]/90 disabled:bg-slate-300 text-white rounded-xl text-xs font-bold transition-colors shadow-sm"
-          >
-            {ar ? "إرسال الإجابة" : "Submit Answer"}
-          </button>
+      {/* Poll options */}
+      {isPoll && !submitted && (
+        <div className="space-y-2">
+          {interactive.options!.map((option, i) => {
+            const letter = String.fromCharCode(65 + i);
+            const isSelected = selectedOption === letter;
+            return (
+              <button
+                key={letter}
+                type="button"
+                onClick={() => setSelectedOption(letter)}
+                className={cn(
+                  "w-full flex items-start gap-2.5 p-3 rounded-xl border text-left text-xs font-medium transition-all",
+                  isSelected
+                    ? "border-[#0E6C3C] bg-emerald-50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100 ring-1 ring-[#0E6C3C]"
+                    : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-emerald-300 hover:bg-emerald-50/40"
+                )}
+              >
+                <span className={cn(
+                  "flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-extrabold",
+                  isSelected ? "bg-[#0E6C3C] text-white" : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400"
+                )}>
+                  {letter}
+                </span>
+                <span className="leading-relaxed flex-1">
+                  <StemRenderer content={option} inline />
+                </span>
+                {isSelected && <ChevronRight className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />}
+              </button>
+            );
+          })}
         </div>
-      ) : (
-        <div className="space-y-2 mt-3">
-          <div className="p-3 rounded-xl bg-emerald-50/50 border border-emerald-100 text-xs text-slate-700 italic">
-            "{answer}"
-          </div>
-          <div className="text-xs text-center font-bold text-emerald-700 flex items-center justify-center gap-1">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            {ar ? "تم حفظ إجابتك. استمر في التعلم!" : "Answer saved. Keep learning!"}
-          </div>
+      )}
+
+      {/* Text input for calculation / reflection */}
+      {(isCalc || isReflection) && !submitted && (
+        <textarea
+          value={textAnswer}
+          onChange={(e) => setTextAnswer(e.target.value)}
+          rows={4}
+          placeholder={isCalc
+            ? (ar ? "اكتب حسابك خطوة بخطوة..." : "Show your working step by step...")
+            : (ar ? "اكتب تأملك هنا..." : "Write your reflection here...")}
+          className="w-full p-3 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition resize-none"
+          dir={ar ? "rtl" : "ltr"}
+        />
+      )}
+
+      {/* Submit button */}
+      {!submitted && (
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={isPoll ? !selectedOption : !textAnswer.trim()}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#0E6C3C] hover:bg-[#0E6C3C]/90 disabled:bg-slate-200 dark:disabled:bg-slate-700 disabled:text-slate-400 text-white text-xs font-bold transition-all shadow-sm"
+        >
+          <Send className="h-3.5 w-3.5" />
+          {ar ? "إرسال الإجابة" : "Submit Answer"}
+        </button>
+      )}
+
+      {/* Post-submission: show selected answer */}
+      {submitted && isPoll && selectedOption && (
+        <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-3 space-y-1">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            {ar ? "إجابتك" : "Your answer"}
+          </p>
+          <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+            {selectedOption}) <StemRenderer content={interactive.options![selectedOption.charCodeAt(0) - 65] || ""} inline />
+          </p>
         </div>
       )}
 
       {/* Progressive hints */}
-      {maxHints > 0 && (
-        <div className="space-y-2 pt-2 border-t border-emerald-100">
+      {interactive.hints && interactive.hints.length > 0 && (
+        <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-              {ar ? "التلميحات المتدرجة" : "Socratic Hints"}:
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
+              {ar ? "تلميحات" : "Hints"}
             </span>
-            {hintsRevealed < maxHints && (
+            {hintsShown < interactive.hints.length && (
               <button
                 type="button"
-                onClick={() => setHintsRevealed((n) => n + 1)}
-                className="flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-800 transition-colors"
+                onClick={() => setHintsShown(n => n + 1)}
+                className="flex items-center gap-1 text-[11px] font-bold text-amber-700 dark:text-amber-400 hover:text-amber-900 transition-colors"
               >
-                <ChevronDown className="h-3 w-3" />
-                {ar
-                  ? `عرض تلميح (${hintsRevealed}/${maxHints})`
-                  : `Show Hint (${hintsRevealed}/${maxHints})`}
+                <Lightbulb className="h-3 w-3" />
+                {ar ? `تلميح ${hintsShown + 1}` : `Hint ${hintsShown + 1}`}
               </button>
             )}
           </div>
 
-          {activity.progressiveHints.slice(0, hintsRevealed).map((hint, i) => (
+          {interactive.hints.slice(0, hintsShown).map((hint, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               transition={{ duration: 0.2 }}
-              className="rounded-xl border border-amber-200 bg-amber-50/60 p-2.5 flex items-start gap-2 text-xs"
+              className="rounded-lg border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/20 p-2.5 flex items-start gap-2"
             >
-              <Lightbulb className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
-              <div className="text-[11px] text-amber-900 leading-relaxed">
-                <span className="font-bold">
-                  {ar ? `تلميح ${i + 1}` : `Hint ${i + 1}`}:
-                </span>{" "}
+              <Lightbulb className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
+                <span className="font-bold">{ar ? `تلميح ${i + 1}:` : `Hint ${i + 1}:`} </span>
                 <StemRenderer content={hint} inline />
               </div>
             </motion.div>
           ))}
         </div>
       )}
+
+      {/* Reveal — only shown after submission */}
+      {submitted && interactive.reveal && (
+        <div className="space-y-2">
+          {!showReveal ? (
+            <button
+              type="button"
+              onClick={() => setShowReveal(true)}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-emerald-400 dark:border-emerald-600 text-emerald-800 dark:text-emerald-300 text-xs font-bold hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors"
+            >
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              {ar ? "اكشف الإجابة الكاملة" : "Reveal Full Answer"}
+            </button>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-xl border border-emerald-300 dark:border-emerald-700/60 bg-emerald-50 dark:bg-emerald-950/20 p-3.5 space-y-2"
+            >
+              <div className="flex items-center gap-1.5 text-xs font-extrabold text-emerald-800 dark:text-emerald-300">
+                <CheckCircle2 className="h-4 w-4" />
+                {ar ? "الإجابة والتفسير" : "Answer & Explanation"}
+              </div>
+              <div className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                <StemRenderer content={interactive.reveal} />
+              </div>
+            </motion.div>
+          )}
+        </div>
+      )}
+
+      {/* Reset button */}
+      {submitted && (
+        <button
+          type="button"
+          onClick={reset}
+          className="w-full flex items-center justify-center gap-1.5 py-2 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 font-semibold transition-colors"
+        >
+          <RotateCcw className="h-3 w-3" />
+          {ar ? "حاول مرة أخرى" : "Try again"}
+        </button>
+      )}
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// AssessmentMCQ — 4-option MCQ (Green & White Light Theme)
+// AssessmentMCQ — legacy assessment format from the DB
 // ---------------------------------------------------------------------------
 
-interface AssessmentMCQProps {
+function AssessmentMCQ({
+  assessment,
+  concept,
+  ar,
+  experienceId,
+  onAnswer,
+}: {
   assessment: NonNullable<StudentConceptViewModel["assessment"]>;
   concept: StudentConceptViewModel;
   ar: boolean;
   experienceId: string;
   onAnswer: (optionId: string) => void;
-}
-
-function AssessmentMCQ({ assessment, concept, ar, experienceId, onAnswer }: AssessmentMCQProps) {
+}) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [checking, setChecking] = useState(false);
@@ -376,7 +448,7 @@ function AssessmentMCQ({ assessment, concept, ar, experienceId, onAnswer }: Asse
   const [hint, setHint] = useState<string | null>(null);
   const [loadingHint, setLoadingHint] = useState(false);
 
-  const submitAnswer = async (optionId: string) => {
+  const submit = async (optionId: string) => {
     setSelectedId(optionId);
     setChecking(true);
     onAnswer(optionId);
@@ -393,10 +465,9 @@ function AssessmentMCQ({ assessment, concept, ar, experienceId, onAnswer }: Asse
         const data = await res.json();
         setResult({ correct: Boolean(data.correct), correctOptionId: String(data.correctOptionId) });
       } else {
-        setResult({ correct: false, correctOptionId: optionId });
+        setResult(null);
       }
     } catch {
-      // Offline/backend failure — record the answer without a verdict.
       setResult(null);
     } finally {
       setChecking(false);
@@ -415,40 +486,44 @@ function AssessmentMCQ({ assessment, concept, ar, experienceId, onAnswer }: Asse
           mode: "hint",
           conceptTitle: concept.title,
           stageName: concept.stage,
-          coreInsight: concept.coreContent?.explanation || "",
-          mentalModel: concept.coreContent?.analogy ? { analogy: concept.coreContent.analogy } : undefined,
-          mechanism: concept.coreContent?.explanation || "",
-          visualCaption: concept.visual?.caption,
+          coreInsight: concept.coreContent?.explanation || concept.visibleCopy || "",
           assessmentStem: assessment.stem,
         }),
       });
       const data = await res.json();
-      setHint(data.reply || (ar ? "تذكر القاعدة الأساسية لآلية العمل في هذا المفهوم." : "Recall the core biophysical rule discussed in this concept."));
-    } catch (e) {
-      setHint(ar ? "فكر في كيفية تفاعل المكونات معاً لحل هذا السؤال." : "Think about how the core components interact to resolve this question.");
+      setHint(data.reply || (ar ? "فكر في الآلية الأساسية وكيف تؤثر على النتيجة." : "Think about the core mechanism and how it affects the outcome."));
+    } catch {
+      setHint(ar ? "راجع الفكرة الأساسية للمفهوم ثم حاول مرة أخرى." : "Review the core concept then try again.");
     } finally {
       setLoadingHint(false);
     }
   };
 
+  const reset = () => {
+    setSelectedId(null);
+    setSubmitted(false);
+    setResult(null);
+    setHint(null);
+  };
+
   return (
-    <div className="space-y-4 rounded-2xl border border-emerald-200/90 bg-white p-4.5 shadow-sm">
-      {/* Header badge */}
+    <div className="space-y-3">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-emerald-800">
-          <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
-          {ar ? "اختبار فهمك" : "Check Your Understanding"}
+        <span className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest text-emerald-800 dark:text-emerald-300">
+          <Sparkles className="h-3 w-3 text-emerald-600" />
+          {ar ? "اختبر فهمك" : "Check Your Understanding"}
         </span>
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 uppercase tracking-widest border border-emerald-200">
-            {assessment.difficulty}
-          </span>
-        </div>
+        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 uppercase">
+          {assessment.difficulty}
+        </span>
       </div>
 
       {/* Stem */}
-      <div className="text-xs font-bold text-slate-900 leading-relaxed">
-        <StemRenderer content={ar && assessment.stemAr ? assessment.stemAr : assessment.stem} />
+      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 p-3.5">
+        <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-relaxed">
+          <StemRenderer content={ar && assessment.stemAr ? assessment.stemAr : assessment.stem} />
+        </p>
       </div>
 
       {/* Options */}
@@ -456,109 +531,101 @@ function AssessmentMCQ({ assessment, concept, ar, experienceId, onAnswer }: Asse
         {assessment.options.map((option, i) => {
           const letter = String.fromCharCode(65 + i);
           const isSelected = selectedId === option.id;
-          const isCorrectOption = submitted && result != null && result.correctOptionId === option.id;
-          const isWrongPick = submitted && result != null && isSelected && !result.correct;
+          const isCorrect = submitted && result?.correctOptionId === option.id;
+          const isWrong = submitted && result && isSelected && !result.correct;
 
           return (
             <button
               key={option.id}
               type="button"
               disabled={submitted || checking}
-              onClick={() => submitAnswer(option.id)}
+              onClick={() => submit(option.id)}
               className={cn(
-                "w-full text-left p-3 rounded-xl border text-xs font-medium transition-all flex items-start gap-2.5",
-                isCorrectOption
-                  ? "border-emerald-500 bg-emerald-50 text-emerald-950 font-bold shadow-xs ring-1 ring-emerald-500"
-                  : isWrongPick
-                    ? "border-red-300 bg-red-50 text-red-900 font-semibold shadow-xs"
+                "w-full flex items-start gap-2.5 p-3 rounded-xl border text-left text-xs font-medium transition-all",
+                isCorrect
+                  ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100 ring-1 ring-emerald-500"
+                  : isWrong
+                    ? "border-red-400 bg-red-50 dark:bg-red-950/20 text-red-900 dark:text-red-200 ring-1 ring-red-400"
                     : isSelected
-                      ? "border-[#0E6C3C] bg-emerald-50 text-emerald-950 font-bold shadow-xs ring-1 ring-[#0E6C3C]"
+                      ? "border-[#0E6C3C] bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-[#0E6C3C]"
                       : submitted
-                        ? "border-slate-100 bg-slate-50 text-slate-400 cursor-not-allowed"
-                        : "border-slate-200 bg-white text-slate-700 hover:border-emerald-400 hover:bg-emerald-50/40",
+                        ? "border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/20 text-slate-400 cursor-not-allowed"
+                        : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-emerald-300 hover:bg-emerald-50/40 cursor-pointer"
               )}
             >
               <span className={cn(
-                "font-mono font-bold px-1.5 py-0.5 rounded text-[10px] shrink-0",
-                isCorrectOption ? "bg-emerald-600 text-white" : isWrongPick ? "bg-red-500 text-white" : isSelected ? "bg-[#0E6C3C] text-white" : "bg-slate-100 text-slate-600"
+                "flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-extrabold",
+                isCorrect ? "bg-emerald-600 text-white" :
+                isWrong ? "bg-red-500 text-white" :
+                isSelected ? "bg-[#0E6C3C] text-white" :
+                "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400"
               )}>
                 {letter}
               </span>
-              <span className="leading-relaxed">
+              <span className="flex-1 leading-relaxed">
                 <StemRenderer content={ar && option.textAr ? option.textAr : option.text} inline />
               </span>
-              {isCorrectOption && <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5 ml-auto" />}
-              {isWrongPick && <span className="text-red-500 text-[10px] font-bold shrink-0 mt-0.5 ml-auto">{ar ? "إجابتك" : "Your pick"}</span>}
+              {isCorrect && <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5 ml-auto" />}
+              {isWrong && <XCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5 ml-auto" />}
             </button>
           );
         })}
       </div>
 
-      {/* Verdict — revealed strictly AFTER submission (FR-021 reveal-after-answer) */}
-      {submitted && result && !checking && (
-        <div
-          className={cn(
-            "p-3 rounded-xl border text-xs font-semibold flex items-start gap-2 leading-relaxed",
-            result.correct
-              ? "border-emerald-300 bg-emerald-50 text-emerald-900"
-              : "border-amber-300 bg-amber-50 text-amber-900"
-          )}
-        >
-          {result.correct ? (
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-          ) : (
-            <HelpCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-          )}
+      {/* Verdict */}
+      {submitted && result && (
+        <div className={cn(
+          "p-3 rounded-xl border text-xs font-semibold leading-relaxed flex items-start gap-2",
+          result.correct
+            ? "border-emerald-300 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-900 dark:text-emerald-200"
+            : "border-amber-300 bg-amber-50 dark:bg-amber-950/20 text-amber-900 dark:text-amber-200"
+        )}>
+          {result.correct
+            ? <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+            : <HelpCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />}
           <span>
             {result.correct
-              ? (ar ? "✓ إجابة صحيحة! أحسنت." : "✓ Correct! Great job.")
+              ? (ar ? "✓ صحيح! أحسنت." : "✓ Correct! Well done.")
               : (ar
-                ? `ليست الإجابة الصحيحة — الإجابة الصحيحة مميزة باللون الأخضر. راجع الفكرة الأساسية ثم تابع.`
-                : `Not quite — the correct answer is highlighted in green. Review the core idea and continue.`)}
+                  ? "ليست الإجابة الصحيحة. الإجابة الصحيحة مميزة باللون الأخضر. راجع المفهوم الأساسي."
+                  : "Not quite. The correct answer is highlighted in green. Review the core concept above.")}
           </span>
         </div>
       )}
 
-      {submitted && !result && (
-        <p className="text-xs text-emerald-700 font-bold italic text-center">
-          {ar
-            ? "✓ تم تسجيل إجابتك. يمكنك الانتقال إلى المفهوم التالي."
-            : "✓ Answer recorded. You can now proceed to the next concept."}
-        </p>
-      )}
-
-      {/* AI Tutor Socratic Hint Helper */}
-      <div className="pt-2 border-t border-emerald-100">
+      {/* Hint + Reset row */}
+      <div className="flex gap-2">
         {!hint ? (
           <button
             type="button"
             onClick={fetchHint}
             disabled={loadingHint}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100/60 text-xs font-semibold text-emerald-800 transition-colors disabled:opacity-50"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50/50 dark:bg-amber-950/10 text-xs font-semibold text-amber-800 dark:text-amber-300 hover:bg-amber-100/60 transition-colors disabled:opacity-50"
           >
-            <Lightbulb className="h-3.5 w-3.5 text-emerald-600" />
-            {loadingHint
-              ? (ar ? "المعلم يستحضر التلميح..." : "Tutor is preparing hint...")
-              : (ar ? "💡 اطلب تلميحاً من المعلم الذكي" : "💡 Ask AI Tutor for a Socratic Hint")}
+            <Lightbulb className="h-3.5 w-3.5" />
+            {loadingHint ? (ar ? "جارٍ..." : "Loading...") : (ar ? "تلميح" : "Hint")}
           </button>
         ) : (
-          <div className="p-3 rounded-xl border border-emerald-200 bg-emerald-50/80 space-y-1 text-xs text-emerald-900 leading-relaxed">
-            <div className="flex items-center gap-1.5 font-bold text-emerald-800 text-[11px]">
-              <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
-              {ar ? "تلميح المعلم الذكي:" : "AI Tutor Hint:"}
-            </div>
-            <div className="italic text-slate-700">
-              <StemRenderer content={hint} />
-            </div>
+          <div className="flex-1 rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50/60 dark:bg-amber-950/20 p-2.5 text-xs text-amber-900 dark:text-amber-200 leading-relaxed italic">
+            <StemRenderer content={hint} inline />
           </div>
+        )}
+
+        {submitted && (
+          <button
+            type="button"
+            onClick={reset}
+            className="flex items-center gap-1 py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-400 font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          >
+            <RotateCcw className="h-3 w-3" />
+            {ar ? "حاول" : "Retry"}
+          </button>
         )}
       </div>
 
       {submitted && (
-        <p className="text-xs text-emerald-700 font-bold italic text-center">
-          {ar
-            ? "✓ تم تسجيل إجابتك. يمكنك الانتقال إلى المفهوم التالي."
-            : "✓ Answer recorded. You can now proceed to the next concept."}
+        <p className="text-[10px] text-center text-slate-400 dark:text-slate-500">
+          {ar ? "✓ تم تسجيل إجابتك" : "✓ Answer recorded — continue to the next concept"}
         </p>
       )}
     </div>
@@ -566,49 +633,190 @@ function AssessmentMCQ({ assessment, concept, ar, experienceId, onAnswer }: Asse
 }
 
 // ---------------------------------------------------------------------------
-// KeyTakeaway — fallback when no activity/assessment is present
+// ActivityPrompt — open-ended activity with progressive hints
 // ---------------------------------------------------------------------------
 
-function KeyTakeaway({
+function ActivityPrompt({
+  activity,
+  ar,
+  onSubmit,
+}: {
+  activity: NonNullable<StudentConceptViewModel["activity"]>;
+  ar: boolean;
+  onSubmit?: (answer: string) => void;
+}) {
+  const [answer, setAnswer] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [hintsShown, setHintsShown] = useState(0);
+  const hints = activity.progressiveHints || [];
+
+  return (
+    <div className="space-y-3">
+      {/* Header */}
+      <div className="flex items-center gap-2">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest bg-teal-100 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300">
+          <Sparkles className="h-3 w-3" />
+          {activity.actionVerb || (ar ? "نشاط" : "Activity")}
+        </span>
+        <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">
+          {activity.title}
+        </span>
+      </div>
+
+      {/* Prompt */}
+      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 p-3.5">
+        <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 leading-relaxed">
+          <StemRenderer content={ar && activity.promptAr ? activity.promptAr : activity.prompt} />
+        </div>
+      </div>
+
+      {/* Text area */}
+      {!submitted ? (
+        <div className="space-y-2">
+          <textarea
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value)}
+            rows={4}
+            placeholder={ar ? "اكتب إجابتك هنا..." : "Write your answer here..."}
+            className="w-full p-3 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition resize-none"
+            dir={ar ? "rtl" : "ltr"}
+          />
+          <button
+            type="button"
+            disabled={!answer.trim()}
+            onClick={() => { setSubmitted(true); onSubmit?.(answer); }}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#0E6C3C] hover:bg-[#0E6C3C]/90 disabled:bg-slate-200 dark:disabled:bg-slate-700 disabled:text-slate-400 text-white text-xs font-bold transition-all"
+          >
+            <Send className="h-3.5 w-3.5" />
+            {ar ? "إرسال" : "Submit"}
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 italic leading-relaxed">
+            &ldquo;{answer}&rdquo;
+          </div>
+          <div className="flex items-center gap-1.5 justify-center text-xs text-emerald-700 dark:text-emerald-400 font-bold">
+            <CheckCircle2 className="h-4 w-4" />
+            {ar ? "تم الحفظ" : "Saved — keep going!"}
+          </div>
+        </div>
+      )}
+
+      {/* Progressive hints */}
+      {hints.length > 0 && (
+        <div className="space-y-1.5 pt-1 border-t border-slate-200 dark:border-slate-700/40">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              {ar ? "تلميحات" : "Hints"}
+            </span>
+            {hintsShown < hints.length && (
+              <button
+                type="button"
+                onClick={() => setHintsShown(n => n + 1)}
+                className="flex items-center gap-1 text-[11px] font-bold text-amber-700 dark:text-amber-400 hover:text-amber-900"
+              >
+                <ChevronDown className="h-3 w-3" />
+                {ar ? `تلميح (${hintsShown}/${hints.length})` : `Hint (${hintsShown}/${hints.length})`}
+              </button>
+            )}
+          </div>
+          {hints.slice(0, hintsShown).map((hint, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              className="rounded-lg border border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/15 p-2.5 flex items-start gap-2 text-xs"
+            >
+              <Lightbulb className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="text-amber-900 dark:text-amber-200">
+                <span className="font-bold">{ar ? `${i + 1}:` : `Hint ${i + 1}:`} </span>
+                <StemRenderer content={hint} inline />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// KeyPointsSummary — shown when there's no explicit activity / assessment
+// ---------------------------------------------------------------------------
+
+function KeyPointsSummary({
   concept,
   ar,
 }: {
   concept: StudentConceptViewModel;
   ar: boolean;
 }) {
+  const bullets = concept.bullets || [];
+  const explanation = concept.coreContent?.explanation || concept.visibleCopy || "";
+  const analogy = concept.coreContent?.analogy || "";
+  const realWorld = concept.realWorld?.application || "";
+
   return (
-    <div className="space-y-4">
-      {/* Key takeaway from real-world transfer */}
-      <div className="rounded-2xl border border-emerald-500/15 bg-gradient-to-br from-emerald-50/50 to-teal-50/30 dark:from-emerald-950/20 dark:to-slate-900/60 p-5 space-y-3">
-        <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
-          <Lightbulb className="h-4 w-4" />
-          {ar ? "الخلاصة" : "Key Takeaway"}
-        </div>
-        <div className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
-          <StemRenderer content={concept.coreContent?.explanation || ""} />
-        </div>
+    <div className="space-y-3">
+      {/* Header */}
+      <div className="flex items-center gap-2">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300">
+          <BookMarked className="h-3 w-3" />
+          {ar ? "النقاط الرئيسية" : "Key Points"}
+        </span>
       </div>
 
-      {/* Real-world application */}
-      <div className="rounded-2xl border border-purple-500/15 bg-purple-50/30 dark:bg-purple-950/15 p-5 space-y-2">
-        <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-purple-700 dark:text-purple-400">
-          {ar ? "📌 التطبيق" : "📌 Application"}
-        </div>
-        <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-          <StemRenderer content={concept.realWorld?.application || ""} />
-        </div>
-      </div>
-
-      {/* Mental model recap */}
-      <div className="rounded-xl border border-slate-200/60 dark:border-slate-700/40 bg-slate-50/50 dark:bg-slate-800/30 p-4 space-y-1">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-          {ar ? "تذكّر" : "Remember"}
-        </p>
-        {concept.coreContent?.analogy && (
-          <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed italic">
-            &ldquo;<StemRenderer content={concept.coreContent.analogy} inline />&rdquo;
+      {/* Core explanation */}
+      {explanation && (
+        <div className="rounded-xl border border-emerald-200/60 dark:border-emerald-900/30 bg-emerald-50/40 dark:bg-emerald-950/10 p-3.5">
+          <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 leading-relaxed">
+            <StemRenderer content={explanation} />
           </p>
-        )}
+        </div>
+      )}
+
+      {/* Bullets */}
+      {bullets.length > 0 && (
+        <ul className="space-y-2">
+          {bullets.map((b, i) => (
+            <li key={i} className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300">
+              <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5" />
+              <span className="leading-relaxed"><StemRenderer content={b} inline /></span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {/* Analogy */}
+      {analogy && (
+        <div className="rounded-xl border border-amber-200/60 dark:border-amber-900/30 bg-amber-50/30 dark:bg-amber-950/10 p-3 flex items-start gap-2">
+          <Lightbulb className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
+          <p className="text-xs text-slate-700 dark:text-slate-300 italic leading-relaxed">
+            <StemRenderer content={analogy} inline />
+          </p>
+        </div>
+      )}
+
+      {/* Real world */}
+      {realWorld && (
+        <div className="rounded-xl border border-purple-200/60 dark:border-purple-900/30 bg-purple-50/30 dark:bg-purple-950/10 p-3 space-y-1">
+          <p className="text-[10px] font-extrabold uppercase tracking-widest text-purple-700 dark:text-purple-400">
+            {ar ? "التطبيق العملي" : "Real-World Application"}
+          </p>
+          <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+            <StemRenderer content={realWorld} inline />
+          </p>
+        </div>
+      )}
+
+      {/* Prompt to reflect */}
+      <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-600 p-3 text-center">
+        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+          {ar
+            ? "تأمل في هذا المفهوم واطرح سؤالاً على المعلم الذكي إذا احتجت مساعدة."
+            : "Reflect on this concept. Use the AI Tutor if you have questions."}
+        </p>
       </div>
     </div>
   );
