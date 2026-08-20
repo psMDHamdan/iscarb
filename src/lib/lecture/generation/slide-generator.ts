@@ -325,8 +325,8 @@ Generate EXACTLY the slide specified by the SlidePlan.function.
 Return STRICT JSON. No markdown, no code fences, no prose outside JSON.
 
 {
-  "slideNo": 1,
-  "function": "problem",
+  "slideNo": number,
+  "function": "string from SlidePlan",
   "title": "<specific, provocative, contains a number or named entity>",
   "body": {
     "visibleCopy": "<one sentence of context, or empty>",
@@ -348,7 +348,7 @@ Return STRICT JSON. No markdown, no code fences, no prose outside JSON.
   },
   "notes": {
     "instructorNotes": "<specific facilitation: events, timing, expected reactions>",
-    "timingMinutes": 5,
+    "timingMinutes": 3-10,
     "facilitationMoves": [
       "<specific move: Cold-call 2 students>",
       "<specific move: Divide room into 3 groups>"
