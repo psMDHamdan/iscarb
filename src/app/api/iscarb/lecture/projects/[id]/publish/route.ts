@@ -33,8 +33,6 @@ import { getActiveProfiles } from "@/lib/lecture/profile-governance";
 
 const bodySchema = z.object({
   notes: z.string().optional(),
-  force: z.boolean().optional(),
-  approveAll: z.boolean().optional(),
 });
 
 export const POST = guard(
@@ -56,8 +54,7 @@ export const POST = guard(
       return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
     }
 
-    // Fetch the actual current state for validation
-    // We NO LONGER auto-approve artifacts. The faculty must review and approve them.
+    // Auto-approval (force / approveAll) is forbidden — faculty must approve explicitly.
 
     const [failedErrorGates, artifacts, readinessItems] = await Promise.all([
       db.lectureGateResult.count({
@@ -79,45 +76,17 @@ export const POST = guard(
       }),
     ]);
 
-    if (parsed.data?.approveAll || parsed.data?.force) {
-      await db.lectureSlideArtifact.updateMany({
-        where: { projectId: id },
-        data: { status: "approved" },
-      });
-      await db.lectureReadinessItem.updateMany({
-        where: { projectId: id },
-        data: { approved: true },
-      });
-      const [approvedArtifactsRefetch, readinessRefetch] = await Promise.all([
-        db.lectureSlideArtifact.findMany({
-          where: { projectId: id },
-          select: {
-            id: true,
-            slideNo: true,
-            status: true,
-            version: true,
-            contentJson: true,
-          },
-        }),
-        db.lectureReadinessItem.findMany({
-          where: { projectId: id },
-          select: { slideNo: true, approved: true, createdAt: true },
-        }),
-      ]);
-      artifacts.splice(0, artifacts.length, ...approvedArtifactsRefetch);
-      readinessItems.splice(0, readinessItems.length, ...readinessRefetch);
-    }
 
     const inventory = publishInventoryFromRows({ artifacts, readiness: readinessItems });
     const { blockers, counts } = evaluatePublishChecks({
-      failedErrorGates: 0,
-      unapprovedSlides: (parsed.data?.approveAll || parsed.data?.force) ? [] : inventory.unapprovedSlides,
-      unapprovedReadinessItems: (parsed.data?.approveAll || parsed.data?.force) ? [] : inventory.unapprovedReadinessItems,
+      failedErrorGates,
+      unapprovedSlides: inventory.unapprovedSlides,
+      unapprovedReadinessItems: inventory.unapprovedReadinessItems,
       currentSlideCount: inventory.currentSlideCount,
       requiredSlideCount: inventory.requiredSlideCount,
     });
 
-    if (blockers.length > 0 && !parsed.data?.force && !parsed.data?.approveAll) {
+    if (blockers.length > 0) {
       return NextResponse.json(
         {
           error: "PUBLISH_BLOCKED",
@@ -138,9 +107,9 @@ export const POST = guard(
           error: "PUBLISH_BLOCKED",
           blockers: ["No approved slides found for publication"],
           counts: {
-            failedErrorGates: 0,
-            unapprovedSlides: 0,
-            unapprovedReadinessItems: 0,
+            failedErrorGates,
+            unapprovedSlides: inventory.unapprovedSlides,
+            unapprovedReadinessItems: inventory.unapprovedReadinessItems,
           },
         },
         { status: 422 }

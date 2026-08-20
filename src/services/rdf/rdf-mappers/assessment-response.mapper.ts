@@ -5,6 +5,7 @@
 import type { RdfMapper, MapperResult } from "./types";
 import { rdfTriple, rdfLiteralTriple } from "./types";
 import { instanceUri, classUri, universityGraph } from "@/config/rdf";
+import { normalizeScoringSource } from "@/lib/assessment/scoring-source";
 
 interface AssessmentResponseEntity {
   id: string;
@@ -45,7 +46,7 @@ export const assessmentResponseMapper: RdfMapper<AssessmentResponseEntity> = {
       rdfLiteralTriple(uri, "iscarb:band", entity.band, "xsd:string"),
       rdfLiteralTriple(uri, "iscarb:passed", entity.passed, "xsd:boolean"),
       rdfLiteralTriple(uri, "iscarb:feedback", entity.feedback, "xsd:string"),
-      rdfLiteralTriple(uri, "iscarb:scoringSource", entity.source, "xsd:string"),
+      rdfLiteralTriple(uri, "iscarb:scoringSource", normalizeScoringSource(entity.source), "xsd:string"),
       rdfLiteralTriple(uri, "iscarb:modelUsed", entity.model, "xsd:string"),
       // Link to student
       rdfTriple(uri, "iscarb:submittedBy", studentUri),

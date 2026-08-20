@@ -7,6 +7,7 @@ import {
   toAttemptSnapshotView,
   type LiveEmployabilityReport,
 } from "@/lib/assessment/live-employability-report";
+import { assertCertificateEligibility } from "@/lib/assessment/certificate-eligibility";
 import { resolveOwnedStudentId } from "@/lib/assessment/resolve-student";
 import React from "react";
 import { renderToBuffer } from "@react-pdf/renderer";
@@ -61,12 +62,16 @@ export const GET = guard(
       }
     }
 
+    const snapshot = toAttemptSnapshotView(report);
+    const eligibility = await assertCertificateEligibility(studentId);
+    if (eligibility.ok) snapshot.id = eligibility.attemptId;
+
     return NextResponse.json(
       {
         success: true,
         report,
         /** Drop-in shape for EmployabilityDetailedReportView */
-        attempt: toAttemptSnapshotView(report),
+        attempt: snapshot,
       },
       { headers: { "Cache-Control": "private, no-store" } },
     );

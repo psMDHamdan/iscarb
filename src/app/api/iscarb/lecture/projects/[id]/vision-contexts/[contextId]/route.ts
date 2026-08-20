@@ -16,6 +16,7 @@ import { NextResponse } from "next/server";
 import { guard, type GuardContext } from "@/lib/api-guard";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { getScopedProject } from "@/lib/lecture/review/tenant-guard";
 
 const patchSchema = z.object({
   approved: z.boolean(),
@@ -31,15 +32,11 @@ export const PATCH = guard(
     const { id, contextId } = await params;
     const tenantId = ctx.session.universityId || "default";
 
-    // Verify project exists and is tenant-scoped
-    const project = await db.lectureProject.findFirst({ where: { id } });
-    if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
-    if (project.tenantId && project.tenantId !== tenantId && tenantId !== "default" && project.tenantId !== "default") {
-      return NextResponse.json({ error: "Unauthorized tenant access" }, { status: 403 });
-    }
+    const scoped = await getScopedProject(id, tenantId, ctx.session.userId);
+    if (!scoped) return NextResponse.json({ error: "Project not found" }, { status: 404 });
 
     const context = await db.lectureVisionContext.findFirst({
-      where: { id: contextId, projectId: id },
+      where: { id: contextId, projectId: scoped.id },
     });
     if (!context) {
       return NextResponse.json({ error: "Vision context not found" }, { status: 404 });

@@ -25,7 +25,7 @@ export async function getScopedProject(
     select: { id: true, tenantId: true, courseProfileId: true, nationalAlignmentMode: true },
   });
   if (!project) return null;
-  if (tenantId && project.tenantId !== tenantId && project.tenantId !== "default" && tenantId !== "default") {
+  if (project.tenantId !== tenantId) {
     await auditCrossTenant({
       actorId,
       entityType: "LectureProject",

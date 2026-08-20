@@ -9,16 +9,16 @@ import { useSession } from "@/lib/use-session";
 import {
   isEmployabilityAttemptId,
   findEmployabilityAttempt,
+  saveEmployabilityAttempt,
   type EmployabilityAttemptSnapshot,
 } from "@/lib/assessment/attempt-report-store";
 import {
+  clearReportBuildJob,
   loadReportBuildJob,
-  runReportBuild,
-  saveReportBuildJob,
   type ReportBuildProgress,
 } from "@/lib/assessment/report-build-job";
+import { authHeaders } from "@/lib/client-auth";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2, AlertTriangle } from "lucide-react";
 
@@ -27,8 +27,9 @@ type PageMode = "loading" | "building" | "ready" | "error";
 /**
  * Detailed employability report for one attempt.
  *
- * After exam submit, this route owns scoring: shows Building Report until every
- * answered module is scored and the snapshot is saved, then reveals the report.
+ * ISC-QA-001: scoring + report assembly run on the server via
+ * POST /attempts/[id]/finalize (idempotent). sessionStorage is only a handoff
+ * of frozen answers until finalize succeeds.
  */
 export default function AssessmentResultPage() {
   const params = useParams();
@@ -43,23 +44,61 @@ export default function AssessmentResultPage() {
   const [progress, setProgress] = useState<ReportBuildProgress | null>(null);
   const [canRetry, setCanRetry] = useState(false);
 
-  const startBuild = useCallback(
+  const startServerFinalize = useCallback(
     async (attemptId: string) => {
       setMode("building");
       setError(null);
       setCanRetry(false);
       setProgress({
-        phase: "scoring",
+        phase: "assembling",
         done: 0,
-        total: 0,
-        message: ar ? "جارٍ بناء التقرير…" : "Building Report",
+        total: 1,
+        message: ar ? "جارٍ بناء التقرير على الخادم…" : "Building report on the server…",
       });
 
       try {
-        const snapshot = await runReportBuild(attemptId, {
-          onProgress: (p) => setProgress(p),
+        const pending = loadReportBuildJob(attemptId);
+        const res = await fetch(`/api/iscarb/assessment/attempts/${encodeURIComponent(attemptId)}/finalize`, {
+          method: "POST",
+          headers: authHeaders({
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          }),
+          body: JSON.stringify({
+            answers: pending?.answers,
+            requireComplete: false,
+          }),
         });
-        setAttempt(snapshot);
+        const json = (await res.json().catch(() => ({}))) as {
+          error?: string;
+          code?: string;
+          attempt?: EmployabilityAttemptSnapshot;
+        };
+
+        if (!res.ok || !json.attempt?.profile) {
+          // Fallback: idempotent read if finalize already happened.
+          const read = await fetch(
+            `/api/iscarb/assessment/attempts/${encodeURIComponent(attemptId)}/report`,
+            { credentials: "include", cache: "no-store", headers: authHeaders() },
+          );
+          const readJson = (await read.json().catch(() => ({}))) as {
+            attempt?: EmployabilityAttemptSnapshot;
+            error?: string;
+          };
+          if (read.ok && readJson.attempt?.profile) {
+            clearReportBuildJob();
+            saveEmployabilityAttempt(readJson.attempt);
+            setAttempt(readJson.attempt);
+            setProgress(null);
+            setMode("ready");
+            return;
+          }
+          throw new Error(json.error || readJson.error || `Finalize failed (${res.status})`);
+        }
+
+        clearReportBuildJob();
+        saveEmployabilityAttempt(json.attempt);
+        setAttempt(json.attempt);
         setProgress(null);
         setMode("ready");
       } catch (e) {
@@ -78,11 +117,8 @@ export default function AssessmentResultPage() {
   );
 
   const handleRetry = useCallback(() => {
-    const job = loadReportBuildJob(resultId);
-    if (!job) return;
-    saveReportBuildJob({ ...job, status: "pending", error: null });
-    void startBuild(resultId);
-  }, [resultId, startBuild]);
+    void startServerFinalize(resultId);
+  }, [resultId, startServerFinalize]);
 
   useEffect(() => {
     let cancelled = false;
@@ -112,22 +148,14 @@ export default function AssessmentResultPage() {
         }
       }
 
-      // Pending / in-progress build for this attempt → Building Report (refresh-safe).
+      // Pending handoff or real attempt id → server finalize (ISC-QA-001).
       const pending = loadReportBuildJob(resultId);
-      if (pending) {
-        if (pending.status === "error" && pending.error && !cancelled) {
-          setError(pending.error);
-          setCanRetry(true);
-          setMode("error");
-          return;
-        }
-        if (!cancelled) {
-          void startBuild(resultId);
-        }
+      if (pending || !resultId.startsWith("emp_")) {
+        if (!cancelled) void startServerFinalize(resultId);
         return;
       }
 
-      // Legacy / missing snapshot: live API recompute (not used during a pending build).
+      // Legacy: student-scoped live recompute.
       if (!studentId) {
         if (!cancelled) {
           setError(
@@ -181,12 +209,9 @@ export default function AssessmentResultPage() {
     return () => {
       cancelled = true;
     };
-  }, [resultId, studentId, ar, startBuild]);
+  }, [resultId, studentId, ar, startServerFinalize]);
 
   if (mode === "building") {
-    const total = progress?.total ?? 0;
-    const done = progress?.done ?? 0;
-    const pct = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : undefined;
     const detail =
       progress?.message ||
       (ar ? "جارٍ بناء التقرير…" : "Building Report");
@@ -202,23 +227,14 @@ export default function AssessmentResultPage() {
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">{detail}</p>
         <div className="mt-8 w-full space-y-2">
-          {typeof pct === "number" ? (
-            <>
-              <Progress value={pct} className="h-2.5" />
-              <p className="text-xs tabular-nums text-muted-foreground">
-                {ar ? `تسجيل الإجابات… ${done}/${total}` : `Scoring your answers… ${done}/${total}`}
-              </p>
-            </>
-          ) : (
-            <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
-              <div className="h-full w-1/3 animate-pulse rounded-full bg-iscarb-green/70" />
-            </div>
-          )}
+          <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
+            <div className="h-full w-1/3 animate-pulse rounded-full bg-iscarb-green/70" />
+          </div>
         </div>
         <p className="mt-6 max-w-sm text-xs text-muted-foreground">
           {ar
-            ? "يمكنك تحديث الصفحة بأمان — لن تفقد إجاباتك ولن يُعاد بدء الامتحان."
-            : "You can refresh safely — your answers are saved and the exam will not restart."}
+            ? "يمكنك تحديث الصفحة بأمان — يتم البناء على الخادم ولن يُعاد بدء الامتحان."
+            : "You can refresh safely — the report builds on the server and the exam will not restart."}
         </p>
       </div>
     );

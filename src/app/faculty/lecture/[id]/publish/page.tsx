@@ -108,7 +108,15 @@ export default function PublishPage({
 
   const handleDownload = useCallback(
     async (formatId: string, versionId?: string) => {
-      const vid = versionId || lastPublishedId;
+      let vid = versionId || lastPublishedId;
+      if (!vid) {
+        try {
+          const result = await publish.mutateAsync({});
+          vid = result?.versionId;
+        } catch {
+          // If version exists, proceed to download
+        }
+      }
       if (vid) {
         window.open(
           `/api/iscarb/lecture/packages/${vid}/download/${formatId}`,
@@ -228,7 +236,7 @@ export default function PublishPage({
 
               <div className="shrink-0">
                 <Button
-                  onClick={() => setShowPublishConfirm(true)}
+                  onClick={() => publish.mutate({})}
                   disabled={
                     publish.isPending || r.artifactSummary.total === 0
                   }

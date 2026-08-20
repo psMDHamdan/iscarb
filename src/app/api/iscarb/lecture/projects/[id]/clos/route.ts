@@ -12,7 +12,11 @@ import { NextResponse } from "next/server";
 import { guard, type GuardContext } from "@/lib/api-guard";
 import { db } from "@/lib/db";
 import { z } from "zod";
-import { validateCloSelection } from "@/lib/lecture/planner/clo-validator";
+import {
+  assertApprovedCloTextImmutable,
+  validateCloSelection,
+} from "@/lib/lecture/planner/clo-validator";
+import { getScopedProject } from "@/lib/lecture/review/tenant-guard";
 
 const cloSchema = z.object({
   id: z.string().min(1),
@@ -37,8 +41,11 @@ export const PUT = guard(
     const { id } = await params;
     const tenantId = ctx.session.universityId || "default";
 
+    const scoped = await getScopedProject(id, tenantId, ctx.session.userId);
+    if (!scoped) return NextResponse.json({ error: "Project not found" }, { status: 404 });
+
     const project = await db.lectureProject.findFirst({
-      where: { id, tenantId },
+      where: { id: scoped.id },
       include: { courseProfile: true },
     });
     if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
@@ -63,15 +70,41 @@ export const PUT = guard(
       return NextResponse.json({ error: `Validation error: ${errMsgs}`, details: parsed.error.flatten() }, { status: 400 });
     }
 
+    // Validation check for CLO selection shape
+    const validation = validateCloSelection(parsed.data.teacherEnteredClos, parsed.data.selectedLectureCloIds);
+    if (!validation.valid) {
+      return NextResponse.json({ error: `CLO Validation Failed: ${validation.errors.join("; ")}`, details: validation.errors }, { status: 400 });
+    }
+
     // BRD FR-004 / AC-15: approved CLO text is immutable. Once approved,
     // faculty cannot overwrite the text. But a second project reuses this
     // tenant's course profile (same courseCode), so re-submitting the SAME
     // approved CLOs is legitimate — treat it as idempotent success instead of
     // dead-ending the wizard with 409. Different text still gets rejected.
-    // Validation check for CLO selection shape
-    const validation = validateCloSelection(parsed.data.teacherEnteredClos, parsed.data.selectedLectureCloIds);
-    if (!validation.valid) {
-      return NextResponse.json({ error: `CLO Validation Failed: ${validation.errors.join("; ")}`, details: validation.errors }, { status: 400 });
+    const immutability = assertApprovedCloTextImmutable(
+      project.courseProfile.cloApprovedAt,
+      project.courseProfile.teacherEnteredClos,
+      parsed.data.teacherEnteredClos
+    );
+    if (!immutability.allowed) {
+      return NextResponse.json(
+        {
+          error: "Approved CLO text is immutable and cannot be changed",
+          code: immutability.error ?? "CLO_TEXT_IMMUTABLE",
+        },
+        { status: 409 }
+      );
+    }
+    if (immutability.idempotent) {
+      const existingClos = Array.isArray(project.courseProfile.teacherEnteredClos)
+        ? project.courseProfile.teacherEnteredClos
+        : [];
+      return NextResponse.json({
+        courseProfileId: project.courseProfile.id,
+        cloCount: existingClos.length,
+        approvedAt: project.courseProfile.cloApprovedAt,
+        idempotent: true,
+      });
     }
 
     try {
