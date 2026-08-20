@@ -35,6 +35,7 @@ import type { CourseLearningOutcome } from "@/lib/assessment/ai-question-generat
 import { generateSlideArtifact } from "./slide-generator";
 import { generateReadinessItems } from "./readiness-generator";
 import { deduplicateReadinessItems } from "@/lib/lecture/deduplication";
+import { globalSentenceRegistry } from "./content-registry";
 import type {
   LectureProjectWithRelations,
   ReadinessItemJson,
@@ -145,7 +146,7 @@ async function persistArtifact(
     contentJson: draft.content as object,
     citations: draft.content.citations as object[],
     wordCount: draft.content.wordCount,
-    bulletCount: draft.content.bullets.length,
+    bulletCount: (draft.content.body?.bullets ?? draft.content.bullets ?? []).length,
     status: draft.flagged ? "flagged" : "draft",
   };
 
@@ -187,9 +188,9 @@ async function persistReadinessItem(
   const existing =
     typeof db.lectureReadinessItem?.findFirst === "function"
       ? await db.lectureReadinessItem.findFirst({
-          where: { projectId, slideNo: item.slideNo },
-          orderBy: { createdAt: "desc" },
-        })
+        where: { projectId, slideNo: item.slideNo },
+        orderBy: { createdAt: "desc" },
+      })
       : null;
 
   const payload = {
@@ -344,6 +345,12 @@ export async function generateSlideChunk(
 ): Promise<void> {
   const win = progressWindow(meta);
   try {
+    // Reset sentence registry at the start of each generation run so
+    // cross-slide repetition tracking is scoped to this deck only.
+    if (Math.min(...slideNos) <= 1) {
+      globalSentenceRegistry.clear();
+    }
+
     await setProgress(projectId, { status: "generating", progress: within(win, 2) });
 
     const project = await loadProject(projectId);
@@ -764,14 +771,25 @@ function failedDraft(
     slidePlanId: plan.id,
     content: {
       title: plan.title,
-      bullets: [],
-      visualIntent: "",
-      studentAction: "",
-      speakerNotes: "",
-      citations: [],
-      claims: [],
+      body: {
+        visibleCopy: "",
+        bullets: [],
+      },
+      notes: {
+        instructorNotes: "",
+        timingMinutes: 0,
+        facilitationMoves: [],
+        answers: "",
+      },
+      sourceCoverage: {
+        mappedBlockIds: plan.sourceBlockIds ?? [],
+        omissionReason: null,
+      },
+      cloLinks: plan.cloIds ?? [],
       cloIds: plan.cloIds ?? [],
       sourceBlockIds: plan.sourceBlockIds ?? [],
+      citations: [],
+      claims: [],
       wordCount: 0,
     },
     errors: [error],

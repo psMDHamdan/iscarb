@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Zap, Loader2, Image as ImageIcon, Sparkles, Edit2, CheckCircle2 } from "lucide-react";
 import type { SlideContentJson } from "@/lib/lecture/generation/types";
 import { getAcademicVisualForSlide } from "@/lib/lecture/academic-visuals";
+import { proxiedImageUrl } from "@/lib/image-proxy";
 import { VisualManagerModal } from "./VisualManagerModal";
 import { StemRenderer } from "@/components/ui/StemRenderer";
 
@@ -55,7 +56,7 @@ export function SlidePreviewCard({ slideNo, content, total = 20, className, onSa
     );
   }
 
-  const bullets = content.bullets || content.visibleContent || [];
+  const bullets = content.body?.bullets || content.bullets || content.visibleContent || [];
   const wordCount = (content.title || "").split(/\s+/).length + bullets.join(" ").split(/\s+/).length;
   const over = wordCount > 40;
 
@@ -116,24 +117,18 @@ export function SlidePreviewCard({ slideNo, content, total = 20, className, onSa
             {/* Visual Image */}
             <div className="relative w-full h-32 rounded-xl overflow-hidden bg-white border border-emerald-100 shadow-xs">
               <img
-                src={(() => {
-                  // Reject PDFs and non-image formats immediately, use fallback
-                  const url = currentDisplayImage || "";
-                  const lower = url.toLowerCase().split("?")[0];
-                  const badExts = [".pdf", ".djvu", ".ogg", ".webm", ".ogv", ".mp4"];
-                  if (badExts.some((e) => lower.endsWith(e))) {
-                    return fallbackVisual.imageUrl;
-                  }
-                  return url.startsWith("http")
-                    ? `/api/iscarb/image-proxy?url=${encodeURIComponent(url)}`
-                    : url;
-                })()}
+                src={proxiedImageUrl(currentDisplayImage)}
                 alt={currentDisplayTitle}
                 className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
                 loading="lazy"
                 onError={(e) => {
-                  // Use fallback Unsplash image directly (not through proxy to avoid redirect loops)
-                  (e.target as HTMLImageElement).src = fallbackVisual.imageUrl;
+                  const fallbackSrc = proxiedImageUrl(fallbackVisual.imageUrl);
+                  // Avoid a feedback loop if the fallback itself cannot load.
+                  // Fall back to the proxied fallback on any error (never raw,
+                  // which would violate the CSP img-src directive).
+                  if ((e.target as HTMLImageElement).getAttribute("src") !== fallbackSrc) {
+                    (e.target as HTMLImageElement).src = fallbackSrc;
+                  }
                 }}
               />
 
@@ -216,7 +211,7 @@ export function SlidePreviewCard({ slideNo, content, total = 20, className, onSa
               <StemRenderer content={typeof content.studentAction === "object" ? (content.studentAction as any).prompt : content.studentAction} inline />
             </span>
           </div>
-          <Badge className="bg-[#0E6C3C] text-white font-bold shrink-0 text-[10px] shadow-xs">Active Task</Badge>
+          <Badge className="bg-[#0E6C3C] text-white font-bold shrink-0 text-[10px] shadow-xs">⚡ Activity</Badge>
         </div>
       )}
 

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertCircle, Wallet, Award, ExternalLink, QrCode, X, Filter } from "lucide-react";
+import { proxiedImageUrl } from "@/lib/image-proxy";
 
 interface CredentialItem {
   id: string;
@@ -186,7 +187,7 @@ export function CompetenciesCredentialWalletView() {
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-start gap-3">
                       {cred.imageUrl ? (
-                        <img src={cred.imageUrl} alt={cred.name} className="h-10 w-10 rounded-lg object-cover" />
+                        <img src={proxiedImageUrl(cred.imageUrl)} alt={cred.name} className="h-10 w-10 rounded-lg object-cover" />
                       ) : (
                         <div className="h-10 w-10 rounded-lg bg-iscarb-blue/10 flex items-center justify-center">
                           <Award className="h-5 w-5 text-iscarb-blue" />

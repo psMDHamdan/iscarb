@@ -37,18 +37,35 @@ async function buildEvidenceData(
     include: { courseProfile: true },
   });
   const gateResults = await db.lectureGateResult.findMany({ where: { projectId } });
+  const artifacts = await db.lectureSlideArtifact.findMany({
+    where: { projectId },
+    orderBy: { slideNo: "asc" },
+  });
+  const readiness = await db.lectureReadinessItem.findMany({ where: { projectId } });
 
   return {
-    courseName: project?.courseProfile?.courseName ?? "Course",
-    courseCode: project?.courseProfile?.courseCode ?? "CRS-101",
-    lectureTitle: project?.title ?? "Lecture",
-    version: 1,
+    projectTitle: project?.title ?? "Lecture",
     manifestHash: manifestHash ?? "N/A",
     approvedBy: approvedBy ?? "Faculty",
     approvedAt: approvedAt ? approvedAt.toISOString() : new Date().toISOString(),
+    coverage: artifacts.map((a: { contentJson: unknown; slideNo: number }) => {
+      const src = (a.contentJson as any)?.sourceCoverage as any;
+      return {
+        blockId: src?.mappedBlockIds?.[0] ?? "",
+        locator: src?.sourceLocator ?? `Slide ${a.slideNo}`,
+        disposition: src?.mappedBlockIds?.length ? "mapped" : "none",
+        reason: src?.mappedBlockIds?.length ? null : "no source blocks mapped",
+      };
+    }),
     clos: clos.map((c) => ({ number: c.number, text: c.text, bloomLevel: c.bloomLevel })),
-    qualityGates: gateResults.map((g) => ({ gateId: g.gateId, name: g.gateId, status: g.status, detail: g.detail ?? "" })),
-    matrix: clos.map((c) => ({ cloNumber: c.number, cloText: c.text, slideCount: 1, artifactIds: [] })),
+    citations: [],
+    readiness: readiness.map((r: { slideNo: number; stem: string; cloId: string }) => ({
+      slideNo: r.slideNo,
+      stem: r.stem,
+      clo: r.cloId,
+      outcome: null,
+    })),
+    gates: gateResults.map((g: { gateKey: string; status: string; severity: string }) => ({ gateKey: g.gateKey, status: g.status, severity: g.severity })),
   };
 }
 

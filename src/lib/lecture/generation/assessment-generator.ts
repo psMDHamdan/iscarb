@@ -155,8 +155,8 @@ export async function generateAssessment(
     "rubric",
     "evidence",
   ]);
-  if (noAssessmentFunctions.has((slide as any).fn ?? "")) return slide;
-  if (!slide.title || slide.bullets.length === 0) return slide;
+  if (noAssessmentFunctions.has((slide as any).function ?? (slide as any).fn ?? "")) return slide;
+  if (!slide.title || (slide.body?.bullets ?? []).length === 0) return slide;
 
   const sourceTexts = sourceBlocks.map((b) => b.text);
 

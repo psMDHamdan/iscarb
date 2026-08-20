@@ -119,18 +119,10 @@ export class StudentUxAdapter extends BaseProjectionAdapter<LearningExperience, 
           ["review", "flagged", "NEEDS_FACULTY_REVIEW"].includes(String(input.status)) ||
           (block as { flaggedForReview?: boolean }).flaggedForReview === true,
 
-        // 5-Layer Student View (No technical field jargon + LaTeX equation support)
-        coreInsight: coreInsightHtml,
-        mentalModel: cleanJargon(
-          block.intuitionMentalModel || academicAnalogy.analogy || "Imagine a real-world metaphor illustrating this principle."
-        ),
-        mechanism: mechanismExplanationHtml,
-        realWorldApplication: transferScenarioHtml,
-        misconceptionAlert: block.misconceptions?.[0] ? {
-          misconception: cleanJargon(block.misconceptions[0].commonBelief),
-          whyItFails: cleanJargon(block.misconceptions[0].whyIncorrect),
-          correction: cleanJargon(block.misconceptions[0].correction),
-        } : undefined,
+        // iSCARB Content Compiler Schema
+        visibleCopy: coreInsightHtml,
+        bullets: block.keyTakeaways?.map((t) => MathChemTransformer.transformToHtml(cleanJargon(t))) || [],
+        studentAction: undefined, // Populated from activity below if needed, or left undefined if handled by activity field.
 
         // Visual Scaffolding
         visual: visual

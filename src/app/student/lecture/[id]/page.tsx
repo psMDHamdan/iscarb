@@ -17,17 +17,13 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-
-import { motion } from "framer-motion";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
   ChevronRight,
   BookOpen,
-  Loader2,
-  CheckCircle,
-  Star,
-  Menu,
-  X,
+  Edit3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/lib/store";
@@ -71,20 +67,10 @@ export default function StudentLearnPage() {
     `/api/iscarb/lecture/experience/${experienceId}`,
   );
 
-  // ── Server session (resume + server-computed mastery) ─────────────────────
-  const [sessionState, setSessionState] = useState<{
-    sessionId?: string;
-    resume?: { currentBlockIndex?: number; currentStage?: string; completedStageKeys?: string[] };
-    masteryPercent?: number;
-    finalChallengeUnlocked?: boolean;
-  } | null>(null);
-
   // ── State ─────────────────────────────────────────────────────────────────
   const [phase, setPhase] = useState<PlayerPhase>("LANDING");
   const [currentConceptId, setCurrentConceptId] = useState<string>("");
   const [completedConceptIds, setCompletedConceptIds] = useState<Set<string>>(new Set());
-  const [completedInteractions, setCompletedInteractions] = useState<Set<string>>(new Set());
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // ── Derived data ──────────────────────────────────────────────────────────
 
@@ -133,30 +119,9 @@ export default function StudentLearnPage() {
 
   useEffect(() => {
     if (experience && !currentConceptId) {
-      // Resume from the server session (spec: server-persisted progress), else
-      // fall back to the first concept.
-      fetch(`/api/iscarb/lecture/experience/${experienceId}/session`)
-        .then((r) => (r.ok ? r.json() : null))
-        .then((s: {
-          sessionId?: string;
-          resume?: { currentBlockIndex?: number; currentStage?: string; completedStageKeys?: string[] };
-          masteryPercent?: number;
-          finalChallengeUnlocked?: boolean;
-        } | null) => {
-          if (s) setSessionState(s);
-          const resumeKeys = s?.resume?.completedStageKeys;
-          if (resumeKeys?.length) {
-            setCompletedConceptIds((prev) => new Set([...prev, ...resumeKeys]));
-          }
-          const resumeIndex = s?.resume?.currentBlockIndex ?? 0;
-          const targetId =
-            conceptOrder[Math.max(0, Math.min(resumeIndex - 1, conceptOrder.length - 1))] ??
-            experience.navigation.initialActiveConceptId;
-          setCurrentConceptId(targetId);
-        })
-        .catch(() => setCurrentConceptId(experience.navigation.initialActiveConceptId));
+      setCurrentConceptId(experience.navigation.initialActiveConceptId);
     }
-  }, [experience, currentConceptId, experienceId, conceptOrder]);
+  }, [experience, currentConceptId]);
 
   // ── Navigation callbacks ──────────────────────────────────────────────────
 
@@ -177,19 +142,8 @@ export default function StudentLearnPage() {
 
   const goNext = useCallback(() => {
     if (!experience || !currentConceptId) return;
-    
-    // Check if current concept requires interaction before proceeding
-    const currentConceptView = experience.concepts[currentConceptId];
-    if (currentConceptView) {
-      const hasInteraction = !!currentConceptView.activity || !!currentConceptView.assessment;
-      // Allow proceeding if already completed or marked
-      if (hasInteraction && !completedInteractions.has(currentConceptId) && !completedConceptIds.has(currentConceptId)) {
-        alert(ar ? "يرجى إكمال النشاط قبل المتابعة." : "Please complete the task to proceed.");
-        return;
-      }
-    }
+
     if (isLastConcept) {
-      // Mark the last concept as completed and show summary
       setCompletedConceptIds((prev) => {
         const next = new Set(prev);
         next.add(currentConceptId);
@@ -199,7 +153,7 @@ export default function StudentLearnPage() {
       return;
     }
     navigateTo(conceptOrder[currentIndex + 1]);
-  }, [experience, currentConceptId, completedInteractions, completedConceptIds, ar, isLastConcept, currentIndex, conceptOrder, navigateTo]);
+  }, [experience, currentConceptId, isLastConcept, currentIndex, conceptOrder, navigateTo]);
 
   const goPrev = useCallback(() => {
     if (isFirstConcept) return;
@@ -231,41 +185,6 @@ export default function StudentLearnPage() {
   const handleFinish = useCallback(() => {
     router.push("/student/lecture");
   }, [router]);
-
-  // ── Server-side progress persistence (resume + mastery sync) ──────────────
-  const syncProgress = useCallback(() => {
-    if (!currentConceptId) return;
-    const idx = conceptOrder.indexOf(currentConceptId);
-    fetch(`/api/iscarb/lecture/experience/${experienceId}/session`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        currentBlockIndex: idx + 1,
-        currentStage: currentConcept?.stage ?? "DISCOVER",
-        completedStageKeys: [...completedConceptIds],
-      }),
-    })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((s) => {
-        if (s?.masteryPercent != null) {
-          setSessionState((prev) => ({
-            ...prev,
-            sessionId: s.sessionId ?? prev?.sessionId,
-            masteryPercent: s.masteryPercent,
-            finalChallengeUnlocked: s.finalChallengeUnlocked,
-          }));
-        }
-      })
-      .catch(() => {});
-  }, [currentConceptId, conceptOrder, completedConceptIds, currentConcept, experienceId]);
-
-  // Persist progress to the server whenever the active concept changes.
-  useEffect(() => {
-    if (phase === "PLAYING" && currentConceptId) {
-      const t = setTimeout(syncProgress, 400);
-      return () => clearTimeout(t);
-    }
-  }, [phase, currentConceptId, syncProgress]);
 
   // ── Keyboard navigation ───────────────────────────────────────────────────
 
@@ -299,19 +218,16 @@ export default function StudentLearnPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center relative overflow-hidden bg-slate-50 dark:bg-slate-950">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-100/40 via-slate-50 to-slate-50 dark:from-emerald-900/20 dark:via-slate-950 dark:to-slate-950" />
-        <div className="relative z-10 space-y-6 text-center max-w-sm w-full mx-4">
-          <div className="glass-card p-8 flex flex-col items-center justify-center animate-pulse">
-            <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-teal-500/10 text-emerald-600 dark:text-emerald-400 mb-6">
-              <BookOpen className="h-10 w-10 animate-bounce" />
-            </div>
-            <p className="text-lg font-black tracking-tight text-slate-800 dark:text-slate-100">
-              {ar ? "جاري تحضير تجربة التعلّم..." : "Preparing your learning experience..."}
-            </p>
-            <div className="mt-6 h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 w-2/3 animate-pulse rounded-full" />
-            </div>
+      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-emerald-50/50 via-slate-50/80 to-teal-50/40 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+        <div className="space-y-4 text-center max-w-md">
+          <div className="p-4 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 w-16 h-16 mx-auto flex items-center justify-center animate-pulse">
+            <BookOpen className="h-8 w-8" />
+          </div>
+          <p className="text-base font-bold text-slate-700 dark:text-slate-300">
+            {ar ? "جاري تحضير تجربة التعلّم..." : "Preparing your learning experience..."}
+          </p>
+          <div className="h-1.5 w-48 mx-auto rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+            <div className="h-full w-2/3 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 animate-pulse" />
           </div>
         </div>
       </div>
@@ -322,23 +238,20 @@ export default function StudentLearnPage() {
 
   if (error || !experience) {
     return (
-      <div className="flex min-h-screen items-center justify-center relative overflow-hidden bg-slate-50 dark:bg-slate-950 px-4">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-100/40 via-slate-50 to-slate-50 dark:from-rose-900/20 dark:via-slate-950 dark:to-slate-950" />
-        <div className="relative z-10 glass-card p-10 text-center max-w-md w-full space-y-6">
-          <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-400/20 to-red-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center shadow-inner">
-            <span className="text-3xl font-black">!</span>
+      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-emerald-50/50 via-slate-50/80 to-teal-50/40 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 px-4">
+        <div className="max-w-md rounded-3xl border border-red-500/30 bg-white/90 dark:bg-slate-900/90 p-8 text-center space-y-4 shadow-xl">
+          <div className="mx-auto w-12 h-12 rounded-full bg-red-100 dark:bg-red-950/40 flex items-center justify-center">
+            <span className="text-2xl">⚠</span>
           </div>
-          <div className="space-y-2">
-            <h2 className="text-xl font-black tracking-tight text-slate-900 dark:text-slate-100">
-              {ar ? "تعذر تحميل التجربة التعليمية" : "Failed to load learning experience"}
-            </h2>
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-              {(error as Error)?.message ?? (ar ? "يرجى المحاولة مرة أخرى" : "Please try again later")}
-            </p>
-          </div>
+          <h2 className="text-lg font-bold text-red-700 dark:text-red-300">
+            {ar ? "تعذر تحميل التجربة التعليمية" : "Failed to load learning experience"}
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            {(error as Error)?.message ?? (ar ? "يرجى المحاولة مرة أخرى" : "Please try again later")}
+          </p>
           <button
             onClick={() => router.back()}
-            className="w-full py-3.5 rounded-xl text-sm font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-emerald-500/50 hover:shadow-brand transition-all active:scale-[0.98]"
+            className="px-6 py-2.5 rounded-xl text-sm font-bold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
             {ar ? "العودة" : "Go Back"}
           </button>
@@ -380,144 +293,100 @@ export default function StudentLearnPage() {
 
   return (
     <div
-      className="flex flex-col h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased relative overflow-hidden"
+      className="flex flex-col h-screen bg-gradient-to-br from-emerald-50/50 via-slate-50/80 to-teal-50/40 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased"
       dir={ar ? "rtl" : "ltr"}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-100/30 via-slate-50 to-slate-50 dark:from-emerald-900/10 dark:via-slate-950 dark:to-slate-950 pointer-events-none" />
-      
       {/* ── Top Bar ────────────────────────────────────────────────────── */}
-      <header className="relative z-10 flex items-center gap-4 px-6 py-4 glass-panel border-b border-white/20 dark:border-white/5 shrink-0 shadow-sm">
-        {/* Mobile hamburger */}
-        <button
-          type="button"
-          onClick={() => setMobileNavOpen(true)}
-          className="lg:hidden flex items-center justify-center p-2 rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-all"
-          aria-label={ar ? "التنقل" : "Navigate"}
-        >
-          <Menu className="h-5 w-5 text-slate-600 dark:text-slate-300" />
-        </button>
-
+      <header className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-200/60 dark:border-slate-700/40 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl shrink-0">
         {/* Back to the lecture list */}
         <button
           type="button"
           onClick={() => router.back()}
-          className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 transition-all hover:shadow-brand border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors"
           aria-label={ar ? "رجوع" : "Back"}
         >
           <ChevronLeft className={cn("h-4 w-4", ar && "rotate-180")} />
-          {ar ? "العودة للدروس" : "Back to Lectures"}
+          {ar ? "رجوع" : "Back"}
         </button>
 
         {/* Title */}
-        <h1 className="flex-1 text-base font-black tracking-tight text-slate-800 dark:text-slate-200 truncate px-2">
+        <h1 className="flex-1 text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
           {experience.courseTitle}
         </h1>
 
+        {/* Faculty Edit in Studio Shortcut — studio is keyed by projectId */}
+        <Link
+          href={`/faculty/lecture/${experience.projectId || experienceId.replace(/^PREVIEW_/, "")}/studio/${currentIndex + 1}`}
+          target="_blank"
+          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 transition-colors shadow-xs"
+        >
+          <Edit3 className="h-3.5 w-3.5 text-emerald-700" />
+          {ar ? "تعديل في الاستوديو" : "Edit in Studio"}
+        </Link>
+
         {/* Progress */}
-        <div className="hidden sm:flex items-center gap-3 min-w-[180px] bg-white/40 dark:bg-slate-900/40 px-4 py-2 rounded-2xl border border-slate-200/50 dark:border-slate-700/50">
-          <div className="flex-1 h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden shadow-inner">
+        <div className="hidden sm:flex items-center gap-2 min-w-[140px]">
+          <div className="flex-1 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"
+              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"
               animate={{ width: `${progressPercent}%` }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
+              transition={{ duration: 0.4 }}
             />
           </div>
-          <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400 tabular-nums">
-            {currentIndex + 1} / {conceptOrder.length}
+          <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500 tabular-nums">
+            {currentIndex + 1}/{conceptOrder.length}
           </span>
-          {sessionState?.masteryPercent != null && (
-            <span className="flex items-center gap-1 text-xs font-black text-emerald-600 dark:text-emerald-400 tabular-nums" title={ar ? "إتقان محسوب على الخادم" : "Server-computed mastery"}>
-              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-              {sessionState.masteryPercent}%
-            </span>
-          )}
         </div>
       </header>
 
       {/* ── Main 3-Panel Layout ────────────────────────────────────────── */}
-      <div className="relative z-10 flex flex-1 min-h-0 lg:flex-row flex-col overflow-hidden p-0 sm:p-4 gap-4">
+      <div className="flex flex-1 min-h-0 lg:flex-row flex-col overflow-hidden">
 
         {/* Left Panel — Journey Navigator */}
         <div className="hidden lg:flex flex-col shrink-0 overflow-hidden transition-all duration-300 ease-in-out w-64 xl:w-72 opacity-100">
-          <div className="glass-card h-full rounded-3xl overflow-hidden border border-white/20 dark:border-white/5 shadow-brand">
-            <JourneyNavigator
-              stages={experience.navigation.stages}
-              currentStage={currentStage}
-              currentConceptId={currentConceptId}
-              completedConceptIds={completedConceptIds}
-              totalConcepts={experience.navigation.totalConcepts}
-              ar={ar}
-              onStageClick={handleStageClick}
-              onConceptClick={navigateTo}
-            />
-          </div>
+          <JourneyNavigator
+            stages={experience.navigation.stages}
+            currentStage={currentStage}
+            currentConceptId={currentConceptId}
+            completedConceptIds={completedConceptIds}
+            totalConcepts={experience.navigation.totalConcepts}
+            ar={ar}
+            onStageClick={handleStageClick}
+            onConceptClick={navigateTo}
+          />
         </div>
 
         {/* Center Panel — Concept Content */}
-        <main className="flex flex-col flex-1 min-w-0 overflow-hidden glass-card sm:rounded-3xl border-y sm:border border-white/20 dark:border-white/5 shadow-brand bg-white/80 dark:bg-slate-900/80">
+        <main className="flex flex-col flex-1 min-w-0 overflow-hidden border-x-0 lg:border-x border-slate-200/60 dark:border-slate-700/40">
           {/* Content */}
           <div className="flex-1 overflow-y-auto">
             {currentConcept ? (
               isFinalChallenge && experience.finalChallenge ? (
-                sessionState?.finalChallengeUnlocked === false ? (
-                  <FinalChallengeLocked
-                    masteryPercent={sessionState?.masteryPercent ?? 0}
-                    ar={ar}
-                  />
-                ) : (
-                  <FinalChallengeView
-                    challenge={experience.finalChallenge}
-                    ar={ar}
-                    experienceId={experienceId}
-                    onAnswerRecorded={(score) => {
-                      fetch(`/api/iscarb/lecture/experience/${experienceId}/session`, {
-                        method: "PATCH",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          interaction: {
-                            conceptBlockId: currentConcept.id,
-                            activityType: "FINAL_CHALLENGE",
-                            studentInput: "final challenge submitted",
-                            isCorrect: score >= 4,
-                            evaluatedMasteryScore: score,
-                          },
-                        }),
-                      })
-                        .then((r) => (r.ok ? r.json() : null))
-                        .then((s) => {
-                          if (s?.masteryPercent != null) {
-                            setSessionState((prev) => ({
-                              ...prev,
-                              masteryPercent: s.masteryPercent,
-                              finalChallengeUnlocked: s.finalChallengeUnlocked,
-                            }));
-                          }
-                        })
-                        .catch(() => {});
-                    }}
-                  />
-                )
+                <FinalChallengeView
+                  challenge={experience.finalChallenge}
+                  ar={ar}
+                />
               ) : (
-                <ConceptContent concept={currentConcept} ar={ar} experienceId={experienceId} />
+                <ConceptContent concept={currentConcept} ar={ar} />
               )
             ) : (
-              <div className="flex items-center justify-center h-full p-8 text-sm font-medium text-slate-500 dark:text-slate-400">
+              <div className="flex items-center justify-center h-full p-8 text-sm text-slate-500 dark:text-slate-400">
                 {ar ? "حدد مفهومًا للبدء" : "Select a concept to begin"}
               </div>
             )}
           </div>
 
           {/* Bottom Navigation Bar */}
-          <nav className="flex items-center gap-4 px-6 py-4 border-t border-slate-200/40 dark:border-slate-700/40 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md shrink-0">
+          <nav className="flex items-center gap-3 px-4 py-3 border-t border-slate-200/60 dark:border-slate-700/40 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl shrink-0">
             <button
               type="button"
               onClick={goPrev}
               disabled={isFirstConcept}
               className={cn(
-                "flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400",
+                "flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400",
                 isFirstConcept
                   ? "text-slate-300 dark:text-slate-600 cursor-not-allowed"
-                  : "text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:shadow-brand border border-slate-200 dark:border-slate-700 hover:border-emerald-500/30 active:scale-[0.98]",
+                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 border border-slate-200 dark:border-slate-700",
               )}
               aria-label={ar ? "السابق" : "Previous"}
             >
@@ -526,12 +395,12 @@ export default function StudentLearnPage() {
             </button>
 
             {/* Mobile progress */}
-            <div className="flex-1 sm:hidden px-4">
-              <div className="h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden shadow-inner">
+            <div className="flex-1 sm:hidden">
+              <div className="h-1 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
                 <motion.div
-                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"
+                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"
                   animate={{ width: `${progressPercent}%` }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  transition={{ duration: 0.4 }}
                 />
               </div>
             </div>
@@ -541,13 +410,13 @@ export default function StudentLearnPage() {
             <button
               type="button"
               onClick={goNext}
-              className="group flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-black tracking-wide text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 shadow-brand hover:shadow-emerald-500/25 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 active:scale-[0.98]"
+              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-extrabold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md hover:shadow-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
               aria-label={isLastConcept ? (ar ? "إنهاء" : "Finish") : (ar ? "التالي" : "Next")}
             >
               {isLastConcept
                 ? (ar ? "عرض النتائج" : "See Results")
                 : (ar ? "التالي" : "Next")}
-              <ChevronRight className={cn("h-4 w-4 transition-transform group-hover:translate-x-1", ar && "rotate-180 group-hover:-translate-x-1")} />
+              <ChevronRight className={cn("h-4 w-4", ar && "rotate-180")} />
             </button>
           </nav>
         </main>
@@ -555,108 +424,31 @@ export default function StudentLearnPage() {
         {/* Right Panel — Activity / Assessment / Coach */}
         <aside
           className={cn(
-            "flex flex-col min-w-0 overflow-hidden border-t sm:border-t-0 sm:rounded-3xl glass-card border border-white/20 dark:border-white/5 shadow-brand",
-            "lg:w-[32%] xl:w-[28%] max-w-md",
+            "flex flex-col min-w-0 overflow-hidden border-t lg:border-t-0",
+            "lg:w-[32%] xl:w-[27%] max-w-md",
             "min-h-[300px] lg:min-h-0",
           )}
         >
           {currentConcept ? (
-            <ActivityPanel 
-              concept={currentConcept} 
+            <ActivityPanel
+              concept={currentConcept}
               ar={ar}
               experienceId={experienceId}
-              onActivitySubmit={(conceptId, answer) => {
-                setCompletedInteractions(prev => new Set(prev).add(conceptId));
-                // Persist the free-text activity server-side (drives mastery).
-                fetch(`/api/iscarb/lecture/experience/${experienceId}/session`, {
-                  method: "PATCH",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    interaction: {
-                      conceptBlockId: conceptId,
-                      activityType: "ACTIVE_RECALL",
-                      studentInput: answer ?? "",
-                      isCorrect: true,
-                    },
-                  }),
-                })
-                  .then((r) => (r.ok ? r.json() : null))
-                  .then((s) => {
-                    if (s?.masteryPercent != null) {
-                      setSessionState((prev) => ({
-                        ...prev,
-                        masteryPercent: s.masteryPercent,
-                        finalChallengeUnlocked: s.finalChallengeUnlocked,
-                      }));
-                    }
-                  })
-                  .catch(() => {});
+
+              onActivitySubmit={(id) => {
+                setCompletedConceptIds(prev => new Set(prev).add(currentConcept.id));
               }}
-              onAssessmentAnswer={(assessmentId, optionId) => {
-                void assessmentId; void optionId;
-                setCompletedInteractions(prev => new Set(prev).add(currentConcept.id));
+              onAssessmentAnswer={(id) => {
+                setCompletedConceptIds(prev => new Set(prev).add(currentConcept.id));
               }}
             />
           ) : (
-            <div className="flex items-center justify-center h-full p-6 text-sm font-medium text-slate-400 dark:text-slate-500">
+            <div className="flex items-center justify-center h-full p-6 text-sm text-slate-400 dark:text-slate-500">
               {ar ? "محتوى تفاعلي" : "Interactive content"}
             </div>
           )}
         </aside>
       </div>
-
-      {/* ── Mobile Navigation Drawer ────────────────────────────────────── */}
-      {mobileNavOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setMobileNavOpen(false)}
-          />
-          {/* Drawer */}
-          <motion.div
-            initial={{ x: ar ? 300 : -300 }}
-            animate={{ x: 0 }}
-            exit={{ x: ar ? 300 : -300 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className={cn(
-              "absolute top-0 h-full w-72 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden",
-              ar ? "right-0" : "left-0"
-            )}
-          >
-            <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
-              <span className="text-sm font-black text-slate-800 dark:text-slate-200">
-                {ar ? "التنقل" : "Navigate"}
-              </span>
-              <button
-                type="button"
-                onClick={() => setMobileNavOpen(false)}
-                className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              >
-                <X className="h-4 w-4 text-slate-500" />
-              </button>
-            </div>
-            <div className="h-[calc(100%-60px)] overflow-y-auto">
-              <JourneyNavigator
-                stages={experience.navigation.stages}
-                currentStage={currentStage}
-                currentConceptId={currentConceptId}
-                completedConceptIds={completedConceptIds}
-                totalConcepts={experience.navigation.totalConcepts}
-                ar={ar}
-                onStageClick={(stageKey) => {
-                  handleStageClick(stageKey);
-                  setMobileNavOpen(false);
-                }}
-                onConceptClick={(id) => {
-                  navigateTo(id);
-                  setMobileNavOpen(false);
-                }}
-              />
-            </div>
-          </motion.div>
-        </div>
-      )}
     </div>
   );
 }
@@ -668,229 +460,78 @@ export default function StudentLearnPage() {
 function FinalChallengeView({
   challenge,
   ar,
-  experienceId,
-  onAnswerRecorded,
 }: {
   challenge: StudentFinalChallengeViewModel;
   ar: boolean;
-  experienceId?: string;
-  onAnswerRecorded?: (score: number) => void;
 }) {
   const [response, setResponse] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [evaluation, setEvaluation] = useState<{ score: number; feedback: string } | null>(null);
-
-  const handleSubmit = async () => {
-    if (!response.trim()) return;
-    setIsSubmitting(true);
-    try {
-      const res = await fetch("/api/iscarb/student/lecture/evaluate-task", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          conceptTitle: challenge.title,
-          taskPrompt: `${challenge.prompt}\n\nScenario: ${challenge.scenario}\n\nRubric: ${challenge.rubricCriteria.join("; ")}`,
-          studentAnswer: response,
-          lang: ar ? "ar" : "en",
-          mode: "challenge",
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setEvaluation({ score: data.score || 3, feedback: data.feedback || (ar ? "تم تقييم إجابتك" : "Your response has been evaluated.") });
-        onAnswerRecorded?.(data.score || 3);
-      } else {
-        setEvaluation({ score: 3, feedback: ar ? "تم حفظ إجابتك." : "Your response has been saved." });
-        onAnswerRecorded?.(3);
-      }
-    } catch {
-      setEvaluation({ score: 3, feedback: ar ? "تم حفظ إجابتك." : "Your response has been saved." });
-      onAnswerRecorded?.(3);
-    } finally {
-      setIsSubmitting(false);
-      setSubmitted(true);
-    }
-  };
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto p-6 lg:p-10 max-w-4xl mx-auto w-full space-y-8" dir={ar ? "rtl" : "ltr"}>
+    <div className="flex flex-col h-full overflow-y-auto p-5 lg:p-6 max-w-3xl mx-auto w-full space-y-5" dir={ar ? "rtl" : "ltr"}>
       {/* Header */}
-      <div className="space-y-3">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-sm">
-          <span className="text-sm">🔥</span>
-          {ar ? "التحدي النهائي" : "Final Challenge"}
-        </div>
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 dark:text-slate-50 leading-tight">
+      <div className="space-y-2">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest bg-rose-600 text-white">
+          🔥 {ar ? "التحدي النهائي" : "Final Challenge"}
+        </span>
+        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-slate-50 leading-tight">
           {challenge.title}
         </h1>
       </div>
 
       {/* Scenario */}
-      <div className="relative overflow-hidden rounded-3xl border border-rose-500/20 bg-gradient-to-br from-rose-50/80 via-white to-white dark:from-rose-950/40 dark:via-slate-900/80 dark:to-slate-900/80 p-6 sm:p-8 space-y-4 shadow-sm">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-rose-400/10 blur-3xl rounded-full" />
-        <p className="text-xs font-black uppercase tracking-widest text-rose-600 dark:text-rose-400">
+      <div className="rounded-2xl border border-rose-500/15 bg-gradient-to-br from-rose-50/50 to-white dark:from-rose-950/20 dark:to-slate-900/60 p-5 space-y-3">
+        <p className="text-xs font-extrabold uppercase tracking-widest text-rose-700 dark:text-rose-400">
           {ar ? "السيناريو" : "Scenario"}
         </p>
-        <p className="text-base sm:text-lg text-slate-800 dark:text-slate-200 leading-relaxed font-medium relative z-10">
+        <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
           {challenge.scenario}
         </p>
       </div>
 
       {/* Prompt */}
-      <div className="rounded-3xl border border-slate-200/60 dark:border-slate-700/60 bg-white/60 dark:bg-slate-900/60 p-6 sm:p-8 space-y-4 shadow-sm backdrop-blur-sm">
-        <p className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/60 p-5 space-y-3">
+        <p className="text-xs font-extrabold uppercase tracking-widest text-slate-500 dark:text-slate-400">
           {ar ? "مهمتك" : "Your Task"}
         </p>
-        <p className="text-lg sm:text-xl text-slate-900 dark:text-slate-100 leading-relaxed font-bold">
+        <p className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
           {challenge.prompt}
         </p>
       </div>
 
       {/* Rubric Criteria */}
-      <div className="rounded-3xl border border-amber-300/40 bg-gradient-to-br from-amber-50/80 to-yellow-50/30 dark:from-amber-950/30 dark:to-slate-900/60 p-6 sm:p-8 space-y-5 shadow-sm">
-        <p className="text-xs font-black uppercase tracking-widest text-amber-800 dark:text-amber-400">
+      <div className="rounded-2xl border border-amber-300/30 bg-amber-50/50 dark:bg-amber-950/20 p-5 space-y-3">
+        <p className="text-xs font-extrabold uppercase tracking-widest text-amber-800 dark:text-amber-300">
           {ar ? "معايير التقييم" : "Evaluation Criteria"}
         </p>
-        <ul className="space-y-3">
+        <ul className="space-y-2">
           {challenge.rubricCriteria.map((criterion, i) => (
-            <li key={i} className="flex items-start gap-4 text-sm sm:text-base text-amber-950 dark:text-amber-100/90 font-medium">
-              <span className="flex-shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-amber-200 to-amber-300 dark:from-amber-800/80 dark:to-amber-900/60 text-amber-900 dark:text-amber-200 flex items-center justify-center text-xs font-black shadow-inner">
+            <li key={i} className="flex items-start gap-2 text-xs text-amber-900 dark:text-amber-200">
+              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-amber-200 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 flex items-center justify-center text-[10px] font-bold">
                 {i + 1}
               </span>
-              <span className="leading-relaxed pt-0.5">{criterion}</span>
+              <span className="leading-relaxed">{criterion}</span>
             </li>
           ))}
         </ul>
       </div>
 
       {/* Response area */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         <label
           htmlFor="challenge-response"
-          className="text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-400"
+          className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400"
         >
           {ar ? "إجابتك" : "Your Response"}
         </label>
-        <div className="relative group">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-2xl blur opacity-0 group-focus-within:opacity-30 transition duration-500" />
-          <textarea
-            id="challenge-response"
-            value={response}
-            onChange={(e) => setResponse(e.target.value)}
-            rows={8}
-            disabled={submitted}
-            className="relative w-full px-6 py-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/90 text-base text-slate-800 dark:text-slate-200 leading-relaxed resize-y focus:outline-none focus:border-transparent placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-inner backdrop-blur-sm disabled:opacity-70"
-            placeholder={ar ? "اكتب إجابتك هنا..." : "Write your response here..."}
-            dir={ar ? "rtl" : "ltr"}
-          />
-        </div>
-
-        {/* Submit button or evaluation result */}
-        {!submitted ? (
-          <button
-            type="button"
-            disabled={!response.trim() || isSubmitting}
-            onClick={handleSubmit}
-            className="w-full py-4 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-400 hover:to-orange-400 disabled:from-slate-300 disabled:to-slate-300 dark:disabled:from-slate-800 dark:disabled:to-slate-800 text-white rounded-2xl text-sm font-black transition-all shadow-md hover:shadow-lg disabled:shadow-none flex items-center justify-center gap-2 active:scale-[0.98]"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>{ar ? "جاري التقييم..." : "Evaluating..."}</span>
-              </>
-            ) : (
-              <span>{ar ? "إرسال التحدي" : "Submit Challenge"}</span>
-            )}
-          </button>
-        ) : evaluation ? (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-5 rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-gradient-to-br from-white to-emerald-50/60 dark:from-slate-900 dark:to-emerald-950/30 shadow-xs space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                <span className="text-xs font-black uppercase tracking-widest text-emerald-800 dark:text-emerald-300">
-                  {ar ? "تم التقييم" : "Evaluated"}
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className={cn(
-                      "h-3.5 w-3.5",
-                      star <= evaluation.score
-                        ? "fill-amber-400 text-amber-400"
-                        : "text-slate-300 dark:text-slate-700"
-                    )}
-                  />
-                ))}
-              </div>
-            </div>
-            <p className="text-sm font-bold text-slate-800 dark:text-slate-100 leading-relaxed">
-              {evaluation.feedback}
-            </p>
-          </motion.div>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// FinalChallengeLocked — §35 gating: unlock only after mastery ≥ 70%
-// ---------------------------------------------------------------------------
-
-function FinalChallengeLocked({
-  masteryPercent,
-  ar,
-}: {
-  masteryPercent: number;
-  ar: boolean;
-}) {
-  return (
-    <div className="flex flex-col h-full overflow-y-auto p-6 lg:p-10 max-w-4xl mx-auto w-full" dir={ar ? "rtl" : "ltr"}>
-      <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6 min-h-[60vh]">
-        <div className="relative">
-          <div className="w-28 h-28 rounded-3xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shadow-inner">
-            <span className="text-5xl">🔒</span>
-          </div>
-          <div className="absolute -inset-3 bg-gradient-to-r from-emerald-400/20 to-teal-400/20 rounded-[2rem] blur-xl" />
-        </div>
-        <div className="space-y-2 max-w-md">
-          <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">
-            {ar ? "التحدي النهائي مقفل" : "Final Challenge Locked"}
-          </h2>
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-            {ar
-              ? "أكمل الأنشطة وأجب عن أسئلة التحقق للوصول إلى إتقان %70 على الأقل، ثم عد لفتح التحدي."
-              : "Complete the activities and answer the check questions to reach at least 70% mastery, then return to unlock the challenge."}
-          </p>
-        </div>
-        <div className="w-full max-w-sm space-y-3">
-          <div className="flex items-center justify-between text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
-            <span>{ar ? "إتقانك الحالي" : "Your mastery"}</span>
-            <span className="tabular-nums">{masteryPercent}%</span>
-          </div>
-          <div className="h-3 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden shadow-inner">
-            <motion.div
-              className={cn(
-                "h-full rounded-full",
-                masteryPercent >= 70
-                  ? "bg-gradient-to-r from-emerald-500 to-teal-400"
-                  : "bg-gradient-to-r from-amber-500 to-orange-400"
-              )}
-              animate={{ width: `${Math.min(100, masteryPercent)}%` }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            />
-          </div>
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-            {ar ? "الحد الأدنى: %70" : "Threshold: 70%"}
-          </p>
-        </div>
+        <textarea
+          id="challenge-response"
+          value={response}
+          onChange={(e) => setResponse(e.target.value)}
+          rows={6}
+          className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-300 leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent placeholder:text-slate-400 dark:placeholder:text-slate-500"
+          placeholder={ar ? "اكتب إجابتك هنا..." : "Write your response here..."}
+          dir={ar ? "rtl" : "ltr"}
+        />
       </div>
     </div>
   );

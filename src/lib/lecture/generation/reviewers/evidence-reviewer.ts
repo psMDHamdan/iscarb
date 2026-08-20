@@ -48,15 +48,16 @@ Return a JSON object containing:
 }
 `;
 
-  const response = await chatJson(prompt, "gpt-4o"); 
+  const response = await chatJson({ user: prompt, model: "gpt-4o" });
+  const json = (response.json || {}) as any; 
   
   const claimsList = Array.isArray(slide?.claims) ? slide.claims : [];
   const reviewedClaims = claimsList.map(c => {
-    const review = response.reviewedClaims?.find((rc: any) => rc.id === c.id);
+    const review = json.reviewedClaims?.find((rc: any) => rc.id === c.id);
     return { ...c, verificationStatus: review?.verificationStatus || "UNSUPPORTED" };
   });
 
-  const unsupportedIds = response.unsupportedClaimIds || [];
+  const unsupportedIds = json.unsupportedClaimIds || [];
   const hasUnsupported = unsupportedIds.length > 0;
 
   const result: ReviewResult = {

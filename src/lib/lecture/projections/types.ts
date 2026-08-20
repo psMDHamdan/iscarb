@@ -82,15 +82,43 @@ export interface StudentConceptViewModel {
   /** True when the underlying artifact failed QA or generation and needs faculty review. */
   flaggedForReview?: boolean;
 
-  // 5-Layer Student View (No technical field jargon)
-  coreInsight: string;
-  mentalModel?: string;
-  mechanism?: string;
-  realWorldApplication?: string;
-  misconceptionAlert?: {
+  // Student Experience Compiler Schema
+  cardType?: "concept" | "worked_example" | "case_study" | "assessment" | "reflection";
+  headline?: string;
+  hook?: string;
+  coreContent?: {
+    explanation: string;
+    analogy?: string;
+    diagramDescription?: string;
+    /** Numbered mechanism steps — drives the "How It Works" list in ConceptContent */
+    steps?: string[];
+  };
+  interactive?: {
+    type: "poll" | "calculation" | "drag_drop" | "reflection";
+    prompt: string;
+    options?: string[];
+    hints: string[];
+    reveal: string;
+  };
+  commonPitfalls?: Array<{
     misconception: string;
-    whyItFails: string;
-    correction: string;
+    whyWrong: string;
+    betterWay: string;
+  }>;
+  realWorld?: {
+    application: string;
+    scenario?: string;
+    sourceUrl?: string;
+    derivedLabel: "system-suggested" | "official-source";
+  };
+
+  // Fallback / legacy SlideArtifact fields for when the compiler hasn't run yet
+  visibleCopy: string;
+  bullets: string[];
+  studentAction?: {
+    type: string;
+    stem: string;
+    options?: string[];
   };
 
   // Visual Scaffolding

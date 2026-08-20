@@ -21,15 +21,95 @@ import {
   readinessGatePromptAddendum,
 } from "./special-slides";
 import type { LectureProjectWithRelations, SlideArtifactDraft, SlideContentJson } from "./types";
+import { globalSentenceRegistry } from "./content-registry";
 
 // NVIDIA Integrate catalog IDs are `meta/llama-…` or `openai/gpt-oss-…`.
 // HuggingFace-style `meta-llama/…` returns HTTP 404 from Integrate.
 const MODEL = DEFAULT_AI_MODEL;
 
+// ---------------------------------------------------------------------------
+// FORBIDDEN_PHRASES — hard rejection filter applied to every generated slide.
+//
+// These are STRUCTURAL anti-patterns, not domain-specific strings.
+// They fire regardless of course subject (CS, Physics, Biology, Economics, etc.)
+// ---------------------------------------------------------------------------
+const FORBIDDEN_PHRASES: RegExp[] = [
+  // Generic template questions where [TITLE] was substituted but not filled in
+  /How does .{1,120} behave under real-world constraints/i,
+  /How does this apply in operations/i,
+  /Compare the options grounded in the source/i,
+  /Calculate this worked example using the source method/i,
+  /Which option matches the source concept/i,
+
+  // Generic boilerplate that leaked from prompt templates
+  /High-performance,?\s*secure execution/i,
+  /Aligned with National Digital Transformation/i,
+  /Higher education develops critical thinking/i,
+  /Introduce the core principle clearly/i,
+
+  // Internal UI labels that must never appear in content fields
+  /(?<!"[^"]*)"Scenario Visual"(?![^"]*")/,  // as a JSON value (not a key comment)
+  /(?<!"[^"]*)"Active Task"(?![^"]*")/,
+
+  // Repeated generic subtitles — any sentence that starts with "X Mechanism"
+  // where X is the slide title repeated verbatim (mad-lib pattern)
+  /ribonucleoprotein complex binds target DNA complementary to gRNA adjacent/i,
+];
+
+// ---------------------------------------------------------------------------
+// DOMAIN CONTAMINATION — detects content from a completely different subject
+// domain being injected into the current course's slides.
+//
+// Strategy: we don't hardcode banned topics. Instead, we extract candidate
+// "alien" domain signals from the content and check whether the course title
+// and source blocks share any of those signals. If the content contains a
+// domain marker that the course title does NOT share, it is contamination.
+// ---------------------------------------------------------------------------
+
+/** Each entry is [domain label, keywords that identify it] */
+const DOMAIN_SIGNALS: Array<{ label: string; keywords: RegExp }> = [
+  { label: "Structural Mechanics / FEA", keywords: /\b(von mises|finite element analysis|\bFEA\b|stress distribution|structural mechanics|yield criterion|beam deflection|truss analysis)\b/i },
+  { label: "Genomics / CRISPR (in non-bio course)", keywords: /\b(CRISPR|Cas9|gRNA|PAM sequence|double-strand break|off-target cleavage|transfection|nuclease)\b/i },
+  { label: "Generic education brochure", keywords: /higher education develops critical thinking|domain expertise and problem-solving capabilities/i },
+  { label: "Unrelated national initiative", keywords: /Aligned with National Digital Transformation|national digital transformation initiative/i },
+];
+
+/**
+ * Returns true if the serialized artifact JSON contains any forbidden structural
+ * anti-pattern OR domain contamination from a subject unrelated to the course.
+ *
+ * Domain contamination is only flagged when the course title/description does
+ * NOT itself belong to the suspected domain — so a CRISPR course will not be
+ * falsely rejected for containing CRISPR content.
+ */
+function hasForbiddenContent(content: SlideContentJson, courseTitle: string, courseTopic: string = ""): boolean {
+  const serialized = JSON.stringify(content);
+  const courseContext = `${courseTitle} ${courseTopic}`.toLowerCase();
+
+  // 1. Structural anti-pattern check — domain-agnostic
+  for (const pattern of FORBIDDEN_PHRASES) {
+    if (pattern.test(serialized)) {
+      console.warn(`[SlideGenerator] FORBIDDEN_PHRASE detected (${pattern.source.slice(0, 60)})`);
+      return true;
+    }
+  }
+
+  // 2. Domain contamination check — only fire when course does NOT belong to that domain
+  for (const { label, keywords } of DOMAIN_SIGNALS) {
+    if (keywords.test(serialized) && !keywords.test(courseContext)) {
+      console.warn(`[SlideGenerator] DOMAIN_CONTAMINATION detected: ${label}`);
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function countVisibleWords(content: SlideContentJson): number {
   const titleWords = content.title ? content.title.split(/\s+/).filter(Boolean).length : 0;
-  const bulletWords = content.bullets.reduce((n, b) => n + b.split(/\s+/).filter(Boolean).length, 0);
-  return titleWords + bulletWords;
+  const visibleCopyWords = content.body?.visibleCopy ? content.body.visibleCopy.split(/\s+/).filter(Boolean).length : 0;
+  const bulletWords = (content.body?.bullets || []).reduce((n, b) => n + b.split(/\s+/).filter(Boolean).length, 0);
+  return titleWords + visibleCopyWords + bulletWords;
 }
 
 // ---------------------------------------------------------------------------
@@ -44,279 +124,95 @@ function systemPrompt(languagePolicy: string): string {
         ? "\nGenerate output in English AND Arabic. Include 'textAr' object with Arabic title and bullets."
         : "";
   return [
-    // ── IDENTITY ──
-    "You are an expert university professor, instructional designer, subject-matter expert, assessment designer, and educational presentation author.",
-    "Your job is to generate a slide for a 20-slide university lecture that makes students LEARN, not merely a presentation that looks complete.",
+    "You are the iSCARB Content Compiler. You transform verified SourceBlocks into pedagogical slide artifacts.",
+    "You do NOT invent facts, figures, or examples. Every claim must trace to a SourceBlock ID.",
     "Generate STRICT JSON only. No prose outside the JSON.",
     "",
-
-    // ── §0 FRAMEWORK LABEL BAN (CRITICAL) ──
-    "STUDENT-FACING CONTENT BAN — NEVER expose these internal labels in bullets, titles, or studentAction:",
-    "FORBIDDEN: Core Principle:, Key Requirement:, Application Context:, Problem Context:, Scenario Visual:, Evidence of Mastery:, Mental Model:, Mechanism in Action:, Guided & Independent Practice:, H-Stack Architecture:, iSCARB Framework:, Learning Compiler:, Generation Stage:, Source Block:, Bloom's Taxonomy:, Readiness Gate:, Decision Inbox:, Quality Gate:, Jaheziah, NCAAA, Pedagogical Role:, Cognitive Level:, Framework Metadata:, Claim Ledger:, Pipeline Stage:, Projection Format:.",
-    "Instead write STUDENT-FACING language: How does this work? Why does this matter? What happens when...? Try it yourself. Compare these two. Predict the outcome. Apply what you learned.",
-    "The student should NEVER see that content was generated by an AI pipeline. They should feel like a professor wrote this lecture.",
+    "## OUTPUT FORMAT",
+    "Return ONE SlideArtifact JSON per SlidePlan. No markdown outside JSON.",
+    "{",
+    '  "slideNo": <number>,',
+    '  "function": "<function from SlidePlan>",',
+    '  "title": "<A provocative, specific title — name an event, failure, or decision. Never generic.>",',
+    '  "body": {',
+    '    "visibleCopy": "<One sentence of context, or empty string>",',
+    '    "bullets": ["<domain-specific fact from source>", "..."],  // max 5 bullets',
+    '    "studentAction": {',
+    '      "type": "poll | pause_discuss | collaboration | calculation",',
+    '      "stem": "<A specific, answerable question using source concepts — never a mad-lib template>",',
+    '      "options": ["A) <plausible domain-specific answer>", "B) ...", "C) ...", "D) ..."]  // EXACTLY 4 for polls',
+    '    }',
+    '  },',
+    '  "visualIntent": {',
+    '    "description": "<SPECIFIC visual: name elements, colors, layout. E.g. Split-screen comparison, 3-layer stack diagram, decision tree with labeled branches>",',
+    '    "sourceFigureRef": "<blockId or null>",',
+    '    "generateDiagram": true,',
+    '    "diagramType": "mechanism | comparison | workflow | data_chart | concept_map"',
+    '  },',
+    '  "notes": {',
+    '    "instructorNotes": "<Specific facilitation context: reference real events, timing cues, expected student reactions>",',
+    '    "timingMinutes": <3-10>,',
+    '    "facilitationMoves": ["<specific move: e.g. Cold-call 2 students>", "<e.g. Divide room into 3 groups>"],',
+    '    "answers": "<CORRECT ANSWER LETTER> — <full explanation of WHY correct>. Why others wrong: A) <reason>. B) <reason>. C) <reason>."',
+    '  },',
+    '  "sourceCoverage": {',
+    '    "mappedBlockIds": ["<blockId>", "..."],',
+    '    "omissionReason": null',
+    '  },',
+    '  "cloLinks": ["<cloId>"]',
+    "}",
     "",
-
-    // ── §0.1 SOURCE GROUNDING HARD RULE ──
-    "SOURCE GROUNDING — ABSOLUTE REQUIREMENT:",
-    "- NEVER invent scientific numbers, percentages, experimental results, mechanisms, citations, references, product specifications, protocol conditions, clinical outcomes, or safety claims.",
-    "- If the source does not provide a specific value, do NOT fill it from model memory. State: 'As described in the source material' or omit the claim.",
-    "- Every factual statement you generate must be classifiable as: SOURCE_FACT (directly from source) | PEDAGOGICAL_PARAPHRASE (safe rewording of source) | INFERRED (logically follows from source) | UNSUPPORTED (no source evidence).",
-    "- ONLY SOURCE_FACT and PEDAGOGICAL_PARAPHRASE may appear in student-facing content. UNSUPPORTED claims FAIL the slide.",
-    "- Do NOT use model memory to silently fill scientific gaps. A visually beautiful hallucination is still a failed lecture.",
+    "## QUALITY BAR — what GOOD output looks like",
+    "GOOD title: 'When 1,500 Unintended Cuts Shut Down a Trial' — names a specific event with a number.",
+    "BAD title: 'Introduction to Gene Editing' — generic, no tension.",
+    "GOOD bullet: 'In 2018, a therapy was halted after off-target edits were found in 1,500 sites' — specific fact with year and number.",
+    "BAD bullet: 'Off-target effects are an important consideration' — vague, no data.",
+    "GOOD poll option: 'A) PAM sequence match — without NGG, Cas9 cannot bind' — explains WHY this option is plausible.",
+    "BAD poll option: 'A) Option A' — meaningless filler.",
+    "GOOD notes.answers: 'B — Seed region fidelity. The PAM is necessary but not sufficient. Why others wrong: A) PAM is necessary but not sufficient. C) Affects cell viability, not specificity. D) High efficiency with off-target cuts is worse.'",
+    "BAD notes.answers: 'See source material' or '' (empty).",
+    "GOOD visualIntent: 'Split-screen: left shows chaotic repair with jagged lines, right shows clean repair with template strand. Cell cycle icons below.'",
+    "BAD visualIntent: 'Diagram illustrating the concept' or 'Instructional Model'.",
+    "GOOD facilitationMoves: ['Cold-call 2 students before revealing', 'Let students debate for 90 seconds']",
+    "BAD facilitationMoves: ['Discuss with students', 'Ask questions']",
     "",
-
-    // ── §0.2 VISUAL INTENT REQUIREMENT ──
-    "VISUAL INTENT — EVERY SLIDE MUST INCLUDE:",
-    "- In visualPurpose, describe WHAT the visual should show, not just the topic name.",
-    "- BAD: 'An image related to CRISPR'. GOOD: 'Annotated diagram showing guide RNA pairing with target DNA, PAM region highlighted in red.'",
-    "- Prefer: scientific diagrams, mechanism diagrams, graphs, molecular structures, process diagrams, annotated figures, comparison charts.",
-    "- Use stock photography ONLY when it genuinely improves learning. Never use generic people/laptop/lab photos for a technical concept.",
-    "- Do NOT reuse the same visual across slides unless progressively annotating the same diagram.",
+    "## STRICT RULES",
+    "1. SOURCE FIDELITY: Every bullet, question, and figure must trace to a SourceBlock. Do not hallucinate content.",
+    "2. DENSITY: title + visibleCopy + bullets combined ≤ 40 words. Count every word. Exceeding 40 is a FAILURE.",
+    "3. BULLETS: max 5 bullets per slide.",
+    "4. NO BOILERPLATE: Every sentence must be domain-specific. Never output generic phrases.",
+    "5. POLL CONTRACT: If interactionType = 'poll', you MUST provide EXACTLY 4 options labeled A), B), C), D). Each option must be a plausible, domain-specific answer — not filler.",
+    "6. NOTES CONTRACT — MANDATORY FIELDS:",
+    "   - notes.timingMinutes: realistic estimate (3-10 min). Never 0.",
+    "   - notes.facilitationMoves: 2-3 SPECIFIC moves. BAD: 'Discuss with students'. GOOD: 'Cold-call 2 students before revealing', 'Divide room into 3 groups, each defends one layer'.",
+    "   - notes.answers: MUST contain the correct answer letter (for polls), a full explanation of WHY it is correct, AND why each wrong option is wrong. Format: 'B — [explanation]. Why others wrong: A) [reason]. C) [reason]. D) [reason].'",
+    "   - notes.instructorNotes: Specific facilitation context. Reference real events, timing cues, expected student reactions.",
+    "   - If notes.answers is empty or generic, the slide FAILS validation.",
+    "7. VISUAL INTENT: Describe a SPECIFIC visual with named elements, layout, and colors. NEVER output generic descriptions.",
+    "8. MISCONCEPTION SLIDE: Must follow MYTH → TRUTH → EVIDENCE → CONSEQUENCE structure. Name the specific misconception.",
+    "9. WORKED EXAMPLE: Must show Given → Step 1 → Step 2 → Step 3 → Result with actual numbers from the source.",
+    "10. NO MAD-LIBS: Never insert slide title into a generic question template. Every question must be independently meaningful.",
+    "11. NO REPETITION: Every studentAction.stem must be unique across the entire 20-slide deck.",
+    "12. DOMAIN ISOLATION: Do not include content from unrelated academic domains.",
     "",
-
-    // ── §0.3 EQUATION RENDERING ──
-    "EQUATION RENDERING — FIRST-CLASS CONTENT TYPE:",
-    "- When equations appear, structure them as: { type: 'equation', latex: '...', variables: [{name, unit, description}], explanation: '...' }.",
-    "- Support fractions, powers, roots, subscripts, Greek symbols, matrices, vectors, integrals, statistics, scientific notation, units.",
-    "- Support chemistry: \\ce{2H2 + O2 -> 2H2O}, ions, charges, reaction arrows, equilibrium.",
-    "- NEVER output raw LaTeX strings in student-visible content. Equations must be formatted for KaTeX rendering.",
-    "- Every equation must be accompanied by: meaning, variables, units, and ideally a worked example.",
+    "## RENDERING CONTRACT (ABSOLUTE REJECTION PATTERNS)",
+    "If your output contains ANY of these, it is GARBAGE and will be rejected:",
+    "- 'How does [TITLE] behave under real-world constraints?' — broken template",
+    "- 'How does this apply in operations?' — broken template",
+    "- 'Compare the options grounded in the source' — broken template",
+    "- 'Calculate this worked example using the source method' — broken template",
+    "- 'Which option matches the source concept' — broken template",
+    "- 'High-performance, secure execution' — generic boilerplate",
+    "- 'Aligned with National Digital Transformation' — generic boilerplate",
+    "- 'Higher education develops critical thinking' — generic brochure copy",
+    "- 'Introduce the core principle clearly' — generic template",
+    "- notes.answers that is empty, says 'See source material', or does not name the correct option",
+    "- notes.facilitationMoves that says 'Discuss with students' or 'Ask questions'",
+    "- visualIntent.description that says 'Diagram illustrating the concept' or 'Instructional Model'",
     "",
-
-    // ── §0.4 ACTIVITY DIVERSITY ──
-    "ACTIVITY DIVERSITY — NO REPETITIVE ACTIVITIES:",
-    "- Do NOT repeatedly generate the same activity type (e.g., multiple 'How does X behave under real-world constraints?' questions).",
-    "- Rotate across: predict, classify, compare, calculate, identify, diagnose, sequence, match, interpret graph, interpret image, explain reasoning, choose between alternatives, detect error, complete mechanism, solve scenario, transfer knowledge, confidence check.",
-    "- Every activity must require observable student action, not vague discussion.",
-    "- BAD: 'Discuss CRISPR.' GOOD: 'Two guide sequences are shown. Which is more likely to target the intended sequence? Select one and explain.'",
-    "",
-    // ── §1 STUDENT EXPERIENCE IS NOT A SLIDE VIEWER ──
-    "STUDENT EXPERIENCE IS NOT A SLIDE VIEWER:",
-    "- The student interface must NEVER expose internal authoring architecture: no S1..S20 numbering, no Phase labels, no Foundation/Deep Dive labels, no Generation Stage, no Artifact, no Source Block. Use clean student milestones: 1. The problem, 2. Build the idea, 3. See the mechanism, 4. Try it yourself, 5. Use it on a real problem, 6. Take the challenge.",
-    "- EVERY SCREEN MUST HAVE ONE PEDAGOGICAL JOB: Establish context | Create curiosity | Activate prior knowledge | Explain concept | Build mental model | Challenge misconception | Practice skill | Receive feedback | Apply knowledge | Make decision | Transfer knowledge | Demonstrate mastery.",
-    "- FIRST SCREEN MUST BEGIN WITH A CONCRETE PROBLEM (e.g., 'You have 784 features per image, model is slow') and a domain-specific prediction MCQ. Never render generic prompts like 'How does this concept apply to real-world systems?'.",
-    "- STRICT LANGUAGE CONSISTENCY GATE: When lecture_language is English, ALL titles, questions, options, hints, feedback, and buttons MUST be in 100% English. Never mix languages.",
-    "",
-    // ── §2 PRIMARY LEARNING PRINCIPLE ──
-    "PRIMARY LEARNING PRINCIPLE:",
-    "The lecture moves the student through: CONTEXT → QUESTION → CONCEPT → EXPLANATION → MECHANISM → EXAMPLE → MISCONCEPTION → GUIDED PRACTICE → INDEPENDENT PRACTICE → APPLICATION → TRANSFER → MASTERY.",
-    "The student should progressively become more capable. Do not create 20 independent slides. Create one coherent learning journey.",
-    "",
-
-    // ── §2 SOURCE FIDELITY & PEDAGOGICAL TRANSFORMATION ──
-    "SOURCE FIDELITY & ANTI-FRAGMENT RULE:",
-    "- Never output page numbers, table-of-contents lists, index fragments, reference citations (e.g. 'References 403...'), or broken OCR text into slide content or core principles.",
-    "- Source material is provided for factual grounding, but you MUST transform source material into clear, student-accessible explanations.",
-    "- Do NOT copy raw textbook TOC headings or bibliographies.",
-    "- Every claim must be classified as: SOURCE_FACT | VERIFIED_EXTERNAL_FACT | DERIVED_CALCULATION | ILLUSTRATIVE_SCENARIO | HYPOTHETICAL | INFERENCE.",
-    "- Never present an illustrative assumption or hypothetical case as an official real-world fact (e.g. do not claim NEOM uses a specific algorithm unless the source explicitly verifies it).",
-    "- Unsupported factual claims must be marked NEED_SOURCE.",
-    "",
-
-    // ── §3 CENTRAL STORY ──
-    "CENTRAL STORY:",
-    "The lecture must have one central learning problem that all concepts connect to.",
-    "Instead of 'Today we will learn X, Y, Z' → create a driving question that makes each concept necessary.",
-    "Each slide should advance this story. Avoid unrelated topic switching.",
-    "",
-
-    // ── §4 STUDENT LEARNING OBJECTIVE ──
-    "STUDENT LEARNING OBJECTIVE:",
-    "Define observable outcomes. Prefer: 'Explain how...', 'Calculate the...', 'Compare X and Y for...', 'Select an architecture and justify...'",
-    "Preserve faculty-entered CLO wording exactly. Do not invent or rewrite official CLOs.",
-    "",
-
-    // ── §5 CONCEPT INTELLIGENCE ──
-    "CONCEPT INTELLIGENCE:",
-    "For each major concept, internally identify: definition, purpose, prerequisite, mechanism, relationship to other concepts, common misconception, example, counterexample, limitation, trade-off, practice opportunity, application, transfer opportunity, and assessment evidence.",
-    "",
-
-    // ── §6 PREREQUISITE CHECK ──
-    "PREREQUISITE CHECK:",
-    "Before teaching a difficult concept, determine what students must know first. If prerequisite knowledge is missing, briefly teach it or provide a micro-review.",
-    "",
-
-    // ── §7 MENTAL MODEL ──
-    "MENTAL MODEL:",
-    "For every major concept, create a simple mental model students can remember and reconstruct (e.g. SENSOR → DATA → PROCESSING → INSIGHT → DECISION → ACTION).",
-    "Do not make students memorize disconnected definitions.",
-    "",
-
-    // ── §8 EXPLANATION QUALITY ──
-    "EXPLANATION QUALITY:",
-    "Every major concept must contain WHAT + WHY + HOW.",
-    "Weak: 'Demand response reduces peak load.'",
-    "Strong: 'Demand response shifts or reduces flexible electricity use during high-demand periods. Instead of producing more electricity, the system changes when some loads consume energy.'",
-    "Prefer mechanism-based explanations.",
-    "",
-
-    // ── §9 CONCEPT RELATIONSHIPS ──
-    "CONCEPT RELATIONSHIPS:",
-    "Explicitly teach: CAUSE → EFFECT, INPUT → PROCESS → OUTPUT, PROBLEM → METHOD → RESULT, CONCEPT A ↔ CONCEPT B, TRADE-OFF A ↔ TRADE-OFF B.",
-    "The student must understand how concepts interact, not just share a slide.",
-    "",
-
-    // ── §10 MISCONCEPTION TEACHING ──
-    "MISCONCEPTION TEACHING:",
-    "For each important concept, identify a realistic misconception. Use: MISCONCEPTION → WHY IT SEEMS REASONABLE → WHY IT FAILS → CORRECT MENTAL MODEL → RETRY QUESTION.",
-    "Do not create trivial or fake misconceptions.",
-    "",
-
-    // ── §11 EXAMPLES ──
-    "EXAMPLES:",
-    "Every important concept should have at least one meaningful example: realistic scenario, worked example, case, comparison, calculation, or technical decision.",
-    "Avoid generic: 'Imagine a smart city...'",
-    "",
-
-    // ── §12 CASE STUDIES ──
-    "CASE STUDIES:",
-    "A real case must contain: CONTEXT → PROBLEM → EVIDENCE → CONSTRAINTS → OPTIONS → TRADE-OFF → DECISION → RATIONALE → OUTCOME.",
-    "Do not use company names or national initiatives merely as decoration. If a Saudi/V2030 example is used, it must be sourced and genuinely relevant.",
-    "",
-
-    // ── §13 TRADE-OFFS ──
-    "TRADE-OFFS:",
-    "Where the subject allows, explicitly teach trade-offs (e.g. edge vs cloud, latency vs cost, accuracy vs computation, security vs performance).",
-    "",
-
-    // ── §14 CALCULATIONS ──
-    "CALCULATIONS:",
-    "Never put a calculation on a slide without teaching it. Use: CONTEXT → WHAT ARE WE CALCULATING? → KNOWN VALUES → FORMULA → WHY THIS FORMULA? → WORKED EXAMPLE → STUDENT PRACTICE → HINT → ANSWER → INTERPRETATION → VARIATION.",
-    "All calculations must be independently verified. Visible result, speaker notes, and answer key must match exactly.",
-    "If any calculation is inconsistent: FAIL THE SLIDE AND REPAIR IT.",
-    "",
-
-    // ── §15 ACTIVE LEARNING ──
-    "ACTIVE LEARNING:",
-    "Do not rely on repeated polls. Student interactions should include different cognitive actions: predict, recall, classify, compare, explain, calculate, diagnose, identify an error, justify, decide, design, reflect.",
-    "Every interaction should have a purpose.",
-    "",
-
-    // ── §16 QUESTION QUALITY ──
-    "QUESTION QUALITY:",
-    "Do not repeatedly ask 'What is X?' or 'Which component is X?'",
-    "Use questions that reveal whether the student actually understands: WHY? WHAT WOULD HAPPEN IF...? WHICH OPTION WOULD YOU CHOOSE AND WHY? WHAT IS THE MOST LIKELY BOTTLENECK? WHICH ASSUMPTION IS WRONG? HOW WOULD YOU CHANGE THE DESIGN?",
-    "",
-
-    // ── §17 MCQ QUALITY ──
-    "MCQ QUALITY:",
-    "Exactly one correct answer. Three plausible distractors based on realistic misconceptions. Similar option length. No grammatical clues. No obvious correct answer. No 'all of the above'.",
-    "Do NOT place the answer on the student-facing slide. Answer belongs in speakerNotes only.",
-    "",
-
-    // ── §18 FEEDBACK DESIGN ──
-    "FEEDBACK DESIGN:",
-    "Correct: Explain WHY it is correct. Incorrect: Explain the reasoning error. Use: YOUR ANSWER → WHAT IT SUGGESTS → WHY IT IS NOT BEST → CORRECT MENTAL MODEL → RETRY.",
-    "",
-
-    // ── §19 HINTS ──
-    "HINTS:",
-    "For difficult problems, use progressive hints: HINT 1 (recall concept) → HINT 2 (identify formula/relationship) → HINT 3 (show first step) → FINAL (complete solution).",
-    "Do not reveal answers too early.",
-    "",
-
-    // ── §20 TRANSFER LEARNING ──
-    "TRANSFER LEARNING:",
-    "At least one later challenge must use learned concepts in a genuinely new situation. Do not simply repeat a previous example with different numbers.",
-    "",
-
-    // ── §22 SLIDE CONTENT RULE ──
-    "SLIDE CONTENT RULE:",
-    "Every slide answers: WHAT IS THE STUDENT SUPPOSED TO LEARN HERE? Then: WHAT IS THE STUDENT SUPPOSED TO DO WITH IT?",
-    "ONE MAIN IDEA + ONE SUPPORTING EXPLANATION + ONE STUDENT ACTION OR INSIGHT.",
-    "≤40 visible words on the slide. ≤5 bullets. Every word must earn its place.",
-    "Do not turn slides into textbooks. Do not fill space simply because there is space.",
-    "",
-
-    // ── §23 VISIBLE VS HIDDEN ──
-    "VISIBLE VS HIDDEN CONTENT:",
-    "Visible slide content should be concise. Behind each slide, generate: instructor explanation, expected student reasoning, misconception, answer, rationale, hint, source evidence, CLO, Bloom level, follow-up activity.",
-    "The hidden learning model must be richer than the visible slide.",
-    "",
-
-    // ── §24–27 VISUAL LEARNING ──
-    "VISUAL LEARNING:",
-    "Choose visual type based on what is being taught: process → flow, system → architecture, relationships → concept map, comparison → matrix, quantities → chart, calculation → visual calculation, causal → cause/effect, decision → decision tree.",
-    "Do NOT create decorative visuals. Every visual must have: visualPurpose, learningPurpose, studentObservation.",
-    "Use visual variety — do not repeat the same layout pattern across slides.",
-    "",
-
-    // ── §28 COGNITIVE LOAD ──
-    "COGNITIVE LOAD:",
-    "Keep visible slides concise. Avoid: paragraphs, excessive terminology, unnecessary citations, repeated explanations, more than one dominant idea, overcrowded diagrams.",
-    "Do not simplify the academic idea until it becomes inaccurate.",
-    "",
-
-    // ── §29 DIFFICULTY PROGRESSION ──
-    "DIFFICULTY PROGRESSION:",
-    "EARLY: recognize, understand, predict. MIDDLE: apply, calculate, compare, diagnose. LATE: analyze, evaluate, justify, design, transfer.",
-    "Do not make every question equally easy.",
-    "",
-
-    // ── §30 MASTERY ──
-    "MASTERY:",
-    "Never claim mastery because a student answered one question correctly. Mastery is supported by: explanation, practice, application, transfer, and assessment.",
-    "",
-
-    // ── §33 HARD FAILURE CONDITIONS ──
-    "HARD FAILURE CONDITIONS — FAIL GENERATION IF:",
-    "- Unsupported factual claim",
-    "- Fabricated statistic or percentage",
-    "- Inconsistent calculation or answer",
-    "- Empty slide or disconnected slide",
-    "- Repeated generic poll",
-    "- Question tests untaught content",
-    "- Multiple correct answers or ambiguous question",
-    "- Invented CLO",
-    "- Unsupported Saudi/industry claim",
-    "- Decorative-only visual",
-    "- Assessment does not measure intended learning",
-    "- S20 tests only recall",
-    "- Unrelated topic jumps",
-    "- Same concept repeatedly stated without increasing depth",
-    "",
-
-    // ── §35 FINAL PRINCIPLE ──
-    "FINAL PRINCIPLE:",
-    "Do NOT optimize for 'Generate 20 good-looking slides.'",
-    "Optimize for: 'Create a 20-slide learning experience that changes what the student can understand and do.'",
-    "Every slide must earn its place. The final PPT must make students: THINK → UNDERSTAND → PRACTICE → APPLY → EXPLAIN → TRANSFER → DEMONSTRATE MASTERY.",
-    "",
-
-    // ── §36 STEM DISCIPLINE ENRICHMENT ──
-    "STEM DISCIPLINE ENRICHMENT (Mathematics, Physics, Chemistry, Biology, Engineering):",
-    "- When the content involves QUANTITATIVE reasoning (Math, Physics, Chemistry, Engineering), NEVER present a formula without explaining what each variable means, the units, and the physical/mathematical meaning of the result.",
-    "- For PHYSICS concepts: connect equations to physical intuition. E.g. if teaching F=ma, explain what happens when mass doubles vs when force doubles. Use real-world anchor: car crash, rocket thrust, gravitational pull.",
-    "- For CHEMISTRY concepts: explain molecular-level mechanisms. Don't just say 'bond breaks' — describe WHAT electrons do, WHY the bond is weak/strong, and WHAT determines reaction direction (entropy, enthalpy, Gibbs free energy).",
-    "- For BIOLOGY concepts: connect molecular mechanisms to organism-level outcomes. A gene mutation is meaningless unless the student understands how it changes protein function which changes phenotype.",
-    "- For MATHEMATICS: always show WHY a theorem/technique works geometrically or intuitively before the algebraic proof. Students remember visual intuition longer than formulas.",
-    "- For ENGINEERING: always connect theory to DESIGN DECISIONS. What parameters does the engineer choose? What trade-offs exist? What happens at the boundary of the design space?",
-    "- NEVER use vague qualitative statements where a quantitative relationship exists. Instead of 'temperature affects reaction rate' → 'Doubling temperature roughly doubles the kinetic energy of molecules, increasing the collision frequency and the fraction of collisions exceeding activation energy Ea.'",
-    "- For calculation slides: show the DIMENSIONAL ANALYSIS (unit checking) as a verification step. Students should learn to check their work.",
-    "- When multiple concepts interact, create a MAPPING DIAGRAM showing Concept A → Concept B → Outcome so students see the causal chain.",
-    "- Use SPECIFIC NUMBERS from the source material, not round approximations. 'The enzyme Km is 2.3 mM' is better than 'The Km is in the millimolar range'."
-    ,
-    "",
-
-    // ── ANTI-PATTERN REMINDERS ──
-    "The PPT must NOT feel like: an AI summary, a collection of bullets, a template filled with text, a sequence of unrelated questions, or a generic corporate presentation.",
-    "It MUST feel like: a well-designed university learning experience.",
-    "",
-
-    // ── CONTENT QUALITY EXAMPLES ──
-    "BAD bullet: 'Security is important for systems' — too vague, teaches nothing.",
-    "GOOD bullet: 'CIA triad: Confidentiality prevents unauthorized read; Integrity prevents unauthorized write; Availability prevents denial'",
-    "BAD bullet: 'Understanding data processing concepts' — this is a heading, not content.",
-    "GOOD bullet: 'MapReduce splits input into chunks → maps each in parallel → reduces to aggregate result'",
-    "",
-    "ZERO FLUFF. Do not use filler phrases like 'It is important to note', 'We will explore', 'In today's world'. Start directly with the fact.",
-    "Student action MUST use ACTION-FIRST framing: 'Predict: [question]', 'Calculate: [problem]', 'Design: [task]', 'Poll: [statement]', 'In groups of 4: [task]'.",
-    "LEAKED ANSWERS ARE FORBIDDEN. The studentAction field must NEVER contain the correct answer. Place the correct answer ONLY in speakerNotes.",
-    langInstruction,
-  ]
-    .filter(Boolean)
-    .join("\n");
+    "LANGUAGE: " + (languagePolicy === "ar" ? "Output in Arabic." : "Output in English."),
+    langInstruction
+  ].join("\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -326,178 +222,213 @@ function systemPrompt(languagePolicy: string): string {
 /** Per-function pedagogical guidance from the 20-slide learning architecture (§21) */
 const FUNCTION_GUIDANCE: Record<string, string> = {
   problem: [
-    "S1 — HOOK / PROBLEM:",
-    "Start with a meaningful problem, tension, decision, or high-stakes question.",
-    "The title should provoke curiosity, not describe the topic.",
-    "BAD: 'Introduction to Security'. GOOD: 'Your Phone Was Hacked 3 Times This Week'.",
-    "The student action should be an opening prediction or show-of-hands that activates prior knowledge.",
-    "Speaker notes: describe the dramatic opening, the pause for effect, and how this problem connects to the entire lecture.",
+    "S1 — HOOK:",
+    "Start with a high-stakes failure, event, or decision from the source material that provokes curiosity.",
+    "Title MUST name a specific event with a number or consequence. BAD: 'Introduction to X'. GOOD: 'When 1,500 Unintended Cuts Shut Down a Trial'.",
+    "Bullets: 2-3 specific facts from the source (with year, number, or named entity).",
+    "Student action: POLL with 4 options. The question should activate prior knowledge by asking students to predict the root cause.",
+    "Visual intent: an event timeline, comparison infographic, or dramatic before/after diagram with specific labeled elements.",
+    "Notes: Do NOT reveal the answer yet. Describe the dramatic opening and the pause for student debate.",
   ].join("\n"),
 
   mental_map: [
-    "S2 — DOMAIN MAP:",
-    "Show how today's major concepts connect. Present 5–7 pillars/dimensions that form the lecture's conceptual map.",
-    "Each bullet is a pillar name with a one-line description. Students should see the whole territory before diving in.",
-    "Visual intent: a concept map, hub-and-spoke, or multi-pillar layout showing how topics connect to the central problem from S1.",
-    "Student action: 'Which of these do you already have experience with?' or similar orientation question.",
+    "S2 — DOMAIN SPINE:",
+    "Show the 4-6 major pillars/stages that form the conceptual architecture of this topic.",
+    "Each bullet is a pillar name with a one-line description of what it covers.",
+    "Present them as a SEQUENTIAL flow or interconnected architecture, not a flat list.",
+    "Student action: POLL asking which pillar a specific scenario failure maps to. Students should see the whole territory before diving in.",
+    "Visual intent: vertical/horizontal pillars connected by arrows, each with a small icon and label. Show flow or dependency between pillars.",
+    "Notes: Have students map a failure from S1 to one of these pillars.",
   ].join("\n"),
 
   clos: [
     "S3 — CLOs:",
     "Show the official CLOs and what the student will be able to DO.",
     "Copy CLO text VERBATIM. Never paraphrase or summarize.",
-    "Student action: 'Which CLO connects most directly to your current role?'",
+    "Each CLO should start with a Bloom-level verb (Distinguish, Analyze, Design, Evaluate).",
+    "Student action: 'Which CLO will be most relevant to your capstone?'",
+    "Visual intent: horizontal cards, each with CLO number, Bloom verb icon, and micro-progress bar.",
   ].join("\n"),
 
   prior_knowledge: [
-    "S4 — H-STACK + READINESS:",
-    "Activate prior knowledge and connect the topic to Human, Technical, and Market value (the H-Stack).",
-    "MANDATORY: Explicitly state the Official Jaheziah target outcome ONLY if the alignment mode is OFFICIAL_JAHEZIAH.",
-    "If required prerequisite knowledge is missing: briefly teach it or provide a micro-review before continuing.",
-    "Student action should be a prediction question: 'Before we dive in, what do you think happens when...?'",
-    "This slide bridges S1's problem to S5's first concept by showing its professional and market value.",
+    "S4 — H-STACK (Human, Technical, Market):",
+    "Present a THREE-LAYER readiness stack connecting the topic to real-world dimensions:",
+    "  HUMAN LAYER: Ethics, consent, professional standards, regulatory bodies.",
+    "  TECHNICAL LAYER: Key technical requirements, validation standards, tools.",
+    "  MARKET LAYER: Industry applications, national context (Vision 2030 if relevant), career pathways.",
+    "Each layer must have 2-3 SPECIFIC items from the source material — never generic.",
+    "Student action: PAUSE & DISCUSS. Ask which layer poses the greatest barrier to a specific real-world scenario.",
+    "Notes: Divide room into 3 groups. Each group defends one layer.",
+    "Visual intent: Three-layer stack or 3-column table with color-coded layers.",
   ].join("\n"),
 
   core_concept: [
-    "S5 — CORE CONCEPT:",
-    "Introduce the first essential concept with WHAT + WHY + HOW.",
-    "Build core knowledge with specific definitions, mechanisms, and models extracted from source blocks.",
-    "Create a simple mental model students can remember and reconstruct.",
-    "Prefer mechanism-based explanations over definitions alone.",
-    "Visual intent: process flows, classification trees, labeled diagrams, or comparison tables with specific elements named.",
+    "S5 — FOUNDATION (Core Concept):",
+    "Introduce the first essential concept with specific definitions, components, and mechanisms from the source.",
+    "Bullets should name specific components, structures, or steps — not abstract descriptions.",
+    "For science: name molecular components, reactions, sequences. For CS: name algorithms, data structures. For business: name frameworks, metrics.",
+    "Student action: POLL asking what happens when a specific parameter changes. Tests understanding of the mechanism, not recall.",
+    "Visual intent: labeled schematic or architecture diagram showing how components connect. Name every element.",
+    "Notes: Include a physical/kinesthetic teaching aide (hand model, analogy to body movements, etc.).",
   ].join("\n"),
 
   mechanism: [
-    "S6 — MENTAL MODEL / MECHANISM:",
-    "Explain HOW the concept works step-by-step.",
-    "Explicitly teach relationships: CAUSE → EFFECT, INPUT → PROCESS → OUTPUT.",
-    "The student must understand the mechanism, not just know the definition.",
-    "Include actual formulas, algorithms, step-by-step processes, or decision criteria from the source material. DO NOT summarize.",
-    "Visual intent: flow diagram, process chain, or architecture diagram showing how things connect.",
+    "S6 — FOUNDATION (Mechanism / Comparison):",
+    "Explain HOW the concept works by presenting two contrasting pathways, approaches, or mechanisms.",
+    "Structure as a COMPARISON: Path A (characteristics, components, outcomes) vs Path B (characteristics, components, outcomes).",
+    "Include actual formulas, algorithms, or step-by-step processes from the source. DO NOT summarize.",
+    "Student action: PAUSE & DISCUSS. Ask WHY one pathway is preferred in a specific context (e.g., 'Why does X drop to <10% in condition Y?').",
+    "Visual intent: split-screen comparison diagram. Left vs Right with contrasting icons and labeled steps.",
+    "Notes: Ask students to name one scenario where Path A is desired and one where Path B is required.",
   ].join("\n"),
 
   misconception: [
-    "S7 — MISCONCEPTION:",
-    "Challenge the most important incorrect mental model using this sequence:",
-    "MISCONCEPTION → WHY IT SEEMS REASONABLE → WHY IT FAILS → CORRECT MENTAL MODEL → RETRY QUESTION.",
-    "Title format: 'Why [Common Simplification] Fails' — expose a specific, named misconception.",
-    "Bullets: (1) State the misconception clearly, (2) explain WHY it seems reasonable, (3) explain WHY it fails with evidence, (4) provide the correct mental model.",
-    "Student action MUST be a poll with 4 options where one option reflects the misconception.",
-    "NEVER include the correct answer in studentAction. Place it ONLY in speakerNotes.",
-    "Do not create trivial or fake misconceptions. The misconception must be realistic.",
+    "S7/S8 — MISCONCEPTION:",
+    "Challenge the most important incorrect mental model using this EXACT structure:",
+    "  Bullet 1 — MYTH: State what students commonly believe (e.g., 'If X has Y, then Z will only happen there').",
+    "  Bullet 2 — TRUTH: State the correct principle with source evidence.",
+    "  Bullet 3 — EVIDENCE: Cite specific data (author, year, quantitative finding).",
+    "  Bullet 4 — CONSEQUENCE: State what happens when someone acts on the myth.",
+    "Title format: 'Why \"[Common Simplification]\" Is Wrong' — name the specific misconception in quotes.",
+    "Student action MUST be a POLL with 4 options. One option reflects the misconception, another is the correct answer.",
+    "NEVER include the correct answer in studentAction. Place it ONLY in notes.answers.",
+    "Notes: Cold-call 2 students before revealing. Emphasize why 'good enough' fails.",
   ].join("\n"),
 
   worked_example: [
-    "S8 — GUIDED EXAMPLE:",
-    "Walk through a meaningful example with full teaching.",
-    "Use: CONTEXT → WHAT ARE WE CALCULATING? → KNOWN VALUES → FORMULA → WHY THIS FORMULA? → WORKED EXAMPLE → INTERPRETATION.",
-    "Show problem → step-by-step solution → result.",
-    "All calculations must be independently verified. Visible result, speaker notes, and answer key must match exactly.",
-    "Visual intent: WORKSPACE layout showing the calculation steps clearly.",
-    "Speaker notes must contain the complete solution with each step explained.",
+    "S8/S9 — WORKED EXAMPLE:",
+    "Walk through a complete calculation or analytical example with full teaching.",
+    "MANDATORY STRUCTURE:",
+    "  Bullet 1 — GIVEN: List all known values with units from the source material.",
+    "  Bullet 2 — STEP 1: Show first calculation step with formula and substitution.",
+    "  Bullet 3 — STEP 2: Show intermediate result with interpretation.",
+    "  Bullet 4 — STEP 3: Show final result with units and real-world meaning.",
+    "ALL numbers MUST come from the source. If no quantitative data exists, mark omissionReason.",
+    "Student action: CALCULATION. Give students a variation to solve with different parameters.",
+    "Visual intent: large equation area with step-by-step math, result highlighted. A slider or scale showing parameter sensitivity.",
+    "Notes: Walk through step by step. Call out common errors (forgetting to multiply by 2 strands, wrong units, etc.).",
   ].join("\n"),
 
   guided_practice: [
-    "S9 — GUIDED PRACTICE:",
-    "Student solves a variation of S8's worked example WITH support.",
-    "Provide progressive hints: HINT 1 (recall concept) → HINT 2 (identify formula) → HINT 3 (show first step).",
-    "Student action should be 'Calculate:' or 'Solve:' with a concrete problem.",
-    "Speaker notes must contain: the complete solution, each hint, and common errors students make.",
-    "Do not reveal answers too early.",
+    "S9/S10 — GUIDED PRACTICE:",
+    "Student solves a variation of the worked example WITH support.",
+    "Provide a concrete problem with specific given values from the source.",
+    "Student action: 'In pairs: [specific task]. Report: (a) top candidates, (b) risk score, (c) final choice and justification.'",
+    "Visual intent: split screen — left shows source data, right shows output table or tool interface.",
+    "Notes: Circulate and check common errors. State the specific common error students make.",
   ].join("\n"),
 
   independent_practice: [
-    "S10 — INDEPENDENT PRACTICE:",
-    "Student solves with minimal support. Content must be ACTIONABLE.",
-    "The problem should require the student to apply the concept without step-by-step scaffolding.",
-    "Student action: a concrete problem that requires independent thinking.",
-    "Speaker notes: full solution plus diagnostic guidance for incorrect attempts.",
+    "S10 — INDEPENDENT ANALYSIS:",
+    "Student solves with minimal support using real or realistic data.",
+    "Provide a DATASET with specific values. Student must rank, recommend, or justify a decision.",
+    "Student action: 'Submit your risk assessment / analysis with quantitative justification.'",
+    "Visual intent: bar chart, decision matrix, or data table with a threshold line.",
+    "Notes: Identify which data point is the real danger and why. Explain the chromatin/context effect.",
   ].join("\n"),
 
   deeper_mechanism: [
-    "S11 — DEEPER CONCEPT:",
-    "Introduce the next level of complexity. Go DEEP into one mechanism or add a second major concept.",
-    "This slide increases cognitive demand beyond S5–S10.",
-    "Include actual formulas, algorithms, or decision criteria from the source material.",
-    "Visual intent: detailed technical diagram or comparison showing the deeper layer.",
+    "S11 — DEEP DIVE (Advanced Mechanism):",
+    "Introduce the next level of complexity with a COMPARISON TABLE showing variants, parameters, or approaches.",
+    "Structure as a TABLE with columns: Name, Key Feature, Mechanism, Trade-off.",
+    "Include specific mutations, parameters, or configurations from the source material.",
+    "State the trade-off explicitly: all improvements come at a cost.",
+    "Student action: PAUSE & DISCUSS. Present a scenario requiring students to weigh the trade-off.",
+    "Visual intent: table with labeled rows and a balance scale showing the trade-off at bottom.",
   ].join("\n"),
 
   trade_off: [
-    "S12 — TRADE-OFF / COMPARISON:",
-    "Show where different choices produce different outcomes.",
-    "Explicitly teach: edge vs cloud, latency vs cost, accuracy vs computation, security vs performance, etc.",
-    "Students should understand that engineering/design decisions involve constraints.",
-    "Visual intent: SPLIT_COMPARE matrix, decision tree, or constraint diagram.",
-    "Student action: 'Which approach would you choose for this scenario and why?'",
+    "S12 — DEEP DIVE (Trade-off Comparison):",
+    "Present a COMPARISON TABLE of approaches with columns: Name, Capacity, Risk, Best Use Case.",
+    "Each row must have specific values from the source (sizes, rates, percentages).",
+    "Below the table: explain pros/cons of each approach in 2-4 concise bullets.",
+    "Student action: PAUSE & DISCUSS. Ask WHY one approach is preferred for a specific clinical/technical scenario.",
+    "Visual intent: four items drawn to relative scale with pros/cons tooltip for each.",
+    "Notes: Connect to a real-world approval or standard (e.g., FDA, ISO, SFDA).",
   ].join("\n"),
 
   real_case: [
-    "S13 — REAL CASE:",
-    "Apply the concept to an authentic sourced scenario.",
-    "A real case must contain: CONTEXT → PROBLEM → EVIDENCE → CONSTRAINTS → OPTIONS → TRADE-OFF → DECISION → RATIONALE → OUTCOME.",
-    "Name specific companies, dates, and outcomes from the source material.",
-    "Do not use company names or national initiatives merely as decoration.",
-    "If a Saudi/Vision 2030 example is used, it must be sourced and genuinely relevant.",
+    "S13 — TRADE-OFF (Strategy Selection):",
+    "Present 3 plausible strategies for solving a specific problem, each with named advantages and limitations.",
+    "Strategy A: [approach] — [efficiency], [limitation], [use case].",
+    "Strategy B: [approach] — [requirement], [efficiency], [constraint].",
+    "Strategy C: [approach] — [advantage], [limitation].",
+    "Student action: POLL asking which strategy to select for a specific clinical/production/design scenario.",
+    "Notes: The 'correct' answer may depend on context. Explain why the real-world choice was made and what trade-off was accepted.",
+    "Visual intent: decision tree starting from 'Problem type?' branching to each strategy.",
   ].join("\n"),
 
   guided_application: [
-    "S14 — APPLICATION:",
-    "Structured problem-solving activity with some guidance.",
-    "MANDATORY: Integrate Saudi Vision 2030 context (e.g. Saudi Green Initiative, NEOM, SDAIA) IF genuinely relevant to the concept.",
-    "Student action should be a collaborative task: 'In groups of 4:' or 'Design:' with a concrete deliverable.",
-    "Visual intent: WORKSPACE layout or real-world scenario diagram.",
+    "S14 — APPLICATION (Case Study):",
+    "Apply the concept to an authentic real-world case WITH specific sourced data.",
+    "A case study must contain: Target, Strategy, Method, Efficacy (with numbers from source), Safety outcome.",
+    "Name specific organizations, dates, trial results, and regulatory approvals.",
+    "Student action: PAUSE & DISCUSS. Ask WHY the case chose this approach instead of an alternative.",
+    "Visual intent: patient/product journey infographic with timeline from discovery to approval. Include local regulatory context (e.g., Saudi approval date).",
+    "Notes: Connect to Vision 2030 or local context if genuinely relevant.",
   ].join("\n"),
 
   independent_application: [
-    "S15 — INDEPENDENT APPLICATION:",
-    "Less guidance. The student solves a realistic problem with minimal scaffolding.",
-    "The task should require combining multiple concepts learned so far.",
-    "Student action: a concrete task requiring independent analysis and decision-making.",
+    "S15 — APPLICATION (Guided Practice):",
+    "Structured problem-solving activity with step-by-step scaffolding.",
+    "Give a specific mutation, configuration, or scenario with exact values.",
+    "Break the task into 3-4 numbered steps the student must follow.",
+    "Student action: 'In pairs: [run tool / design / analyze]. Report: (a) candidates, (b) risk, (c) choice + justification.'",
+    "Visual intent: split screen — left shows input data, right shows tool/output with worked example badge.",
+    "Notes: Circulate. State the common error (wrong orientation, missing parameter, etc.).",
   ].join("\n"),
 
   decision_challenge: [
-    "S16 — DECISION CHALLENGE:",
-    "Student chooses between plausible approaches and must EXPLAIN their reasoning.",
-    "Present a complex choice with real constraints where there is no obviously correct answer.",
-    "Use questions that reveal understanding: WHICH OPTION WOULD YOU CHOOSE AND WHY? WHAT IS THE MOST LIKELY BOTTLENECK? WHICH ASSUMPTION IS WRONG?",
-    "The answer must demonstrate that the student can reason about trade-offs.",
+    "S16 — APPLICATION (Independent Analysis):",
+    "Provide a real or realistic dataset. Student must independently rank, assess, and recommend.",
+    "The dataset should have specific labeled data points with numerical values.",
+    "Student action: 'Submit your assessment with quantitative justification.'",
+    "Visual intent: bar chart or data table with a red threshold line. Decision matrix below.",
+    "Notes: Identify which data point is the real danger. Explain why a 'safe-looking' result may be dangerous due to context.",
   ].join("\n"),
 
   transfer_challenge: [
-    "S17 — TRANSFER CHALLENGE:",
-    "New scenario requiring multiple learned concepts applied to a genuinely new situation.",
-    "Do NOT simply repeat a previous example with different numbers.",
-    "The student must transfer the concept to a domain or context not covered earlier in the lecture.",
-    "This is the highest-difficulty student challenge before the mastery section.",
+    "S17 — APPLICATION (Career / Transfer Context):",
+    "Connect the lecture topic to real career pathways, institutions, or industry applications.",
+    "Name 3-4 SPECIFIC organizations, institutions, or initiatives with concrete roles.",
+    "If Saudi context applies: name Saudi institutions, Vision 2030 projects, and regulatory bodies.",
+    "Student action: PAUSE & DISCUSS. 'Which sector offers the highest impact for graduates trained in this topic?'",
+    "Visual intent: map or location pins with labeled institutions. Each pin has an icon representing the sector.",
+    "Notes: All career paths are valid. Push students to justify with data.",
   ].join("\n"),
 
   rubric: [
     "S18 — RUBRIC:",
     "Observable performance criteria across four levels: Novice | Developing | Proficient | Distinguished.",
-    "Each level must have OBSERVABLE, CONCRETE criteria that students can self-assess against.",
-    "Criteria must map to the lecture CLOs.",
-    "BAD: 'Shows understanding'. GOOD: 'Correctly identifies 3+ threat vectors and maps each to a control'.",
-    "Visual intent: 4-column rubric grid with level headers and criteria rows.",
+    "Each level must have 2-3 OBSERVABLE, CONCRETE criteria that students can self-assess against.",
+    "Criteria must map to specific lecture CLOs and name specific tools, techniques, or outputs.",
+    "BAD: 'Shows understanding'. GOOD: 'Validates with [tool] + justifies choice based on quantitative risk analysis'.",
+    "Level 4 (Distinguished) MUST include a local/applied context (e.g., proposing a Saudi-specific application).",
+    "Visual intent: 2×2 rubric grid with checkmark icons and criteria in each cell. Progress bar at top.",
+    "Notes: Have students self-assess. Most will rate Level 2. Challenge them to identify what Level 3 requires.",
   ].join("\n"),
 
   evidence: [
     "S19 — EVIDENCE OF MASTERY:",
-    "Show how product, process, and explanation demonstrate learning.",
-    "Triangulation: what the student PRODUCES, how the student WORKS, and how the student EXPLAINS.",
-    "Each bullet should name a concrete deliverable or assessment method.",
-    "Student action: 'Select one CLO and identify your strongest evidence type for it.'",
+    "Show how product, process, and explanation demonstrate learning — the evidence triangle.",
+    "PRODUCT: Name the specific deliverable (design document, analysis report, tool output).",
+    "PROCESS: Name the decision log or reasoning trail (why you rejected alternative #2).",
+    "EXPLANATION: Name the oral defense or written justification.",
+    "All three must align: if you chose approach A, your product must be compatible with approach A.",
+    "Student action: PAUSE & DISCUSS. 'Which evidence type is hardest to fake? Which is easiest to improve?'",
+    "Visual intent: triangle diagram with Product, Process, Explanation at vertices. Bidirectional arrows between them.",
+    "Notes: Hardest to fake = Explanation (oral defense). Easiest to improve = Product (more time on tool).",
   ].join("\n"),
 
   readiness: [
     "S20 — READINESS GATE:",
-    "Integrated scenario-based check linked to CLOs. This must be a NEW scenario integrating multiple concepts.",
-    "Do NOT use S20 as a trivial recall question. Do NOT simply ask a definition memorized from S5.",
-    "Give: system constraints + data behavior + performance requirement. Ask the student to choose an approach and justify it.",
-    "Include Readiness Check 4 as an actual multiple choice question with 4 options.",
-    "State the gate criteria: 3/4 correct + rubric level 3+.",
-    "End with a clear NEXT ACTION: what students should do after this lecture.",
+    "Integrated scenario-based check linked to CLOs. This must be a NEW scenario integrating MULTIPLE concepts.",
+    "Do NOT use S20 as trivial recall. Give a complex scenario with constraints, data, and a required decision.",
+    "Include Readiness Check 4 as an actual multiple choice question with 4 options (A/B/C/D).",
+    "State the gate criteria: 3/4 correct + rubric level 3+ (Proficient or Distinguished).",
+    "End with clear NEXT ACTIONS: what students should do after this lecture.",
     "Visual intent: progress dashboard showing checks passed, CLO coverage, and gate status.",
-    "Do not claim professional readiness. Use 'Lecture readiness' or 'Course readiness'.",
+    "Notes: State the correct answer. Explain how to run the final check and how to help students who don't meet the threshold.",
   ].join("\n"),
 };
 
@@ -507,162 +438,83 @@ const FUNCTION_GUIDANCE: Record<string, string> = {
 
 function userPrompt(
   plan: { slideNo: number; function: string; title: string; interactionType: string | null; visualIntent: string | null },
-  selectedClos: CourseLearningOutcome[],
+  clos: CourseLearningOutcome[],
   blocks: { id: string; locator: string; text: string }[],
-  mode: string,
+  nationalAlignmentMode: boolean,
   languagePolicy: string
 ): string {
-  // Perform targeted source block retrieval: select blocks that match key terms in the plan title/function
-  const planKeywords = `${plan.title} ${plan.function}`.toLowerCase().split(/\W+/).filter((w) => w.length > 3);
-  const relevantBlocks = blocks.filter((b) => {
-    const textLower = b.text.toLowerCase();
-    return planKeywords.some((kw) => textLower.includes(kw));
-  });
-  const selectedBlocks = relevantBlocks.length >= 2 ? relevantBlocks.slice(0, 5) : blocks.slice(0, 5);
-
-  const parts: string[] = [
-    `SLIDE ${plan.slideNo} of 20 — Function: ${plan.function}`,
-    `Title suggestion: ${plan.title}`,
-    "",
-    `Course Learning Outcomes:`,
-    selectedClos.map((c) => `  ${c.number}: ${c.text}`).join("\n"),
-    "",
-    "SOURCE MATERIAL (extract specific facts, definitions, formulas, and examples from these blocks):",
-    selectedBlocks.map((b) => `[${b.id}] ${b.locator}: ${b.text.slice(0, 600)}`).join("\n"),
-    "",
-    `Interaction type required: ${plan.interactionType ?? "none"}`,
-    `Visual intent hint: ${plan.visualIntent ?? "derive from content"}`,
-    `National alignment mode: ${mode}`,
-  ];
-
-  // Inject function-specific pedagogical guidance
-  const fnGuide = FUNCTION_GUIDANCE[plan.function];
-  if (fnGuide) {
-    parts.push("", "PEDAGOGICAL REQUIREMENTS FOR THIS SLIDE:", fnGuide);
-  }
-
-  parts.push(
-    "",
-    "BEFORE GENERATING, internally construct the concept model for this slide:",
-    "- What concept is being taught?",
-    "- What is the prerequisite?",
-    "- What is the mechanism?",
-    "- What misconception must be addressed?",
-    "- What is the student supposed to learn HERE?",
-    "- What is the student supposed to DO with it?",
-    "",
-    "FINAL REVIEW before returning JSON:",
-    "1. Is every claim grounded in the source blocks?",
-    "2. Is the student action genuinely useful for learning?",
-    "3. Are calculations correct and consistent?",
-    "4. Would a student learn from this slide without the instructor reading every bullet aloud?",
-    "5. Does this slide advance the lecture's central story?",
-    "",
-    "Return this exact JSON:",
-    '{',
-    '  "title": "...",                       // compelling, specific — not generic',
-    '  "purpose": "...",                     // what is the student supposed to learn here?',
-    '  "learningObjective": "...",           // observable outcome for this slide',
-    '  "academicTruth": "...",               // What is actually supported by the source?',
-    '  "teachingExplanation": "...",          // How should the concept be explained to the student?',
-    '  "learningActivity": {',
-    '    "text": "...",                       // what the student does',
-    '    "cognitiveAction": "...",            // predict|recall|classify|compare|explain|calculate|diagnose|identify_error|justify|decide|design|reflect',
-    '    "hints": ["...", "...", "..."]       // progressive hints for difficult problems (optional)',
-    '  },',
-    '  "feedback": "...",                     // How should the system respond when the student succeeds or fails?',
-    '  "mastery": "...",                      // How will the system know the student can use the concept independently?',
-    '  "bullets": ["...", "..."],             // ≤5 bullets, ≤8 words each, each teaches ONE concrete fact',
-    '  "visualIntent": "...",                 // specific diagram description with named elements and layout',
-    '  "studentAction": "...",                // ACTION-FIRST: concrete task with actual question text, poll options, or calculation',
-    '  "speakerNotes": "...",                 // 5-8 sentence instructor script: what to say, when to pause, expected answers, correct answer, transition to next slide',
-    '  "expectedStudentReasoning": "...",     // what a student should think through',
-    '  "bloomLevel": "...",                   // Remember|Understand|Apply|Analyze|Evaluate|Create',
-    '  "conceptIds": ["..."],                // which concepts this slide teaches',
-    '  "citations": [{ "sourceBlockId": "...", "locator": "...", "excerpt": "..." }],',
-    '  "claims": [{ "id": "...", "text": "...", "type": "SOURCE_FACT|VERIFIED_EXTERNAL_FACT|DERIVED_CALCULATION|ILLUSTRATIVE_SCENARIO|HYPOTHETICAL|INFERENCE", "status": "verified|NEED_SOURCE|hypothetical", "sourceBlockId": "..." }],',
-    '  "wordCount": 0                         // count visible words only (title + bullets)',
-    languagePolicy === "bilingual"
-      ? '  "textAr": { "title": "...", "bullets": ["...", "..."] }'
-      : "",
-    "}",
-  );
-
-  const addendum =
-    plan.function === "misconception"
-      ? misconceptionPromptAddendum()
-      : plan.function === "worked_example"
-        ? workedCalculationPromptAddendum()
-        : plan.slideNo === 18
-          ? rubricPromptAddendum()
-          : plan.slideNo === 20
-            ? readinessGatePromptAddendum(mode)
-            : null;
-
-  if (addendum) parts.push("", "MANDATORY SLIDE-SPECIFIC CONSTRAINTS:", addendum);
-  return parts.filter(Boolean).join("\n");
+  return [
+    `## INPUT`,
+    `- SlidePlan:`,
+    `  slideNo: ${plan.slideNo}`,
+    `  function: ${plan.function}`,
+    `  title: "${plan.title}"`,
+    `  interactionType: "${plan.interactionType || "none"}"`,
+    `  visualIntent: "${plan.visualIntent || "none"}"`,
+    ``,
+    `- CourseProfile:`,
+    `  language: ${languagePolicy}`,
+    `  selectedLectureCLOs: ${JSON.stringify(clos.map(c => ({ id: c.id, number: c.number, text: c.text })))}`,
+    ``,
+    `- SourceBlocks (Verified Base Content):`,
+    ...blocks.map((b) => `  [Block ID: ${b.id}] (Locator: ${b.locator})\n  ${b.text.trim().substring(0, 800)}`),
+    ``,
+    `Remember: Return ONLY valid JSON matching the exact schema.`,
+  ].join("\n");
 }
 
 // ---------------------------------------------------------------------------
 // NORMALIZE — extract structured content from LLM JSON response
 // ---------------------------------------------------------------------------
 
-function normalizeArtifact(json: unknown, cloIds: string[]): SlideContentJson {
+function normalizeArtifact(
+  json: unknown,
+  cloIds: string[],
+  blocks: { id: string; locator: string; text: string }[]
+): SlideContentJson {
   const raw = (json ?? {}) as Record<string, any>;
-  const bullets = Array.isArray(raw.bullets) ? raw.bullets.map(String) : [];
-  const citations = Array.isArray(raw.citations)
-    ? raw.citations.map((c: any) => ({
-      sourceBlockId: String(c?.sourceBlockId ?? ""),
-      locator: String(c?.locator ?? ""),
-      excerpt: String(c?.excerpt ?? c?.text ?? ""),
-    }))
-    : [];
-  const textAr = raw.textAr && typeof raw.textAr === "object"
-    ? {
-      title: typeof raw.textAr.title === "string" ? raw.textAr.title : undefined,
-      bullets: Array.isArray(raw.textAr.bullets) ? raw.textAr.bullets.map(String) : undefined,
-    }
-    : undefined;
+  const rawVisual = raw.visualIntent as Record<string, any> | undefined;
+  const hasSourceFigure = Boolean(
+    typeof rawVisual?.sourceFigureRef === "string" && rawVisual.sourceFigureRef.trim()
+  );
   return {
     title: typeof raw.title === "string" ? raw.title : "",
-    purpose: typeof raw.purpose === "string" ? raw.purpose : "",
-    learningObjective: typeof raw.learningObjective === "string" ? raw.learningObjective : "",
-    academicTruth: typeof raw.academicTruth === "string" ? raw.academicTruth : "",
-    teachingExplanation: typeof raw.teachingExplanation === "string" ? raw.teachingExplanation : "",
-    learningActivity: raw.learningActivity && typeof raw.learningActivity === "object"
-      ? {
-        text: typeof raw.learningActivity.text === "string" ? raw.learningActivity.text : "",
-        cognitiveAction: typeof raw.learningActivity.cognitiveAction === "string" ? raw.learningActivity.cognitiveAction : undefined,
-        hints: Array.isArray(raw.learningActivity.hints) ? raw.learningActivity.hints.map(String) : undefined,
-      }
-      : { text: "" },
-    feedback: typeof raw.feedback === "string" ? raw.feedback : "",
-    mastery: typeof raw.mastery === "string" ? raw.mastery : "",
-    bullets,
-    visibleContent: bullets,
-    visualIntent: typeof raw.visualIntent === "string" ? raw.visualIntent : "",
-    studentAction: typeof raw.studentAction === "string" ? raw.studentAction : "",
-    speakerNotes: typeof raw.speakerNotes === "string" ? raw.speakerNotes : "",
-    citations,
-    claims: Array.isArray(raw.claims)
-      ? raw.claims.map((c: any) => ({
-        id: typeof c?.id === "string" ? c.id : "",
-        text: String(c?.text ?? ""),
-        type: typeof c?.type === "string" ? c.type : "SOURCE_FACT",
-        sourceIds: c?.sourceBlockId ? [String(c.sourceBlockId)] : [],
-        status: ["verified", "NEED_SOURCE", "hypothetical"].includes(c?.status) ? c.status : "NEED_SOURCE",
-        sourceBlockId: c?.sourceBlockId ? String(c.sourceBlockId) : undefined,
-        verificationStatus: ["verified", "NEED_SOURCE", "hypothetical"].includes(c?.status) ? (c.status === "verified" ? "VERIFIED" : c.status === "NEED_SOURCE" ? "UNSUPPORTED" : "VERIFIED") : "UNSUPPORTED",
-      }))
-      : [],
-    cloIds,
-    conceptIds: Array.isArray(raw.conceptIds) ? raw.conceptIds.map(String) : [],
-    sourceBlockIds: [...new Set(citations.map((c: any) => c.sourceBlockId).filter(Boolean))],
-    bloomLevel: typeof raw.bloomLevel === "string" ? raw.bloomLevel : "",
-    interaction: raw.learningActivity || null,
+    body: {
+      visibleCopy: typeof raw.body?.visibleCopy === "string" ? raw.body.visibleCopy : "",
+      bullets: Array.isArray(raw.body?.bullets) ? raw.body.bullets.map(String) : [],
+      studentAction: raw.body?.studentAction || undefined,
+    },
+    visualIntent: {
+      description:
+        typeof rawVisual?.description === "string"
+          ? rawVisual.description
+          : "Diagram illustrating the slide concept.",
+      sourceFigureRef: hasSourceFigure ? rawVisual?.sourceFigureRef ?? null : null,
+      // Default to generating a diagram unless the LLM explicitly points to a
+      // real source figure — a missing flag must not trip the Tier-3 visual
+      // gate (BRD requires ≥18 visually supported slides).
+      generateDiagram: hasSourceFigure ? Boolean(rawVisual?.generateDiagram) : true,
+      diagramType:
+        typeof rawVisual?.diagramType === "string"
+          ? (rawVisual.diagramType as "mechanism" | "comparison" | "workflow" | "data_chart" | "concept_map")
+          : undefined,
+    },
+    notes: raw.notes || {
+      instructorNotes: "",
+      timingMinutes: 0,
+      facilitationMoves: [],
+      answers: ""
+    },
+    sourceCoverage: raw.sourceCoverage || {
+      // Ground in the scoped blocks this slide was generated from.
+      mappedBlockIds: blocks.map((b) => b.id),
+      omissionReason: null
+    },
+    cloLinks: Array.isArray(raw.cloLinks) ? raw.cloLinks.map(String) : cloIds,
     wordCount: 0,
-    textAr,
-  } as SlideContentJson;
+    function: typeof raw.function === "string" ? raw.function : undefined,
+    slideNo: typeof raw.slideNo === "number" ? raw.slideNo : undefined,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -670,105 +522,27 @@ function normalizeArtifact(json: unknown, cloIds: string[]): SlideContentJson {
 // ---------------------------------------------------------------------------
 
 function buildFallbackSlide(
-  project: LectureProjectWithRelations,
-  plan: { slideNo: number; function: string; title: string; interactionType: string | null; visualIntent: string | null },
-  blocks: { id: string; locator: string; text: string }[],
-  clos: CourseLearningOutcome[]
+  project: any,
+  plan: any,
+  blocks: any[],
+  clos: any[]
 ): SlideContentJson {
-  const isAr = project.courseProfile.languagePolicy === "ar";
-  const block = blocks[plan.slideNo % (blocks.length || 1)] || blocks[0];
-  const locator = block?.locator ?? "slide:1";
-
-  // Sanitize raw PDF text — strip raw nucleotide sequences, hex tokens, and OCR artifacts
-  const rawText = block?.text || "";
-  const sanitizedText = rawText
-    .replace(/[a-zA-Z0-9]{16,}/g, "") // remove ultra-long random hex/hash gibberish
-    .replace(/\b[atcgATCGxX]{4,}\b/g, "") // remove raw DNA sequence strings like "atagG xxxxxx"
-    .replace(/\s+/g, " ")
-    .trim();
-
-  const cleanSnippet = sanitizedText.length > 20
-    ? sanitizedText.slice(0, 140).replace(/[^\w\s\u0600-\u06FF,.-]/gi, "")
-    : "";
-
-  // SAFE PLACEHOLDER fallback. Runs ONLY when the LLM is unavailable.
-  // It must never fabricate facts or invent numbers, and must never emit
-  // internal framework labels (e.g. "Core Capability", "Driving Question").
-  // Content is drawn verbatim from the source-block snippet when available,
-  // otherwise a neutral review-pending notice. The slide is always flagged
-  // for review so faculty regenerate it before it reaches students.
-  const topic = plan.title?.trim() || "this topic";
-
-  const coreSnippet =
-    cleanSnippet ||
-    (isAr
-      ? "هذه الشريحة بحاجة إلى مراجعة المحتوى من المادة المصدرية."
-      : "This screen needs content reviewed from the source material.");
-
-  const title = plan.title?.trim() || (isAr ? "محتوى قيد المراجعة" : "Content pending review");
-  const bullets = [coreSnippet];
-
-  const studentAction = isAr
-    ? "راجع المادة المصدرية للتحضير للنشاط."
-    : "Review the source material to prepare for the activity.";
-
-  const speakerNotes = isAr
-    ? "ملاحظة مراجعة: لم يكتمل إنشاء هذه الشريحة تلقائياً. أعد كتابة المحتوى من المادة المصدرية قبل العرض."
-    : "Review flag: this screen was not fully generated. Rewrite the content from the source material before presenting.";
-
-  const studentCoreInsight = coreSnippet;
-  const studentAnalogy = isAr
-    ? "فكر في كيفية ارتباط هذا المفهوم بمثال مألوف لديك."
-    : "Consider how this concept connects to a familiar example.";
-  const studentFramework = "";
-  const studentMechanismExplanation = isAr
-    ? "راجع الخطوات الموثقة في المادة المصدرية لفهم آلية عمل هذا المفهوم."
-    : "Review the documented steps in the source material to understand how this concept works.";
-  const studentScenario = isAr
-    ? "راجع تطبيقات هذا المفهوم في المادة المصدرية."
-    : "Review the applications of this concept in the source material.";
-  const studentApplication = studentScenario;
-
+  const title = plan.title || "Untitled Slide";
+  const bullets = blocks.slice(0, 3).map((b) => b.text.slice(0, 80) + "...");
   return {
+    slideNo: plan.slideNo,
     title,
-    purpose: isAr
-      ? `مراجعة محتوى ${topic} من المادة المصدرية.`
-      : `Review the content of ${topic} from the source material.`,
-    learningObjective: isAr
-      ? "يستطيع الطالب فهم المفهوم بعد مراجعة المادة المصدرية."
-      : "Student can understand the concept after reviewing the source material.",
-    academicTruth: isAr
-      ? "يجب استخراج المحتوى من المادة المصدرية المعتمدة."
-      : "Content must be drawn from the approved source material.",
-    teachingExplanation: coreSnippet,
-    learningActivity: { text: studentAction },
-    feedback: isAr
-      ? "راجع المادة المصدرية للتحقق من الفهم."
-      : "Review the source material to confirm understanding.",
-    mastery: isAr
-      ? "يشرح الطالب المفهوم في سياق جديد بعد مراجعة المادة."
-      : "Student explains the concept in a new context after reviewing the material.",
-    bullets,
-    visibleContent: bullets,
-    visualIntent: plan.visualIntent || (isAr ? "رسم توضيحي من المادة المصدرية" : "Diagram from the source material"),
-    studentAction,
-    speakerNotes,
-    studentCoreInsight,
-    studentAnalogy,
-    studentFramework,
-    studentMechanismExplanation,
-    studentScenario,
-    studentApplication,
-    textAr: isAr ? { title, bullets } : undefined,
-    citations: [{ sourceBlockId: block?.id ?? "1", locator, excerpt: cleanSnippet || title }],
-    claims: [{ text: bullets[0], status: "verified", sourceBlockId: block?.id }],
-    cloIds: clos.map((c) => c.id),
-    conceptIds: [],
-    sourceBlockIds: [block?.id ?? "1"],
-    bloomLevel: "Understand",
-    interaction: null,
-    wordCount: title.split(/\s+/).length + bullets.reduce((n, b) => n + b.split(/\s+/).length, 0),
-  } as SlideContentJson;
+    body: {
+      visibleCopy: "Error loading generated content.",
+      bullets
+    },
+    visualIntent: {
+      description: "Fallback diagram",
+      sourceFigureRef: null,
+      generateDiagram: false,
+    },
+    wordCount: title.split(/\s+/).length + bullets.reduce((n: number, b: string) => n + b.split(/\s+/).length, 0),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -825,8 +599,49 @@ export async function generateSlideArtifact(
     };
   }
 
-  const content = normalizeArtifact(json, clos.map((c) => c.id));
+  const content = normalizeArtifact(json, clos.map((c) => c.id), blocks);
   content.wordCount = countVisibleWords(content);
+
+  // Hard rejection: forbidden structural patterns or domain contamination.
+  const courseProfile = project.courseProfile as any;
+  const courseTitle = courseProfile?.title ?? "";
+  const courseTopic = [
+    courseProfile?.subject ?? "",
+    courseProfile?.discipline ?? "",
+    courseProfile?.description ?? "",
+  ].join(" ");
+  if (hasForbiddenContent(content, courseTitle, courseTopic)) {
+    return {
+      slideNo: plan.slideNo,
+      slidePlanId: plan.id,
+      content: buildFallbackSlide(project, plan, blocks, clos),
+      errors: ["FORBIDDEN_CONTENT_DETECTED"],
+      flagged: true,
+      error: "FORBIDDEN_CONTENT_DETECTED — output contained a forbidden phrase or wrong-domain contamination. Slide must be regenerated.",
+    };
+  }
+
+  // Sentence-level cross-slide duplication check (Fix 6).
+  const candidateTexts = [
+    content.body?.visibleCopy ?? "",
+    ...(content.body?.bullets ?? []),
+    content.body?.studentAction?.stem ?? "",
+  ].filter(Boolean);
+
+  const sentenceConflicts = globalSentenceRegistry.findDuplicateSentences(candidateTexts);
+  if (sentenceConflicts.length > 0) {
+    const examples = sentenceConflicts.slice(0, 2).map(c => `"${c.sentence.slice(0, 60)}..." (first seen S${c.firstSeenInSlide})`).join("; ");
+    console.warn(`[SlideGenerator] S${plan.slideNo} sentence duplication detected: ${examples}`);
+    // Flag for review but do not hard-reject — the repair pass can fix it.
+    content.reviewStatus = "sentence_duplication";
+    (content as any)._sentenceConflicts = sentenceConflicts.map(c => ({
+      sentence: c.sentence.slice(0, 80),
+      firstSeenInSlide: c.firstSeenInSlide,
+    }));
+  }
+
+  // Record accepted sentences so subsequent slides can check against them.
+  globalSentenceRegistry.recordSlide(plan.slideNo, candidateTexts);
 
   const { valid, errors } = artifactGate(content);
   return { slideNo: plan.slideNo, slidePlanId: plan.id, content, errors, flagged: !valid };

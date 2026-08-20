@@ -242,7 +242,7 @@ const MAX_VISIBLE_WORDS = 40;
 
 function countVisibleWords(content: SlideContentJson): number {
   const titleWords = content.title ? content.title.split(/\s+/).filter(Boolean).length : 0;
-  const bulletWords = (content.bullets ?? []).reduce(
+  const bulletWords = (content.body?.bullets ?? content.bullets ?? []).reduce(
     (n, b) => n + b.split(/\s+/).filter(Boolean).length,
     0,
   );
@@ -257,13 +257,21 @@ function dropLastWord(text: string): string {
 
 /** Trim title/bullets to ≤40 visible words. Does not invent text or change gate thresholds. */
 export function enforceVisibleDensity(content: SlideContentJson): void {
-  content.bullets = Array.isArray(content.bullets) ? [...content.bullets] : [];
+  const bullets = Array.isArray(content.body?.bullets)
+    ? content.body.bullets
+    : Array.isArray(content.bullets)
+      ? content.bullets
+      : [];
+  content.body = {
+    ...(content.body as object),
+    bullets,
+  } as SlideContentJson["body"];
   let guard = 0;
   while (countVisibleWords(content) > MAX_VISIBLE_WORDS && guard < 80) {
     guard += 1;
     let longestIdx = -1;
     let longestLen = 0;
-    content.bullets.forEach((b, i) => {
+    bullets.forEach((b, i) => {
       const n = b.split(/\s+/).filter(Boolean).length;
       if (n > longestLen) {
         longestLen = n;
@@ -271,7 +279,7 @@ export function enforceVisibleDensity(content: SlideContentJson): void {
       }
     });
     if (longestIdx >= 0 && longestLen > 1) {
-      content.bullets[longestIdx] = dropLastWord(content.bullets[longestIdx]);
+      bullets[longestIdx] = dropLastWord(bullets[longestIdx]);
       continue;
     }
     const titleWords = content.title ? content.title.split(/\s+/).filter(Boolean).length : 0;

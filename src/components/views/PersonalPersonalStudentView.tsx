@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { QRCodeSVG } from "qrcode.react";
 import { useI18n } from "@/lib/i18n";
 import { Loader2, AlertCircle, GraduationCap, User } from "lucide-react";
+import { proxiedImageUrl } from "@/lib/image-proxy";
 
 export function PersonalPersonalStudentView() {
   const { t, ar, dir } = useI18n();
@@ -59,7 +60,7 @@ export function PersonalPersonalStudentView() {
                       <div className="text-xs opacity-70">{ar ? "رقم الطالب:" : "Student ID:"} {data?.studentId || "-"}</div>
                     </div>
                     <Avatar className="h-16 w-16 border-2 border-white">
-                      <AvatarImage src={data?.avatar} alt={data?.name} />
+                      <AvatarImage src={proxiedImageUrl(data?.avatar)} alt={data?.name} />
                       <AvatarFallback>{data?.name?.charAt(0) || "U"}</AvatarFallback>
                     </Avatar>
                   </div>

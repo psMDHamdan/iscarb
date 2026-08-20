@@ -14,7 +14,7 @@ CLOs:
 ${JSON.stringify(clos, null, 2)}
 
 SLIDES:
-${JSON.stringify(slides.map(s => ({ no: s.slideNo, title: s.title, objective: s.learningObjective, bullets: s.visibleContent, interaction: s.interaction, examples: s.examples, assessment: s.assessment })), null, 2)}
+${JSON.stringify(slides.map(s => ({ no: s.slideNo, title: s.title, objective: s.learningObjective, bullets: s.body?.bullets, interaction: s.interaction, examples: s.examples, assessment: s.assessment })), null, 2)}
 
 Check:
 1. Is the lecture factually sound?
@@ -43,20 +43,21 @@ Return a JSON object matching this schema:
 }
 `;
 
-  const response = await chatJson(prompt, "gpt-4o"); 
+  const response = await chatJson({ user: prompt, model: "gpt-4o" });
+  const json = (response.json || {}) as any; 
 
   const result: ReviewResult = {
-    status: response.status || "NEEDS_FACULTY_REVIEW",
-    score: response.score || 0,
-    criticalIssues: response.criticalIssues || [],
-    majorIssues: response.majorIssues || [],
-    minorIssues: response.minorIssues || [],
-    failedRules: response.failedRules || [],
+    status: json.status || "NEEDS_FACULTY_REVIEW",
+    score: json.score || 0,
+    criticalIssues: json.criticalIssues || [],
+    majorIssues: json.majorIssues || [],
+    minorIssues: json.minorIssues || [],
+    failedRules: json.failedRules || [],
     unsupportedClaims: [],
-    weakQuestions: response.weakQuestions || [],
-    weakExamples: response.weakExamples || [],
-    missingConcepts: response.missingConcepts || [],
-    repairActions: response.repairActions || []
+    weakQuestions: json.weakQuestions || [],
+    weakExamples: json.weakExamples || [],
+    missingConcepts: json.missingConcepts || [],
+    repairActions: json.repairActions || []
   };
 
   return {

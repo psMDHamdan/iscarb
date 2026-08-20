@@ -42,7 +42,7 @@ Previous 3 Layouts: ${previousLayouts.join(", ")}
 Word Count: ${slide.wordCount}
 Visual Nodes Count: ${slide.visualSpec?.nodes?.length || 0}
 Visual Connections Count: ${slide.visualSpec?.connections?.length || 0}
-Text Blocks: ${(slide.visibleContent || []).join(" | ")}
+Text Blocks: ${(slide.body?.bullets || []).join(" | ")}
 `;
 
     const reviewJson = await chatJson(prompt, "gpt-4o-mini", SCREENSHOT_QA_PROMPT);

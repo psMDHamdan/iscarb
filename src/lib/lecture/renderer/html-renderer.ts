@@ -118,7 +118,7 @@ export function renderHTML(
         ? generateVisualPlaceholder({
             slideNo: slide.slideNo,
             fn: (slide as any).function ?? "foundation",
-            visualIntent: content.visualIntent,
+            visualIntent: content.visualIntent.description,
             width: 560,
             height: 280,
           })
@@ -132,7 +132,7 @@ export function renderHTML(
           visualSvg
             ? `<figure class="visual-intent" role="img" aria-label="Visual intent for slide ${slide.slideNo}">
           ${visualSvg}
-          <figcaption class="visual-caption">${escapeHtml(content.visualIntent)}</figcaption>
+          <figcaption class="visual-caption">${escapeHtml(content.visualIntent?.description || "Visual Intent")}</figcaption>
         </figure>`
             : ""
         }

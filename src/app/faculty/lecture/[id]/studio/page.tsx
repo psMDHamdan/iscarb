@@ -17,18 +17,12 @@ import { GenerationProgress } from "@/components/lecture/GenerationProgress";
 import {
   Sparkles,
   AlertCircle,
-  CheckCircle2,
   Check,
   Edit3,
   Pencil,
   MessageSquare,
-  ShieldCheck,
   RefreshCw,
   Eye,
-  Database,
-  Link2,
-  AlertTriangle,
-  GitBranch,
   GraduationCap,
   ExternalLink,
 } from "lucide-react";
@@ -87,8 +81,7 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
   const [jobId, setJobId] = useState<string | null>(null);
   const [selectedSlideNo, setSelectedSlideNo] = useState<number>(1);
   const [regenSlideNo, setRegenSlideNo] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"slide" | "student_view" | "script" | "evidence" | "decisions">("slide");
-  const [resolvedDecisions, setResolvedDecisions] = useState<Set<string>>(new Set());
+  const [activeTab, setActiveTab] = useState<"slide" | "student_view" | "script">("slide");
 
   const { data, isLoading, error } = useApiQuery<ArtifactsResponse>(
     ["lecture", "artifacts", id],
@@ -423,7 +416,7 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
                           {p.interactionType && <span>• {p.interactionType.replace(/_/g, " ")}</span>}
                           {art && (
                             <span className="text-teal-600 dark:text-teal-400 font-bold bg-teal-50 dark:bg-teal-950/40 px-1 rounded border border-teal-500/20">
-                              🎓 Student Ready
+                              Student Ready
                             </span>
                           )}
                         </div>
@@ -462,8 +455,6 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
                     { id: "slide", label: ar ? "معاينة الشريحة" : "Slide Canvas", icon: Eye },
                     { id: "student_view", label: ar ? "محتوى الطالب" : "Student Learning Experience", icon: GraduationCap },
                     { id: "script", label: ar ? "سيناريو المحاضر" : "Instructor Script", icon: MessageSquare },
-                    { id: "evidence", label: ar ? "المصادر والأدلة" : "Source & Evidence", icon: Database },
-                    { id: "decisions", label: ar ? "صندوق القرارات والجودة" : "Decision Inbox & Quality", icon: AlertTriangle },
                   ].map((tab) => (
                     <Button
                       key={tab.id}
@@ -833,7 +824,6 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
                           <div className="p-4 rounded-xl border border-emerald-100 bg-white space-y-1.5 shadow-xs">
                             <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-900">
-                              <span className="text-sm">🎙️</span>
                               {ar ? "افتتاحية الشريحة وجذب الانتباه" : "Opening Verbal Hook"}
                             </div>
                             <p className="text-xs text-slate-600 leading-relaxed font-medium">
@@ -843,7 +833,6 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
 
                           <div className="p-4 rounded-xl border border-emerald-100 bg-white space-y-1.5 shadow-xs">
                             <div className="flex items-center gap-1.5 text-xs font-bold text-[#0F7B8A]">
-                              <span className="text-sm">🔍</span>
                               {ar ? "توجيه النظر للشكل التوضيحي" : "Visual Examination Cue"}
                             </div>
                             <p className="text-xs text-slate-600 leading-relaxed font-medium">
@@ -853,7 +842,6 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
 
                           <div className="p-4 rounded-xl border border-emerald-100 bg-white space-y-1.5 shadow-xs">
                             <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
-                              <span className="text-sm">❓</span>
                               {ar ? "سؤال التوقف والتفاعل الصفي" : "Formative Pause & Check"}
                             </div>
                             <p className="text-xs text-slate-600 leading-relaxed font-medium">
@@ -865,7 +853,6 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
 
                           <div className="p-4 rounded-xl border border-emerald-100 bg-white space-y-1.5 shadow-xs">
                             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
-                              <span className="text-sm">➡️</span>
                               {ar ? "جسر الانتقال للشريحة التالية" : "Bridge Transition (Next Step)"}
                             </div>
                             <p className="text-xs text-slate-600 leading-relaxed font-medium">
@@ -875,330 +862,10 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
                         </div>
                       </div>
                     )}
-                  </CardContent>
+</CardContent>
                 </Card>
               )}
 
-              {/* TAB 3: SOURCE & EVIDENCE (Green & White) */}
-              {activeTab === "evidence" && (
-                <Card className="border border-emerald-200/90 shadow-sm rounded-2xl overflow-hidden bg-white text-slate-900">
-                  <CardHeader className="bg-gradient-to-r from-emerald-50/80 via-white to-emerald-50/50 border-b border-emerald-100 p-5 flex flex-row items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-[#0E6C3C]">
-                      <Database className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-base font-bold text-slate-900">
-                        {ar ? "المصادر والأدلة الأكاديمية" : "Source Traceability & Evidence"}
-                      </CardTitle>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        S{selectedSlideNo} — {ar ? "ربط كل ادعاء بمصدره المعتمد" : "every claim traced to its source block"}
-                      </p>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-6 space-y-5">
-
-                    {/* CLO links */}
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-widest text-slate-600 mb-2">
-                        {ar ? "مخرجات التعلم المرتبطة (CLOs)" : "Linked CLOs"}
-                      </p>
-                      {content?.cloIds && content.cloIds.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                          {content.cloIds.map((cloId: string) => (
-                            <Badge key={cloId} className="bg-[#0E6C3C] text-white font-mono text-xs px-3 py-1 shadow-xs">
-                              <Link2 className="inline h-3 w-3 mr-1" />
-                              {cloId}
-                            </Badge>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-xs text-rose-600 flex items-center gap-1 font-medium">
-                          <AlertTriangle className="h-3.5 w-3.5" />
-                          {ar ? "لا توجد CLOs مرتبطة — يجب مراجعتها" : "No CLOs linked — needs review"}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Source block citations */}
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-widest text-slate-600 mb-2">
-                        {ar ? "الكتل المصدرية المستشهد بها" : "Source Block Citations"}
-                      </p>
-                      {content?.citations && content.citations.length > 0 ? (
-                        <div className="space-y-2">
-                          {content.citations.map((citation: any, idx: number) => (
-                            <div key={idx} className="rounded-xl border border-emerald-200/80 bg-emerald-50/20 p-3.5 text-xs shadow-xs">
-                              <div className="flex items-center justify-between mb-1.5">
-                                <span className="font-mono font-bold text-emerald-800">{citation.locator ?? `Block ${citation.sourceBlockId}`}</span>
-                                <Badge variant="outline" className="text-[10px] border-emerald-300 text-emerald-700 bg-white">
-                                  {citation.sourceBlockId ? `ID: ${citation.sourceBlockId.slice(0, 8)}…` : "no id"}
-                                </Badge>
-                              </div>
-                              {citation.excerpt && (
-                                <p className="text-slate-700 leading-relaxed font-normal">
-                                  "{citation.excerpt}"
-                                </p>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-xs text-amber-700 flex items-center gap-1 font-medium">
-                          <AlertTriangle className="h-3.5 w-3.5" />
-                          {ar ? "لا توجد كتل مصدرية — تحقق من التوليد" : "No source block citations — check generation"}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Claim status */}
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-widest text-slate-600 mb-2">
-                        {ar ? "حالة الادعاءات" : "Claim Status"}
-                      </p>
-                      {content?.claims && content.claims.length > 0 ? (
-                        <div className="space-y-2">
-                          {content.claims.map((claim: any, idx: number) => {
-                            const isNeedSource = claim.type === "NEED_SOURCE" || claim.verificationStatus === "UNSUPPORTED";
-                            const isVerified = claim.verificationStatus === "VERIFIED";
-                            return (
-                              <div
-                                key={idx}
-                                className={`flex items-start gap-2 p-3 rounded-xl border text-xs font-medium shadow-xs ${isNeedSource
-                                    ? "border-rose-200 bg-rose-50/80 text-rose-900"
-                                    : isVerified
-                                      ? "border-emerald-200 bg-emerald-50/80 text-emerald-900"
-                                      : "border-amber-200 bg-amber-50/80 text-amber-900"
-                                  }`}
-                              >
-                                {isNeedSource ? (
-                                  <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5 text-rose-600" />
-                                ) : isVerified ? (
-                                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0 mt-0.5 text-[#0E6C3C]" />
-                                ) : (
-                                  <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5 text-amber-600" />
-                                )}
-                                <div className="min-w-0">
-                                  <span className="font-mono font-bold mr-2">
-                                    {claim.type ?? claim.verificationStatus ?? "UNKNOWN"}
-                                  </span>
-                                  <span className="leading-relaxed">{claim.text}</span>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <p className="text-xs text-slate-400 italic">
-                          {ar ? "لا توجد ادعاءات مسجلة لهذه الشريحة." : "No claims recorded for this slide yet."}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* NCAAA Evidence Matrix Card (BRD §8 FR-020 & §9) */}
-                    <div className="pt-4 border-t border-emerald-100 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <ShieldCheck className="h-4 w-4 text-[#0E6C3C]" />
-                          <span className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                            {ar ? "مصفوفة أدلة الاعتماد الأكاديمي (NCAAA Evidence Matrix)" : "NCAAA Evidence Matrix Alignment"}
-                          </span>
-                        </div>
-                        <Badge className="bg-[#0E6C3C] text-white text-[10px] px-2.5 py-0.5">
-                          {ar ? "مستوفاة وموثقة" : "Compliant & Evidenced"}
-                        </Badge>
-                      </div>
-
-                      <div className="rounded-xl border border-emerald-200/80 bg-gradient-to-r from-emerald-50/40 via-white to-emerald-50/20 p-4 text-xs space-y-2 shadow-xs">
-                        <div className="flex justify-between items-center text-slate-700">
-                          <span className="font-semibold">{ar ? "المعيار المرتبط:" : "Linked NCAAA Requirement:"}</span>
-                          <span className="font-mono text-[#0E6C3C] font-bold">Standard 4 — Teaching & Learning Quality</span>
-                        </div>
-                        <div className="flex justify-between items-center text-slate-700">
-                          <span className="font-semibold">{ar ? "مخرج التعلم المرتبط (CLO):" : "Mapped Course CLO:"}</span>
-                          <span className="font-mono">{content?.cloIds?.[0] ?? "CLO-1"}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-slate-700">
-                          <span className="font-semibold">{ar ? "دليل الشريحة (Locator):" : "Slide Evidence Locator:"}</span>
-                          <span className="font-mono text-[#0F7B8A]">Slide S{selectedSlideNo} • Source Citation</span>
-                        </div>
-                        <div className="pt-2 flex justify-end">
-                          <Link href={`/faculty/lecture/${id}/evidence`} target="_blank">
-                            <Button size="sm" variant="outline" className="text-xs font-bold border-emerald-300 text-emerald-800 hover:bg-emerald-50 rounded-xl">
-                              <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
-                              {ar ? "فتح مساحة أدلة NCAAA الكاملة" : "Open NCAAA Evidence Workspace"}
-                            </Button>
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Version diff indicator */}
-                    {currentArtifact && currentArtifact.version > 1 && (
-                      <div className="rounded-xl border border-emerald-100 bg-emerald-50/30 p-3 flex items-center gap-2 text-xs text-slate-600">
-                        <GitBranch className="h-3.5 w-3.5 shrink-0 text-emerald-700" />
-                        <span>
-                          {ar
-                            ? `هذا الإصدار v${currentArtifact.version} — توجد ${currentArtifact.version - 1} نسخة سابقة`
-                            : `Version v${currentArtifact.version} — ${currentArtifact.version - 1} prior version(s) preserved`}
-                        </span>
-                      </div>
-                    )}
-
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* TAB 4: DECISION INBOX & QUALITY (BRD §8 FR-010 & §9) */}
-              {activeTab === "decisions" && (
-                <Card className="border border-amber-200 shadow-sm rounded-2xl overflow-hidden bg-white text-slate-900">
-                  <CardHeader className="bg-gradient-to-r from-amber-50/80 via-white to-amber-50/50 border-b border-amber-100 p-5 flex flex-row items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-800">
-                        <AlertTriangle className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-base font-bold text-slate-900">
-                          {ar ? "صندوق القرارات الاستثنائية وفحص الجودة" : "Decision Inbox & Quality Control"}
-                        </CardTitle>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          {ar ? "إدارة الادعاءات المحتاجة لمصدر والاستثناءات المعتمدة من عضو هيئة التدريس" : "Exception-driven review for NEED_SOURCE items, density limits, and soft-gates"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => { window.location.href = `/faculty/lecture/${id}/inbox`; }}
-                        className="text-xs font-extrabold border-amber-300 text-amber-900 hover:bg-amber-100/60 rounded-xl h-9"
-                      >
-                        <ExternalLink className="mr-1.5 h-3.5 w-3.5 text-amber-700" />
-                        {ar ? "فتح صندوق القرارات الكامل" : "Open Decision Workspace"}
-                      </Button>
-                      <Badge className="bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl">
-                        {ar ? "معاينة الاستثناءات" : "Grounded Decision Gate"}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="p-6 space-y-6">
-                    {/* Slide S{N} Specific Decisions */}
-                    <div className="space-y-3">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
-                        <span>{ar ? `القرارات المتعلقة بالشريحة S${selectedSlideNo}` : `Slide S${selectedSlideNo} Active Decisions`}</span>
-                        <Badge variant="outline" className="text-[10px] font-mono border-slate-300">
-                          {content?.title || `S${selectedSlideNo}`}
-                        </Badge>
-                      </h4>
-
-                      {/* Item 1: NEED_SOURCE Claim */}
-                      {content?.claims?.some((c: any) => c.verificationStatus === "UNSUPPORTED" || c.type === "NEED_SOURCE") &&
-                      !resolvedDecisions.has(`claim-${selectedSlideNo}`) ? (
-                        <div className="rounded-xl border border-rose-200 bg-rose-50/70 p-4 text-xs space-y-3">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex items-center gap-2 text-rose-900 font-bold">
-                              <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
-                              <span>{ar ? "ادعاء يحتاج مصدر (NEED_SOURCE)" : "Unsupported Real-World Claim (NEED_SOURCE)"}</span>
-                            </div>
-                            <Badge className="bg-rose-600 text-white text-[10px]">High Priority</Badge>
-                          </div>
-                          <p className="text-rose-800 leading-relaxed font-medium">
-                            "{content.claims.find((c: any) => c.verificationStatus === "UNSUPPORTED" || c.type === "NEED_SOURCE")?.text}"
-                          </p>
-                          <div className="flex items-center justify-end gap-2 pt-2 border-t border-rose-200/60">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setResolvedDecisions(new Set(resolvedDecisions).add(`claim-${selectedSlideNo}`));
-                              }}
-                              className="text-xs font-bold border-rose-300 text-rose-800 hover:bg-rose-100 rounded-xl"
-                            >
-                              <Check className="mr-1.5 h-3.5 w-3.5 text-rose-600" />
-                              {ar ? "قبول كافتراض تعليمي" : "Label as Hypothetical"}
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={() => {
-                                setScriptDraft(content?.speakerNotes || "");
-                                setActiveTab("script");
-                              }}
-                              className="bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold rounded-xl"
-                            >
-                              <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                              {ar ? "إضافة مرجع مصدر" : "Add Source Citation"}
-                            </Button>
-                          </div>
-                        </div>
-                      ) : null}
-
-                      {/* Item 2: CLO Link Check */}
-                      {(!content?.cloIds || content.cloIds.length === 0) && !resolvedDecisions.has(`clo-${selectedSlideNo}`) ? (
-                        <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 text-xs space-y-3">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex items-center gap-2 text-amber-900 font-bold">
-                              <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
-                              <span>{ar ? "لم يتم ربط مخرج تعلم (CLO)" : "Unlinked Course CLO Alignment"}</span>
-                            </div>
-                            <Badge className="bg-amber-600 text-white text-[10px]">Quality Gate</Badge>
-                          </div>
-                          <p className="text-amber-800 leading-relaxed font-medium">
-                            {ar
-                              ? "هذه الشريحة لم يتم ربطها بمخرج تعلم محدد من خطة المقرر."
-                              : "This slide has no explicit course CLO assigned to it."}
-                          </p>
-                          <div className="flex items-center justify-end gap-2 pt-2 border-t border-amber-200/60">
-                            <Button
-                              size="sm"
-                              onClick={() => {
-                                setResolvedDecisions(new Set(resolvedDecisions).add(`clo-${selectedSlideNo}`));
-                              }}
-                              className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl"
-                            >
-                              <Check className="mr-1.5 h-3.5 w-3.5" />
-                              {ar ? "ربط بـ CLO-1 تلقائياً" : "Auto-link to CLO-1"}
-                            </Button>
-                          </div>
-                        </div>
-                      ) : null}
-
-                      {/* Clean state indicator */}
-                      {(resolvedDecisions.has(`claim-${selectedSlideNo}`) || !content?.claims?.some((c: any) => c.verificationStatus === "UNSUPPORTED")) &&
-                      (resolvedDecisions.has(`clo-${selectedSlideNo}`) || (content?.cloIds && content.cloIds.length > 0)) ? (
-                        <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs flex items-center justify-between text-emerald-900">
-                          <div className="flex items-center gap-2 font-bold">
-                            <CheckCircle2 className="h-4 w-4 text-[#0E6C3C]" />
-                            <span>{ar ? `الشريحة S${selectedSlideNo} مستوفاة لجميع معايير الجودة والقرارات` : `Slide S${selectedSlideNo} has zero unresolved decisions`}</span>
-                          </div>
-                          <Badge className="bg-[#0E6C3C] text-white text-[10px]">Verified Clean</Badge>
-                        </div>
-                      ) : null}
-                    </div>
-
-                    {/* Full Lecture Decision Summary */}
-                    <div className="pt-4 border-t border-slate-100 space-y-3">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                        {ar ? "ملخص جودة المحاضرة بالكامل" : "Lecture-Wide Quality Gate Audit Summary"}
-                      </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div className="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/40 text-xs space-y-1">
-                          <p className="text-slate-500 font-bold uppercase tracking-wider text-[10px]">{ar ? "الشرائح المعتمدة" : "Approved Slides"}</p>
-                          <p className="text-lg font-extrabold text-[#0E6C3C]">20 / 20</p>
-                        </div>
-                        <div className="p-3.5 rounded-xl border border-teal-200 bg-teal-50/40 text-xs space-y-1">
-                          <p className="text-slate-500 font-bold uppercase tracking-wider text-[10px]">{ar ? "نسبة تغطية المصادر" : "Source Coverage"}</p>
-                          <p className="text-lg font-extrabold text-[#0F7B8A]">100%</p>
-                        </div>
-                        <div className="p-3.5 rounded-xl border border-blue-200 bg-blue-50/40 text-xs space-y-1">
-                          <p className="text-slate-500 font-bold uppercase tracking-wider text-[10px]">{ar ? "قرارات معلقة" : "Pending Decisions"}</p>
-                          <p className="text-lg font-extrabold text-blue-700">{Math.max(0, 2 - resolvedDecisions.size)}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
             </div>
           </div>
         </>

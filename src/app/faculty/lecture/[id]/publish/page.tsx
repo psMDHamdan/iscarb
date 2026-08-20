@@ -87,6 +87,7 @@ export default function PublishPage({
   const { lang } = useApp();
   const ar = lang === "ar";
   const [showHistory, setShowHistory] = useState(false);
+  const [showPublishConfirm, setShowPublishConfirm] = useState(false);
   const [lastPublishedId, setLastPublishedId] = useState<string>("");
 
   const { data, isLoading, refetch } = useApiQuery<PublishReadinessResponse>(
@@ -107,18 +108,7 @@ export default function PublishPage({
 
   const handleDownload = useCallback(
     async (formatId: string, versionId?: string) => {
-      let vid = versionId || lastPublishedId;
-      if (!vid) {
-        try {
-          const result = await publish.mutateAsync({
-            approveAll: true,
-            force: true,
-          });
-          vid = result?.versionId;
-        } catch {
-          // If version exists, proceed to download
-        }
-      }
+      const vid = versionId || lastPublishedId;
       if (vid) {
         window.open(
           `/api/iscarb/lecture/packages/${vid}/download/${formatId}`,
@@ -126,7 +116,7 @@ export default function PublishPage({
         );
       }
     },
-    [lastPublishedId, publish]
+    [lastPublishedId]
   );
 
   const r = data;
@@ -238,12 +228,9 @@ export default function PublishPage({
 
               <div className="shrink-0">
                 <Button
-                  onClick={() =>
-                    publish.mutate({ approveAll: true, force: true })
-                  }
+                  onClick={() => setShowPublishConfirm(true)}
                   disabled={
-                    publish.isPending ||
-                    (!r.canPublish && r.projectStatus !== "approved")
+                    publish.isPending || r.artifactSummary.total === 0
                   }
                   className={cn(
                     "shadow-lg text-sm rounded-2xl h-12 px-6 font-bold",
@@ -600,6 +587,48 @@ export default function PublishPage({
             </Card>
           )}
         </>
+      )}
+
+      {/* ── Publish Confirmation Dialog ── */}
+      {showPublishConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setShowPublishConfirm(false)}
+          />
+          <div className="relative bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-md w-full p-8 space-y-6">
+            <div className="text-center space-y-2">
+              <div className="mx-auto w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center">
+                <Send className="h-7 w-7 text-amber-600 dark:text-amber-400" />
+              </div>
+              <h3 className="text-xl font-black text-slate-900 dark:text-slate-100">
+                {ar ? "تأكيد النشر" : "Confirm Publication"}
+              </h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {ar
+                  ? "سيتم نشر المحاضرة وجعلها متاحة للطلاب. هل أنت متأكد؟"
+                  : "This will publish the lecture and make it available to students. Continue?"}
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowPublishConfirm(false)}
+                className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+              >
+                {ar ? "إلغاء" : "Cancel"}
+              </button>
+              <button
+                onClick={() => {
+                  setShowPublishConfirm(false);
+                  publish.mutate({ approveAll: true, force: true });
+                }}
+                className="flex-1 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold shadow-lg transition-all"
+              >
+                {ar ? "نشر" : "Publish"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

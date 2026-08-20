@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Loader2, AlertCircle, Trash2, Edit2, Award, Plus } from 'lucide-react';
 import { useApi } from '@/hooks/useApi';
+import { proxiedImageUrl } from '@/lib/image-proxy';
 
 interface Achievement {
   id: string;
@@ -129,7 +130,7 @@ export function PortfolioPortfolioAchievementsView() {
                   <div className="flex items-start gap-4">
                     {achievement.badgeUrl && (
                       <img
-                        src={achievement.badgeUrl}
+                        src={proxiedImageUrl(achievement.badgeUrl)}
                         alt={achievement.title}
                         className="w-20 h-20 object-cover rounded-lg"
                       />

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertCircle, Trash2, Download } from "lucide-react";
+import { proxiedImageUrl } from "@/lib/image-proxy";
 
 export function CompetenciesCompetencyCredentialWalletView() {
   const { lang } = useApp();
@@ -189,7 +190,7 @@ export function CompetenciesCompetencyCredentialWalletView() {
               <CardContent className="p-5">
                 {cred.badge && (
                   <img
-                    src={cred.badge}
+                    src={proxiedImageUrl(cred.badge)}
                     alt={cred.name}
                     className="w-16 h-16 mx-auto mb-4 object-contain"
                   />

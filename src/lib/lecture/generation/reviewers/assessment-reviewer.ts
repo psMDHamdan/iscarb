@@ -56,20 +56,21 @@ Return a JSON object:
 }
 `;
 
-  const response = await chatJson(prompt, "gpt-4o"); 
+  const response = await chatJson({ user: prompt, model: "gpt-4o" });
+  const json = (response.json || {}) as any; 
 
   const result: ReviewResult = {
-    status: response.status || "NEEDS_FACULTY_REVIEW",
-    score: response.score || 0,
-    criticalIssues: response.criticalIssues || [],
-    majorIssues: response.majorIssues || [],
+    status: json.status || "NEEDS_FACULTY_REVIEW",
+    score: json.score || 0,
+    criticalIssues: json.criticalIssues || [],
+    majorIssues: json.majorIssues || [],
     minorIssues: [],
-    failedRules: response.failedRules || [],
+    failedRules: json.failedRules || [],
     unsupportedClaims: [],
-    weakQuestions: response.weakQuestions || [],
+    weakQuestions: json.weakQuestions || [],
     weakExamples: [],
     missingConcepts: [],
-    repairActions: response.repairActions || []
+    repairActions: json.repairActions || []
   };
 
   return {

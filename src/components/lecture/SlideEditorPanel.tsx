@@ -11,6 +11,7 @@ import { useApp } from "@/lib/store";
 import { WordCountBadge } from "./WordCountBadge";
 import { Save, Check, RefreshCw, AlertCircle, Edit3, MessageSquare, Layers, Zap, Languages } from "lucide-react";
 import type { SlideContentJson } from "@/lib/lecture/generation/types";
+import { proxiedImageUrl } from "@/lib/image-proxy";
 import { StemRenderer } from "@/components/ui/StemRenderer";
 
 interface Props {
@@ -44,7 +45,9 @@ export function SlideEditorPanel({
   const [activeTab, setActiveTab] = useState<"en" | "ar">("en");
 
   const [title, setTitle] = useState(content.title ?? "");
-  const [bulletsText, setBulletsText] = useState((content.bullets ?? []).join("\n"));
+  const [bulletsText, setBulletsText] = useState(
+    (content.body?.bullets ?? content.bullets ?? []).join("\n")
+  );
   const [visualIntent, setVisualIntent] = useState(content.visualIntent ?? "");
   const [speakerNotes, setSpeakerNotes] = useState(content.speakerNotes ?? content.instructorScript ?? "");
   const [studentAction, setStudentAction] = useState(
@@ -233,11 +236,7 @@ export function SlideEditorPanel({
         {content.visualSpec?.imageUrl && (
           <div className="relative rounded-xl overflow-hidden border border-emerald-100 bg-white p-2 flex items-center gap-3">
             <img
-              src={
-                content.visualSpec.imageUrl.startsWith("http")
-                  ? `/api/iscarb/image-proxy?url=${encodeURIComponent(content.visualSpec.imageUrl)}`
-                  : content.visualSpec.imageUrl
-              }
+              src={proxiedImageUrl(content.visualSpec.imageUrl)}
               alt={content.visualSpec.title || "Visual preview"}
               className="h-16 w-24 object-cover rounded-lg border border-slate-100 flex-shrink-0"
             />

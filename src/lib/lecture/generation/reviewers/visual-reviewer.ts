@@ -67,7 +67,7 @@ Review the following slide composition:
 Title: \${slide.title}
 Visual Spec: \${JSON.stringify(slide.visualSpec)}
 Composition: \${slide.compositionLayout}
-Text Blocks: \${slide.visibleContent.join(" | ")}
+Text Blocks: \${(slide.body?.bullets || []).join(" | ")}
 `;
 
   const reviewJson = await chatJson(prompt, "gpt-4o", VISUAL_REVIEW_PROMPT);

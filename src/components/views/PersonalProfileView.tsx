@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { Loader2, AlertCircle, Mail, Phone, MapPin, Calendar } from "lucide-react";
+import { proxiedImageUrl } from "@/lib/image-proxy";
 
 export function PersonalProfileView() {
   const { t, ar, dir } = useI18n();
@@ -49,7 +50,7 @@ export function PersonalProfileView() {
               <CardHeader className="text-center">
                 <div className="flex justify-center mb-4">
                   <Avatar className="h-32 w-32">
-                    <AvatarImage src={data?.profile?.avatar} alt={data?.profile?.name} />
+                    <AvatarImage src={proxiedImageUrl(data?.profile?.avatar)} alt={data?.profile?.name} />
                     <AvatarFallback>{data?.profile?.name?.charAt(0) || "U"}</AvatarFallback>
                   </Avatar>
                 </div>

@@ -16,7 +16,6 @@ import { db } from "@/lib/db";
 import { deduplicateSlideArtifacts, deduplicateReadinessItems } from "@/lib/lecture/deduplication";
 import { cleanJargon, cleanObjectJargon } from "@/lib/lecture/projections/utils/jargon-cleaner";
 import { getAcademicVisualForSlide } from "@/lib/lecture/academic-visuals";
-import { getAcademicAnalogyForSlide } from "@/lib/lecture/academic-analogies";
 import type {
   StudentExperienceViewModel,
   StudentConceptViewModel,
@@ -106,15 +105,45 @@ interface ContentShape {
   bloomLevel?: string;
   academicTruth?: string;
   teachingExplanation?: string;
-  studentAction?: string;
-  learningActivity?: string | { text?: string } | null;
+  // New SlideContentJson body structure (from slide-generator.ts)
+  body?: {
+    visibleCopy?: string;
+    bullets?: string[];
+    studentAction?: {
+      type?: string;
+      stem?: string;
+      options?: string[];
+      correctIndex?: number;
+      rationale?: string;
+    };
+  };
+  // Legacy flat field (older artifacts stored action as a string)
+  studentAction?: string | { type?: string; stem?: string; options?: string[] };
+  learningActivity?: string | { text?: string; hints?: string[] } | null;
   learningObjective?: string;
   visibleContent?: string[];
-  visualIntent?: string;
+  visualIntent?: string | { description?: string; diagramType?: string };
+  visualSpec?: {
+    fetchedImageUrl?: string;
+    imageUrl?: string;
+    title?: string;
+    caption?: string;
+    learningMessage?: string;
+    purpose?: string;
+    visualType?: string;
+    svgCode?: string;
+    elements?: Array<string | { label?: string; id?: string }>;
+  };
+  notes?: {
+    instructorNotes?: string;
+    timingMinutes?: number;
+    facilitationMoves?: string[];
+    answers?: string;
+  };
   citations?: Array<{ text?: string; locator?: string; sourceBlockId?: string }>;
+  sourceCoverage?: { mappedBlockIds?: string[]; omissionReason?: string | null };
 
-  // Faculty-authored overrides for the student-facing view. When present, these
-  // win over generated content so faculty can control exactly what students see.
+  // Faculty-authored overrides — win over generated content
   studentCoreInsight?: string;
   studentAnalogy?: string;
   studentFramework?: string;
@@ -122,10 +151,15 @@ interface ContentShape {
   studentScenario?: string;
   studentApplication?: string;
 
-  // Generated content fields from the slide generator
+  // Generated content fields
   analogy?: string;
   mentalModel?: string;
   conceptIds?: string[];
+
+  // Review / QA status fields
+  reviewStatus?: string;
+  flaggedForReview?: boolean;
+  wordCount?: number;
 }
 
 function asContent(raw: unknown): ContentShape {
@@ -135,10 +169,38 @@ function asContent(raw: unknown): ContentShape {
 
 /** Placeholder strings the old generator sometimes wrote instead of real content. */
 const PLACEHOLDER_RE =
-  /^(Derived strictly from the source blocks|Simplified explanation prioritizing|Teach .* through source-grounded content|Student can explain and apply the concept from)/i;
+  /^(Derived strictly from the source blocks|Simplified explanation prioritizing|Teach .* through source-grounded content|Student can explain and apply the concept from|Error loading generated content)/i;
 
 function isPlaceholder(text: string): boolean {
   return PLACEHOLDER_RE.test(text.trim());
+}
+
+/**
+ * Detect raw source text fragments that should never reach students.
+ * These are extracted PDF/DOCX text that leaked through without transformation.
+ */
+const SOURCE_FRAGMENT_RE =
+  /^(\d+\s+)?(Note:|Page|Chapter|Section|Figure|Table|ISBN|DOI|References?|Bibliography|Appendix|Table of Contents|\.{3,}|p\.?\s*\d|pp\.?\s*\d)/i;
+
+const SOURCE_NOISE_RE =
+  /(\.\.\.\s*\d+|\bSKU\b|\bGE\d+|\bp[A-Z]\d|\bvector\b.*\bSKU\b|\bdonor vector\b|\bpROSA|\bpCas-Guide|\bpT7-|\b(DNR|SKU)\b|\bcmt\w{20,}\b|[\s(][a-z0-9]{24,}[)\s]|\d{4,}\s+[A-Za-z].{0,60}\.{4,}\s*\d)/i;
+
+function isSourceFragment(text: string): boolean {
+  const t = text.trim();
+  if (t.length < 5) return false;
+  // Very long text with lots of dots/numbers = likely raw OCR extraction
+  if (t.length > 200 && /\d{2,}/.test(t) && /[.]{3,}/.test(t)) return true;
+  // Trailing dot-leader + page number (table of contents / OCR layout lines)
+  if (/[A-Za-z].{0,60}\.{4,}\s*\d{1,3}\s*$/.test(t)) return true;
+  // Ends in a long dot-run with no page number — OCR layout line
+  if (/[A-Za-z].{0,80}\.{5,}\s*$/.test(t)) return true;
+  // Product codes, page references, catalog entries
+  if (SOURCE_FRAGMENT_RE.test(t)) return true;
+  if (SOURCE_NOISE_RE.test(t)) return true;
+  // Text that is mostly numbers and punctuation (not a teaching sentence)
+  const alphaRatio = t.replace(/[^a-zA-Z\u0600-\u06FF\s]/g, '').length / t.length;
+  if (alphaRatio < 0.4 && t.length > 30) return true;
+  return false;
 }
 
 function firstNonEmpty(...vals: Array<string | undefined | null>): string {
@@ -155,15 +217,56 @@ function stripBulletLabel(b: string): string {
 }
 
 function takeBullets(c: ContentShape, max = 6): string[] {
-  const bullets = (c.visibleContent ?? c.bullets ?? [])
+  // New generator stores bullets in body.bullets; visibleCopy is a separate
+  // summary sentence that also serves as bullet[0] when no other bullets exist.
+  const sources = [
+    ...(c.visibleContent ?? []),
+    ...(c.body?.bullets ?? []),
+    ...(c.bullets ?? []),
+  ];
+  const bullets = sources
     .map((b) => cleanJargon(b))
     .map(stripBulletLabel)
-    .filter((b) => b.length > 0);
+    .filter((b) => b.length > 0 && !isSourceFragment(b) && !isPlaceholder(b));
+
+  // If all bullets were filtered out, try to extract meaningful sentences from
+  // body.visibleCopy, teachingExplanation, academicTruth, or learningObjective.
+  if (bullets.length === 0) {
+    const candidates = [
+      c.body?.visibleCopy,
+      c.teachingExplanation,
+      c.academicTruth,
+      c.learningObjective,
+    ].filter(Boolean) as string[];
+    for (const candidate of candidates) {
+      if (isSourceFragment(candidate) || isPlaceholder(candidate)) continue;
+      const sentences = candidate
+        .split(/(?<=[.!?])\s+/)
+        .map((s) => cleanJargon(s).trim())
+        .filter((s) => s.length > 15 && !isSourceFragment(s) && !isPlaceholder(s));
+      if (sentences.length > 0) return sentences.slice(0, max);
+      // If it didn't split, use the whole thing
+      const cleaned = cleanJargon(candidate).trim();
+      if (cleaned.length > 15) return [cleaned].slice(0, max);
+    }
+  }
+
   return bullets.slice(0, max);
 }
 
-/** learningActivity is stored as `{ text }` in older artifacts. */
+/** learningActivity — supports new body.studentAction.stem, legacy flat string, and older {text} object. */
 function activityText(c: ContentShape): string {
+  // New format: body.studentAction.stem
+  if (c.body?.studentAction?.stem) {
+    const s = cleanJargon(c.body.studentAction.stem);
+    if (s && !isPlaceholder(s)) return s;
+  }
+  // Older flat string or object
+  if (typeof c.studentAction === "string") return firstNonEmpty(c.studentAction);
+  if (c.studentAction && typeof c.studentAction === "object" && "stem" in c.studentAction) {
+    return firstNonEmpty((c.studentAction as { stem?: string }).stem);
+  }
+  // Even older learningActivity field
   const la = c.learningActivity;
   if (typeof la === "string") return firstNonEmpty(la);
   if (la && typeof la === "object" && typeof la.text === "string") return firstNonEmpty(la.text);
@@ -279,160 +382,77 @@ export async function projectLegacyStudentExperience({
     const title = cleanJargon(c.title) || `Concept ${artifact.slideNo}`;
 
     // ── Core Insight: prefer the richest available signal ──
-    // Priority: faculty override > teachingExplanation first sentence > academicTruth > learningObjective > bullets[0]
+    // Priority: faculty override > body.visibleCopy (new format) >
+    //           teachingExplanation first sentence > academicTruth >
+    //           learningObjective > bullets[0]
     const extractFirstSentence = (text?: string | null): string => {
       if (!text) return "";
       const cleaned = cleanJargon(text);
       const match = cleaned.match(/^[^.!?\n]+[.!?]/);
       return match ? match[0].trim() : cleaned;
     };
+
+    // body.visibleCopy is the primary content field in the new SlideContentJson
+    const bodyVisibleCopy = (() => {
+      const v = c.body?.visibleCopy;
+      if (!v || isPlaceholder(v) || isSourceFragment(v)) return "";
+      return cleanJargon(v);
+    })();
+
     const coreInsight = firstNonEmpty(
       c.studentCoreInsight,
+      bodyVisibleCopy,
       extractFirstSentence(c.teachingExplanation),
       c.academicTruth,
       c.learningObjective,
       bullets[0],
       c.mastery,
-      title,
-    );
+    ) || cleanJargon(title);
 
     // ── Explanation: prefer mechanism-first explanation ──
     const explanation = firstNonEmpty(
       c.studentMechanismExplanation,
       c.teachingExplanation,
       c.academicTruth,
+      bodyVisibleCopy,
       c.feedback,
-      bullets.length > 1 ? bullets.join(". ") : coreInsight,
       coreInsight,
+    ) || (bullets.length > 1 ? bullets.join(". ") : coreInsight);
+
+    // ── Analogy: use faculty override or generated analogy field ──
+    const analogy = firstNonEmpty(
+      c.studentAnalogy,
+      c.analogy,
+      c.mentalModel,
     );
 
-    // ── Scenario: prefer concrete real-world scenario ──
+    // ── Scenario / real-world transfer ──
     const scenario = firstNonEmpty(
       c.studentScenario,
-      c.teachingExplanation,
-      activityText(c),
-      c.studentAction,
-      `Consider how ${title} operates in a real professional setting: ${bullets[0] || coreInsight}`,
-    );
-    const application = firstNonEmpty(
       c.studentApplication,
       bullets[2],
       bullets[1],
       c.mastery,
+    );
+    const application = firstNonEmpty(
+      c.studentApplication,
+      bullets[3] ?? bullets[2],
       c.learningObjective,
-      `Apply this concept by identifying where ${title} appears in practice.`,
     );
 
-    // ── Common Pitfalls: extract from all slides, not just misconception slides ──
-    let misconceptionAlert: StudentConceptViewModel["misconceptionAlert"];
-    const readinessItem = readinessBySlide.get(slideNo);
-
-    // Source 1: explicit misconception slide
-    if (fn === "misconception") {
-      const pitfallText = firstNonEmpty(bullets[0], c.title);
-      if (pitfallText) {
-        misconceptionAlert = {
-          misconception: cleanJargon(pitfallText),
-          whyItFails: firstNonEmpty(
-            bullets[1],
-            c.feedback,
-            "This seems reasonable because it oversimplifies the actual mechanism. The correct understanding requires accounting for the constraints that limit this behavior.",
-          ),
-          correction: firstNonEmpty(
-            bullets[2],
-            c.mastery,
-            explanation,
-            `Instead, think step by step: trace the actual causal chain from input to output, checking each assumption against the real mechanism.`,
-          ),
-        };
-      }
-    }
-    // Source 2: readiness item misconception tag
-    if (!misconceptionAlert && readinessItem?.misconception) {
-      misconceptionAlert = {
-        misconception: cleanJargon(readinessItem.misconception),
-        whyItFails: `This misconception targets a gap between intuitive reasoning and the formal mechanism taught in this concept.`,
-        correction: `Revisit the core mechanism: ${firstNonEmpty(c.academicTruth, explanation, coreInsight)}. The correct model resolves this confusion.`,
-      };
-    }
-    // Source 3: feedback field may contain misconception guidance
-    if (!misconceptionAlert && c.feedback && c.feedback.length > 30) {
-      misconceptionAlert = {
-        misconception: firstNonEmpty(
-          `Confusion about how ${title} differs from similar concepts`,
-          `Assuming ${title} works without considering its key constraints`,
-        ),
-        whyItFails: firstNonEmpty(
-          extractFirstSentence(c.feedback),
-          `This oversight leads to incorrect conclusions about the mechanism.`,
-        ),
-        correction: firstNonEmpty(
-          explanation,
-          `Focus on the specific conditions that determine when this concept applies versus when it does not.`,
-        ),
-      };
-    }
-
-    // Activity (from learningActivity.text + studentAction + interaction type)
-    const activityPrompt = firstNonEmpty(activityText(c), c.studentAction, scenario);
-    const activity = activityPrompt
-      ? {
-          id: `act-${artifactId}`,
-          type: interaction ?? "think",
-          actionVerb: (interaction && INTERACTION_VERB[interaction]) || "Think",
-          title: "Your Task",
-          prompt: activityPrompt,
-          scaffoldingLevel: fn === "independent_practice" || fn === "independent_application" || fn === "decision_challenge" ? "open" : "guided",
-          progressiveHints: [
-            `Start from the key idea: ${firstNonEmpty(c.academicTruth, bullets[0], title)}`,
-            ...bullets.slice(1, 3).map((b) => `Consider: ${b}`),
-          ].filter(Boolean),
-        }
-      : undefined;
-
-    // Assessment (HIDDEN ANSWER ARCHITECTURE — no isCorrect, no correctIndex, no rationale)
-    const readinessOptions: Array<{ id: string; text: string }> = [];
-    if (readinessItem && readinessItem.options) {
-      let rawOpts: any[] = [];
-      if (Array.isArray(readinessItem.options)) {
-        rawOpts = readinessItem.options;
-      } else if (typeof readinessItem.options === "string") {
-        try {
-          const parsed = JSON.parse(readinessItem.options);
-          if (Array.isArray(parsed)) rawOpts = parsed;
-        } catch {
-          rawOpts = [];
-        }
-      }
-      rawOpts.forEach((o: any, idx: number) => {
-        if (typeof o === "string") {
-          readinessOptions.push({ id: `opt-${idx}`, text: cleanJargon(o) });
-        } else if (o && typeof o === "object") {
-          readinessOptions.push({
-            id: String(o.id ?? `opt-${idx}`),
-            text: cleanJargon(o.text ?? o.label ?? String(o)),
-          });
-        }
-      });
-    }
-
-    const assessment =
-      readinessItem && readinessItem.stem
-        ? {
-            id: `assess-${artifactId}`,
-            stem: cleanJargon(readinessItem.stem),
-            difficulty: readinessItem.difficulty || "medium",
-            options: readinessOptions,
-          }
-        : undefined;
+    // ── studentAction / interactive: read from body.studentAction (new) or flat field (old) ──
+    const rawAction = c.body?.studentAction;
+    const actionStem = activityText(c);
+    const actionOptions: string[] = Array.isArray(rawAction?.options) ? rawAction.options : [];
+    const actionType = rawAction?.type || (typeof c.studentAction === "object" && c.studentAction && "type" in c.studentAction ? (c.studentAction as any).type : null) || (interaction ?? "pause_discuss");
 
     // Source citation
     const citation = Array.isArray(c.citations) ? c.citations[0] : undefined;
     const sourceCitation = citation?.text
       ? {
-          sourceKey: citation.sourceBlockId || "Source Document",
-          citationText: `Source: ${cleanJargon(citation.text)}`,
-        }
+        sourceKey: citation.sourceBlockId || "Source Document",
+        citationText: `Source: ${cleanJargon(citation.text)}`,
+      }
       : undefined;
 
     // Visual mapping
@@ -467,7 +487,7 @@ export async function projectLegacyStudentExperience({
         ? cleanJargon(matchedVisual.caption)
         : cleanJargon(visualSpec?.caption || visualSpec?.learningMessage);
     const visualType = (visualSpec?.visualType || (slideNo === 1 ? "DATA_SCALE" : slideNo === 2 ? "ARCHITECTURE" : slideNo % 2 === 0 ? "PROCESS" : "CONCEPT_MODEL")).toUpperCase();
-    
+
     const diagramElements: string[] = visualSpec?.elements && Array.isArray(visualSpec.elements) && visualSpec.elements.length > 0
       ? visualSpec.elements.map((el: any) => typeof el === "string" ? el : el.label || el.id || "Node")
       : (bullets.length > 0 ? bullets.slice(0, 4) : [title, "Target Binding", "Catalytic Cleavage", "Cellular Repair"]);
@@ -515,11 +535,6 @@ export async function projectLegacyStudentExperience({
       svgCode: visualSpec?.svgCode || renderedSvg,
     };
 
-    const academicAnalogy = getAcademicAnalogyForSlide(
-      title,
-      `${coreInsight} ${explanation} ${bullets.join(" ")} ${c.purpose || ""}`
-    );
-
     const mechanismSteps: string[] | undefined = (() => {
       if (bullets.length >= 2 && bullets.every((b) => b.length > 10)) return bullets;
       if (c.teachingExplanation && c.teachingExplanation.length > 60) {
@@ -556,27 +571,56 @@ export async function projectLegacyStudentExperience({
       bloomLevel: conceptBloom,
       estimatedMinutes: 5,
       flaggedForReview,
-      coreInsight,
-      mentalModel: firstNonEmpty(
-        c.studentAnalogy,
-        c.analogy,
-        c.mentalModel,
-        `Think of ${title} like a system with inputs, processing rules, and outputs — each component depends on the others to function correctly.`
-      ),
-      mechanism: firstNonEmpty(
-        c.studentMechanismExplanation,
-        c.teachingExplanation,
-        c.academicTruth,
-        `This concept operates through a structured mechanism: ${title}`
-      ),
-      realWorldApplication: firstNonEmpty(
-        c.studentScenario,
-        c.teachingExplanation,
-        `Consider a real scenario where ${title} is applied.`
-      ),
-      misconceptionAlert,
-      activity,
-      assessment,
+
+      // ── Legacy flat fields (kept for backward compat) ──
+      visibleCopy: coreInsight || bodyVisibleCopy || bullets[0] || "",
+      bullets: bullets.length > 0
+        ? bullets
+        : (c.body?.bullets ?? [])
+          .map((b: string) => cleanJargon(b))
+          .map(stripBulletLabel)
+          .filter((b: string) => b.length > 0 && !isSourceFragment(b))
+          .slice(0, 6),
+      studentAction: (() => {
+        const sa = c.body?.studentAction;
+        if (sa?.stem) return { type: sa.type || "pause_discuss", stem: sa.stem, options: sa.options };
+        if (typeof c.studentAction === "object" && c.studentAction !== null && "stem" in c.studentAction) {
+          const s = c.studentAction as { type?: string; stem?: string; options?: string[] };
+          if (s.stem) return { type: s.type || "pause_discuss", stem: s.stem, options: s.options };
+        }
+        return undefined;
+      })(),
+
+      // ── coreContent: what ConceptContent renders in the top panels ──
+      coreContent: {
+        explanation: explanation || coreInsight,
+        analogy: analogy || undefined,
+        // steps drives the "How It Works" numbered list
+        steps: mechanismSteps && mechanismSteps.length > 1 ? mechanismSteps : undefined,
+      } as any,
+
+      // ── interactive: poll / discussion prompt for the activity panel ──
+      interactive: actionStem
+        ? {
+          type: (actionType === "poll" ? "poll" : actionType === "calculation" ? "calculation" : "reflection") as any,
+          prompt: actionStem,
+          options: actionOptions.length > 0 ? actionOptions : undefined,
+          hints: [],
+          // Reveal is instructor-only — never expose to students here
+          reveal: "",
+        }
+        : undefined,
+
+      // ── realWorld: bottom "In the Real World" panel ──
+      realWorld: (scenario || application)
+        ? {
+          application: application || scenario || "",
+          scenario: scenario || undefined,
+          derivedLabel: "system-suggested" as const,
+        }
+        : undefined,
+
+      // ── Visual ──
       visual,
       sourceCitation,
     };
@@ -652,16 +696,16 @@ export async function projectLegacyStudentExperience({
     return {
       id: `final-${gateItem.id}`,
       title: `Final Challenge: ${cleanJargon(gateContent.title || gateItem.stem.slice(0, 60))}`,
-      scenario: firstNonEmpty(takeBullets(gateContent)[0], gateContent.learningObjective, gateContent.mastery, gateContent.studentAction, cleanJargon(gateItem.stem)),
+      scenario: firstNonEmpty(takeBullets(gateContent)[0], gateContent.learningObjective, gateContent.mastery, typeof gateContent.studentAction === "string" ? gateContent.studentAction : undefined, cleanJargon(gateItem.stem)),
       prompt: cleanJargon(gateItem.stem),
       rubricCriteria: takeBullets(gateContent, 4).length > 0
         ? takeBullets(gateContent, 4)
         : [
-            "Identify the core problem precisely and state it in your own words.",
-            "Select the most appropriate approach and justify it with the concepts taught in this lesson.",
-            "Explain the trade-offs and what could go wrong with your chosen approach.",
-            "Defend your decision against the most plausible alternative.",
-          ],
+          "Identify the core problem precisely and state it in your own words.",
+          "Select the most appropriate approach and justify it with the concepts taught in this lesson.",
+          "Explain the trade-offs and what could go wrong with your chosen approach.",
+          "Defend your decision against the most plausible alternative.",
+        ],
     };
   })();
 

@@ -30,6 +30,7 @@ import {
   type AcademicVisual,
   type AcademicDiscipline,
 } from "@/lib/lecture/academic-visuals";
+import { proxiedImageUrl } from "@/lib/image-proxy";
 
 interface VisualManagerModalProps {
   isOpen: boolean;
@@ -286,7 +287,7 @@ export function VisualManagerModal({
                     >
                       <div className="relative h-28 w-full rounded-lg overflow-hidden bg-slate-100 mb-2 border border-slate-100">
                         <img
-                          src={v.imageUrl}
+                          src={proxiedImageUrl(v.imageUrl)}
                           alt={v.title}
                           className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-200"
                           loading="lazy"
@@ -367,7 +368,7 @@ export function VisualManagerModal({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="h-40 rounded-xl overflow-hidden border border-emerald-200 bg-white shadow-xs">
                   <img
-                    src={selectedUrl}
+                    src={proxiedImageUrl(selectedUrl)}
                     alt="Preview"
                     className="h-full w-full object-cover"
                   />

@@ -76,42 +76,36 @@ export interface VisualSpecification {
 
 export interface SlideContentJson {
   slideNo?: number;
+  function?: string;
   title: string;
-  purpose?: string;
-  learningObjective?: string;
-  bullets: string[];
-  visibleContent?: string[];
-  studentAction?: string;
-  speakerNotes: string;
-  expectedStudentReasoning?: string;
-  conceptIds?: string[];
-  sourceBlockIds?: string[];
-  cloIds?: string[];
-  bloomLevel?: string;
-  interaction?: any;
-  visualIntent?: any;
-  visualSpec?: VisualSpecification;
-  compositionLayout?: string;
-  examples?: any[];
-  misconception?: any;
-  assessment?: any;
-  citations: CitationJson[];
-  claims: any[];
-  // 5-Layer Content Generation Model
-  coreInsight?: string;
-  mentalModel?: string;
-  mechanism?: string;
-  realWorldApplication?: string;
-  misconceptionAlert?: {
-    misconception: string;
-    whyItFails: string;
-    correction: string;
+  body: {
+    visibleCopy: string;
+    bullets: string[];
+    studentAction?: {
+      type: "poll" | "pause_discuss" | "collaboration" | "calculation";
+      stem: string;
+      options?: string[];
+    };
   };
-  activeLearningPoll?: {
-    question: string;
-    options: { text: string; isCorrect: boolean }[];
+  visualIntent?: {
+    description: string;
+    sourceFigureRef: string | null;
+    generateDiagram: boolean;
+    diagramType?: "mechanism" | "comparison" | "workflow" | "data_chart" | "concept_map";
   };
-
+  notes?: {
+    instructorNotes: string;
+    timingMinutes: number;
+    facilitationMoves: string[];
+    answers: string;
+  };
+  sourceCoverage?: {
+    mappedBlockIds: string[];
+    omissionReason: string | null;
+  };
+  cloLinks?: string[];
+  
+  // Internal generation metadata tracking
   wordCount: number;
   qualityScore?: QualityScore;
   reviewStatus?: string;

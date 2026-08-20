@@ -35,19 +35,18 @@ export function runDeterministicQA(
       result.failedRules.push(`Slide ${slide.slideNo}: Word count ${slide.wordCount} > 40`);
       result.status = "SOFT_FAIL";
     }
-    const bullets = slide.visibleContent?.length || 0;
+    const bullets = slide.body?.bullets?.length || 0;
     if (bullets > 5) {
       result.failedRules.push(`Slide ${slide.slideNo}: Bullet count ${bullets} > 5`);
       result.status = "SOFT_FAIL";
     }
 
-    if (slide.visualIntent && slide.visualIntent.length > 5) visualPlans++;
+    if (slide.visualIntent && slide.visualIntent.generateDiagram) visualPlans++;
     if (slide.examples && slide.examples.length > 0) examplesCount += slide.examples.length;
-    if (slide.interaction?.type === "poll") polls++;
-    if (slide.interaction?.type === "pause_discuss") pauseAndDiscuss++;
-    if (slide.interaction?.type === "collaboration") collaborations++;
-    if (slide.interaction?.type === "calculation") calculations++;
-    if (slide.assessment) readinessChecks++;
+    if (slide.body?.studentAction?.type === "poll") polls++;
+    if (slide.body?.studentAction?.type === "pause_discuss") pauseAndDiscuss++;
+    if (slide.body?.studentAction?.type === "collaboration") collaborations++;
+    if (slide.body?.studentAction?.type === "calculation") calculations++;
 
     if (!slide.title || slide.title.length < 3) {
       result.criticalIssues.push(`Slide ${slide.slideNo}: Empty or missing title`);

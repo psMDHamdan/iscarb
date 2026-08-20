@@ -90,7 +90,7 @@ export async function verifyClaims(
   const pureActivityFunctions = new Set(["clos", "hook", "prior_knowledge"]);
   const isActivity =
     !slide.title ||
-    slide.bullets.length === 0 ||
+    !slide.body?.bullets || slide.body.bullets.length === 0 ||
     pureActivityFunctions.has((slide as any).fn ?? "");
   if (isActivity) return { slide, result: emptyPass() };
 

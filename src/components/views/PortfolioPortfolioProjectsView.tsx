@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, AlertCircle, Trash2, Edit2, Eye, Plus } from 'lucide-react';
 import { useApi } from '@/hooks/useApi';
 import { useToast } from '@/hooks/use-toast';
+import { proxiedImageUrl } from '@/lib/image-proxy';
 
 export function PortfolioPortfolioProjectsView() {
   const router = useRouter();
@@ -99,7 +100,7 @@ export function PortfolioPortfolioProjectsView() {
                   <div className="flex items-start gap-6">
                     {project.imageUrl && (
                       <img
-                        src={project.imageUrl}
+                        src={proxiedImageUrl(project.imageUrl)}
                         alt={project.title}
                         className="w-32 h-32 object-cover rounded-lg"
                       />

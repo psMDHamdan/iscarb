@@ -24,7 +24,7 @@ export function stripLatexToReadable(text: string): string {
 
   // Remove block math delimiters
   result = result.replace(/\$\$([\s\S]*?)\$\$/g, (_, expr: string) => renderLatexAsText(expr));
-  result = result.replace(/\\\[(\s\S]*?)\\\]/g, (_, expr: string) => renderLatexAsText(expr));
+  result = result.replace(/\\\[([\s\S]*?)\\\]/g, (_, expr: string) => renderLatexAsText(expr));
 
   // Remove inline math delimiters
   result = result.replace(/\$([^\$\n]+?)\$/g, (_, expr: string) => renderLatexAsText(expr));

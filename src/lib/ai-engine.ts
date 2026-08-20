@@ -19,10 +19,10 @@ function getNextNvidiaKeyIndex(totalKeys: number): number {
 // ─── AI API Concurrency Limiter ─────────────────────────────────────────
 // Prevents the "thundering herd" problem: when N parallel requests all fire
 // simultaneously, they all get 429'd. Cap in-flight NVIDIA calls.
-// Sweet spot = number of NVIDIA keys (5). Live bench at concurrency 4 already
-// saw 429s/failover; 8–10 historically caused 100–185s spikes. Override via env.
+// We round-robin across 5 NVIDIA keys, so a higher global cap lets each key
+// run several concurrent requests (5 keys × 8 = 40 in-flight max).
 const AI_CONCURRENCY_MAX = Math.min(
-  25,
+  40,
   Math.max(
     1,
     Number.parseInt(process.env.AI_CONCURRENCY_MAX || "20", 10) || 20,
@@ -84,9 +84,10 @@ function releaseAISlot(): void {
 const RETRY_BASE_DELAYS_MS = [500, 1000, 2000];
 const MAX_RETRIES = RETRY_BASE_DELAYS_MS.length;
 // Serverless-friendly: a single model call must never burn the whole function
-// budget on a stall. 30s bounds the worst case while still allowing long
-// generation calls to complete on capable models.
-const FETCH_TIMEOUT_MS = 12_000;
+// budget on a stall. 20s bounds the worst case while still allowing long
+// generation calls to complete on capable models without spurious timeouts
+// that trigger expensive cross-key failover.
+const FETCH_TIMEOUT_MS = 20_000;
 
 function getRetryDelay(attempt: number, retryAfter?: number): number {
   if (retryAfter && retryAfter > 0) {
@@ -418,11 +419,12 @@ export async function chatText(opts: {
   user: string;
   temperature?: number;
   model?: string;
+  guardrails?: boolean;
 }): Promise<ChatResult> {
   const t0 = Date.now();
   const client = await getClient();
   const model = opts.model || DEFAULT_AI_MODEL;
-  const system = withGuardrails(opts.system);
+  const system = opts.guardrails === false ? opts.system : withGuardrails(opts.system);
   try {
     const res = await client.chat.completions.create({
       messages: [

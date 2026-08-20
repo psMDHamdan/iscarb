@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Loader2, AlertCircle, Trophy, Star, Lock, Shield } from "lucide-react";
+import { proxiedImageUrl } from "@/lib/image-proxy";
 
 interface BadgeItem {
   id: string;
@@ -48,7 +49,7 @@ function BadgeCard({ badge, ar, locked = false }: { badge: BadgeItem; ar: boolea
       {/* Icon */}
       <div className="flex justify-center mb-3 relative">
         {badge.iconUrl ? (
-          <img src={badge.iconUrl} alt={badge.name} className="h-12 w-12 rounded-full object-cover" />
+          <img src={proxiedImageUrl(badge.iconUrl)} alt={badge.name} className="h-12 w-12 rounded-full object-cover" />
         ) : (
           <div className={`h-12 w-12 rounded-full flex items-center justify-center ${rarity.bg} border ${rarity.border}`}>
             {locked ? (

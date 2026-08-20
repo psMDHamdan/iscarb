@@ -104,13 +104,13 @@ export function MasterySummary({
       <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] rounded-full bg-blue-400/10 dark:bg-blue-900/20 blur-[100px] pointer-events-none" />
 
       <motion.div
-        variants={containerVariants}
+        variants={containerVariants as any}
         initial="hidden"
         animate="visible"
         className="relative z-10 w-full max-w-2xl space-y-8"
       >
         {/* ── Congratulatory Header ───────────────────────────────────── */}
-        <motion.div variants={itemVariants} className="text-center space-y-4">
+        <motion.div variants={itemVariants as any} className="text-center space-y-4">
           <div className="relative mx-auto w-24 h-24 mb-6">
             <motion.div
               animate={{ rotate: 360 }}
@@ -143,7 +143,7 @@ export function MasterySummary({
         </motion.div>
 
         {/* ── Overall Stats (Glassmorphism) ───────────────────────────── */}
-        <motion.div variants={itemVariants} className="grid grid-cols-3 gap-4">
+        <motion.div variants={itemVariants as any} className="grid grid-cols-3 gap-4">
           <motion.div whileHover={{ y: -4 }} className="relative overflow-hidden rounded-3xl border border-white/60 dark:border-slate-800/60 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl p-5 text-center space-y-1.5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
             <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-400/10 rounded-full blur-xl" />
             <span className="relative z-10 text-3xl font-black text-emerald-600 dark:text-emerald-400 drop-shadow-sm">
@@ -180,7 +180,7 @@ export function MasterySummary({
 
         {/* ── Per-Stage Breakdown ───────────────────────────────────────── */}
         <motion.div
-          variants={itemVariants}
+          variants={itemVariants as any}
           className="rounded-[2rem] border border-white/60 dark:border-slate-700/60 bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl p-7 space-y-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-2xl"
         >
           <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 text-center mb-6">
@@ -249,7 +249,7 @@ export function MasterySummary({
         </motion.div>
 
         {/* ── Actions ──────────────────────────────────────────────────── */}
-        <motion.div variants={itemVariants} className="pt-4 pb-2">
+        <motion.div variants={itemVariants as any} className="pt-4 pb-2">
           <div className="flex flex-col sm:flex-row gap-4">
             <motion.button
               whileHover={{ scale: 1.02 }}

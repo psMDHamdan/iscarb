@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageCircle, Send, Clock } from "lucide-react";
+import { proxiedImageUrl } from "@/lib/image-proxy";
 
 export function CommunityCommunicationChatView() {
   const { lang } = useApp();
@@ -71,7 +72,7 @@ export function CommunityCommunicationChatView() {
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={conv.otherAvatar} />
+                          <AvatarImage src={proxiedImageUrl(conv.otherAvatar)} />
                           <AvatarFallback>{getInitials(conv.otherName)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
@@ -109,7 +110,7 @@ export function CommunityCommunicationChatView() {
                     data.messages.map((msg: any) => (
                       <div key={msg.id} className="flex gap-3 group">
                         <Avatar className="h-8 w-8 flex-shrink-0">
-                          <AvatarImage src={msg.senderAvatar} />
+                          <AvatarImage src={proxiedImageUrl(msg.senderAvatar)} />
                           <AvatarFallback>{getInitials(msg.senderName)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1">

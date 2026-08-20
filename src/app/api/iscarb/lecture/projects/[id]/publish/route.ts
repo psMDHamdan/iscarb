@@ -88,6 +88,24 @@ export const POST = guard(
         where: { projectId: id },
         data: { approved: true },
       });
+      const [approvedArtifactsRefetch, readinessRefetch] = await Promise.all([
+        db.lectureSlideArtifact.findMany({
+          where: { projectId: id },
+          select: {
+            id: true,
+            slideNo: true,
+            status: true,
+            version: true,
+            contentJson: true,
+          },
+        }),
+        db.lectureReadinessItem.findMany({
+          where: { projectId: id },
+          select: { slideNo: true, approved: true, createdAt: true },
+        }),
+      ]);
+      artifacts.splice(0, artifacts.length, ...approvedArtifactsRefetch);
+      readinessItems.splice(0, readinessItems.length, ...readinessRefetch);
     }
 
     const inventory = publishInventoryFromRows({ artifacts, readiness: readinessItems });

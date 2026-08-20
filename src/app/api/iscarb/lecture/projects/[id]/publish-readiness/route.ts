@@ -38,7 +38,7 @@ export const GET = guard(
       // Get all gate results for summary
       db.lectureGateResult.findMany({
         where: { projectId: id },
-        orderBy: { createdAt: "desc" },
+        orderBy: { checkedAt: "desc" },
         select: {
           gateKey: true,
           status: true,

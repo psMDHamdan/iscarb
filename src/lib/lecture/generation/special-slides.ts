@@ -15,16 +15,32 @@ import type { SlideContentJson } from "./types";
 export function buildCLOSlide(selectedClos: CourseLearningOutcome[]): SlideContentJson {
   return {
     title: "What You Will Learn",
-    bullets: selectedClos.map((c) => `${c.number}: ${c.text}`),
-    studentAction: "Which learning outcome connects most directly to your current role? Select one and explain why.",
-    speakerNotes: "Read each learning outcome. Ask students to predict how each will be assessed.",
-    citations: [],
-    claims: [],
-    cloIds: selectedClos.map((c) => c.id),
-    sourceBlockIds: [],
-    wordCount: selectedClos.reduce((n, c) => n + c.text.split(" ").length, 0),
-    visualIntent: "numbered list with Bloom level badge per learning outcome",
-  };
+    body: {
+      visibleCopy: "By the end of this lecture, you should be able to:",
+      bullets: selectedClos.map((c) => `${c.number || ""}: ${c.text || ""}`),
+      studentAction: {
+        type: "pause_discuss",
+        stem: "Which learning outcome connects most directly to your current role? Select one and explain why."
+      }
+    },
+    notes: {
+      instructorNotes: "Read each learning outcome. Ask students to predict how each will be assessed.",
+      timingMinutes: 2,
+      facilitationMoves: ["Read aloud"],
+      answers: ""
+    },
+    cloLinks: selectedClos.map((c) => c.id),
+    sourceCoverage: {
+      mappedBlockIds: [],
+      omissionReason: "Intro slide"
+    },
+    wordCount: selectedClos.reduce((n, c) => n + (c.text || "").split(" ").length, 0),
+    visualIntent: {
+      description: "numbered list with Bloom level badge per learning outcome",
+      sourceFigureRef: null,
+      generateDiagram: true,
+    },
+  } as SlideContentJson;
 }
 
 /** §D S8 — misconception slide mandatory pattern. */

@@ -4,6 +4,10 @@
  * Tracks generated content across lecture decks, activities, application tasks,
  * and readiness assessments to prevent exact, wording, semantic, question, answer,
  * visual, or cognitive task duplicates.
+ *
+ * Also exposes a SentenceRegistry (Fix 6) that tracks every individual sentence
+ * emitted across all slides so the generation layer can detect and reject
+ * cross-slide sentence reuse before it reaches the student.
  */
 
 export interface RegisteredContentItem {
@@ -136,4 +140,94 @@ const STOP_WORDS = new Set([
   "the", "and", "is", "in", "it", "of", "to", "for", "with", "on", "at", "by", "from",
   "this", "that", "these", "those", "which", "what", "where", "how", "why", "who",
 ]);
+
+// ---------------------------------------------------------------------------
+// SentenceRegistry — per-session sentence-level deduplication (Fix 6).
+//
+// Problem: The LLM reuses the same sentence verbatim across multiple slides
+// (e.g. "CRISPR-Cas9 ribonucleoprotein complex binds target DNA complementary
+// to gRNA adjacent" appeared on 7 of 20 slides). The ContentRegistry catches
+// full-item duplicates but not individual bullet/copy sentences.
+//
+// Solution: A flat set of normalised sentence fingerprints. Before persisting
+// any slide artifact the generation layer calls `recordSlide()` then checks
+// `findDuplicateSentences()` against upcoming content.
+// ---------------------------------------------------------------------------
+
+/** Normalise a sentence to a fingerprint (lowercase, strip punctuation, collapse spaces). */
+function normaliseSentence(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[^\w\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Split a block of text into individual sentences. */
+function splitSentences(text: string): string[] {
+  return text
+    .split(/(?<=[.!?])\s+|[\n;]/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 12); // ignore very short fragments
+}
+
+export interface SentenceConflict {
+  sentence: string;
+  firstSeenInSlide: number;
+}
+
+export class SentenceRegistry {
+  /** Map from normalised fingerprint → slideNo where first seen */
+  private seen: Map<string, number> = new Map();
+
+  /**
+   * Record all sentences emitted by a slide artifact.
+   * Call this AFTER a slide is accepted so future slides can be checked.
+   */
+  recordSlide(slideNo: number, texts: string[]): void {
+    for (const text of texts) {
+      for (const sentence of splitSentences(text)) {
+        const fp = normaliseSentence(sentence);
+        if (fp && !this.seen.has(fp)) {
+          this.seen.set(fp, slideNo);
+        }
+      }
+    }
+  }
+
+  /**
+   * Check candidate texts for sentences that already appeared in a previous slide.
+   * Returns an array of conflicts (empty = clean).
+   */
+  findDuplicateSentences(candidateTexts: string[]): SentenceConflict[] {
+    const conflicts: SentenceConflict[] = [];
+    for (const text of candidateTexts) {
+      for (const sentence of splitSentences(text)) {
+        const fp = normaliseSentence(sentence);
+        if (fp && this.seen.has(fp)) {
+          conflicts.push({ sentence, firstSeenInSlide: this.seen.get(fp)! });
+        }
+      }
+    }
+    return conflicts;
+  }
+
+  /** True if any candidate text contains a repeated sentence. */
+  hasDuplicates(candidateTexts: string[]): boolean {
+    return this.findDuplicateSentences(candidateTexts).length > 0;
+  }
+
+  /** Reset between generation sessions. */
+  clear(): void {
+    this.seen.clear();
+  }
+
+  /** Number of unique sentences tracked. */
+  get size(): number {
+    return this.seen.size;
+  }
+}
+
+/** Module-level singleton — shared across a single generation pipeline run. */
+export const globalSentenceRegistry = new SentenceRegistry();
 

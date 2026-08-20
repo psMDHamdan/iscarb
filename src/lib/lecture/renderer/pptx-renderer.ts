@@ -43,7 +43,23 @@ export async function renderPPTX(
 
   for (const artifact of ordered) {
     const content = (artifact.contentJson ?? {}) as unknown as SlideContentJson;
-    const slide = pptx.addSlide();
+
+    // ZTM Master Layout Mapping
+    let masterName = "ZTM_Foundation";
+    const fn = (content as any).function?.toLowerCase();
+
+    if (fn === "hook" || artifact.slideNo === 1) masterName = "ZTM_Hook";
+    else if (fn === "spine" || artifact.slideNo === 2) masterName = "ZTM_Spine";
+    else if (fn === "clos" || artifact.slideNo === 3) masterName = "ZTM_CLOs";
+    else if (fn === "hstack" || artifact.slideNo === 4) masterName = "ZTM_HStack";
+    else if (fn === "worked_example" || artifact.slideNo === 9) masterName = "ZTM_WorkedExample";
+    else if (fn === "rubric" || artifact.slideNo === 18) masterName = "ZTM_Rubric";
+    else if (fn === "evidence" || artifact.slideNo === 19) masterName = "ZTM_Evidence";
+    else if (fn === "gate" || artifact.slideNo === 20) masterName = "ZTM_Gate";
+    else if (artifact.slideNo >= 10 && artifact.slideNo <= 13) masterName = "ZTM_DeepDive";
+    else if (artifact.slideNo >= 14 && artifact.slideNo <= 17) masterName = "ZTM_Application";
+
+    const slide = pptx.addSlide({ masterName });
     slide.background = { color: "FFFFFF" };
 
     const title = stripLatexToReadable(slideTitle(content));
@@ -97,12 +113,7 @@ export async function renderPPTX(
       slide.addText(academicVisual.title, {
         x: 5.55, y: 4.4, w: 2.5, h: 0.3, fontSize: 11, color: "065F46", bold: true, fontFace: t.fontEnglish
       });
-      slide.addShape("roundRect", {
-        x: 8.1, y: 4.4, w: 1.3, h: 0.25, fill: { color: "ECFDF5" }, line: { color: "A7F3D0", width: 1 }, rectRadius: 0.1
-      });
-      slide.addText("Scenario Visual", {
-        x: 8.1, y: 4.4, w: 1.3, h: 0.25, fontSize: 8, bold: true, color: "047857", align: "center", fontFace: t.fontEnglish
-      });
+      // Intentionally no badge — "Scenario Visual" label must never appear on student slides.
       slide.addText(academicVisual.caption.slice(0, 85), {
         x: 5.55, y: 4.75, w: 3.8, h: 1.2, fontSize: 9, color: "64748B", italic: true, fontFace: t.fontEnglish
       });
@@ -110,7 +121,10 @@ export async function renderPPTX(
       slide.addShape("roundRect", {
         x: 5.4, y: 1.5, w: 4.1, h: 4.6, fill: { color: "FAFAFA" }, line: { color: "A7F3D0", width: 1.5 }, rectRadius: 0.15
       });
-      slide.addText(content.visualIntent || "Instructional Model", {
+      const viDesc = typeof content.visualIntent === "object" && content.visualIntent?.description
+        ? content.visualIntent.description
+        : typeof content.visualIntent === "string" ? content.visualIntent : "Instructional Model";
+      slide.addText(viDesc, {
         x: 5.55, y: 3.0, w: 3.8, h: 1.5, fontSize: 12, color: "0F7B8A", bold: true, align: "center", fontFace: t.fontEnglish
       });
     }
@@ -134,19 +148,26 @@ export async function renderPPTX(
         x: 0.5, y: 6.35, w: 9.0, h: 0.8, fill: { color: "ECFDF5" }, line: { color: "A7F3D0", width: 1.2 }, rectRadius: 0.15
       });
       slide.addText(`⚡  ${action}`, {
-        x: 0.7, y: 6.35, w: 7.2, h: 0.8, fontSize: 13, bold: true, color: "065F46",
+        x: 0.7, y: 6.35, w: 8.6, h: 0.8, fontSize: 13, bold: true, color: "065F46",
         fontFace: rtl ? t.fontArabic : t.fontEnglish, rtlMode: rtl
       });
-      slide.addShape("roundRect", {
-        x: 8.1, y: 6.5, w: 1.2, h: 0.5, fill: { color: "065F46" }, rectRadius: 0.1
-      });
-      slide.addText("Active Task", {
-        x: 8.1, y: 6.5, w: 1.2, h: 0.5, fontSize: 9, bold: true, color: "FFFFFF", align: "center", fontFace: t.fontEnglish
-      });
+      // Intentionally no badge — "Active Task" label must never appear on student slides.
+      // The action text itself is sufficient; the label adds no learning value and was
+      // previously leaking internal framework vocabulary to students.
     }
 
-    // Instructor Notes
-    slide.addNotes(content.speakerNotes ?? "No instructor notes provided.");
+    // Instructor Notes — compose from structured notes object
+    const notesObj = content.notes;
+    let notesText = content.speakerNotes ?? "";
+    if (notesObj && typeof notesObj === "object") {
+      const parts: string[] = [];
+      if (notesObj.timingMinutes) parts.push(`Timing: ${notesObj.timingMinutes} min`);
+      if (notesObj.facilitationMoves?.length) parts.push(`Facilitation: ${notesObj.facilitationMoves.join(". ")}`);
+      if (notesObj.instructorNotes) parts.push(`Context: ${notesObj.instructorNotes}`);
+      if (notesObj.answers) parts.push(`Answer: ${notesObj.answers}`);
+      if (parts.length > 0) notesText = parts.join("\n");
+    }
+    slide.addNotes(notesText || "No instructor notes provided.");
   }
 
   let result: any;
