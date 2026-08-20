@@ -168,7 +168,7 @@ export class Pass14Reviews implements PipelinePass {
     if (ctx.contentRegistry) {
       const dupMatrix = ctx.contentRegistry.generateDuplicationMatrix();
       if (dupMatrix.length > 0) {
-        const severeDups = dupMatrix.filter((d) => d.similarity >= 0.70);
+        const severeDups = dupMatrix.filter((d: { similarity: number }) => d.similarity >= 0.70);
         if (severeDups.length > 0) {
           findings.push({
             passNumber: 14,
