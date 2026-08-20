@@ -115,28 +115,22 @@ export class StudentUxAdapter extends BaseProjectionAdapter<LearningExperience, 
         titleAr: block.titleAr ? cleanJargon(block.titleAr) : undefined,
         bloomLevel: block.bloomLevel || "understand",
         estimatedMinutes: block.estimatedMinutes || 7,
+        flaggedForReview:
+          ["review", "flagged", "NEEDS_FACULTY_REVIEW"].includes(String(input.status)) ||
+          (block as { flaggedForReview?: boolean }).flaggedForReview === true,
 
         // 5-Layer Student View (No technical field jargon + LaTeX equation support)
         coreInsight: coreInsightHtml,
-        mentalModel: {
-          analogy: cleanJargon(
-            block.intuitionMentalModel || academicAnalogy.analogy || "Imagine a real-world metaphor illustrating this principle."
-          ),
-          framework: cleanJargon(block.coreIdea || academicAnalogy.framework || block.title),
-        },
-        mechanism: {
-          explanation: mechanismExplanationHtml,
-          steps: block.keyTakeaways?.map((t) => MathChemTransformer.transformToHtml(cleanJargon(t))) || [],
-        },
-        realWorldTransfer: {
-          scenario: transferScenarioHtml,
-          application: cleanJargon(block.keywords?.join(", ") || ""),
-        },
-        commonPitfalls: (block.misconceptions || []).map((m) => ({
-          misconception: cleanJargon(m.commonBelief),
-          whyIncorrect: cleanJargon(m.whyIncorrect),
-          howToThinkAboutIt: cleanJargon(m.correction),
-        })),
+        mentalModel: cleanJargon(
+          block.intuitionMentalModel || academicAnalogy.analogy || "Imagine a real-world metaphor illustrating this principle."
+        ),
+        mechanism: mechanismExplanationHtml,
+        realWorldApplication: transferScenarioHtml,
+        misconceptionAlert: block.misconceptions?.[0] ? {
+          misconception: cleanJargon(block.misconceptions[0].commonBelief),
+          whyItFails: cleanJargon(block.misconceptions[0].whyIncorrect),
+          correction: cleanJargon(block.misconceptions[0].correction),
+        } : undefined,
 
         // Visual Scaffolding
         visual: visual

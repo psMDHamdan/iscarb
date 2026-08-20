@@ -9,7 +9,7 @@
  * specification: source fidelity, concept intelligence, learning progression,
  * five-layer content, and hard failure conditions.
  */
-import { chatJson, DEFAULT_AI_MODEL } from "@/lib/ai-engine";
+import { chatJson, DEFAULT_AI_MODEL, type ChatResult } from "@/lib/ai-engine";
 import type { CourseLearningOutcome } from "@/lib/assessment/ai-question-generation.service";
 import { artifactGate } from "./artifact-validator";
 import { recordModelRun } from "./model-run";
@@ -612,16 +612,16 @@ function normalizeArtifact(json: unknown, cloIds: string[]): SlideContentJson {
   const bullets = Array.isArray(raw.bullets) ? raw.bullets.map(String) : [];
   const citations = Array.isArray(raw.citations)
     ? raw.citations.map((c: any) => ({
-        sourceBlockId: String(c?.sourceBlockId ?? ""),
-        locator: String(c?.locator ?? ""),
-        excerpt: String(c?.excerpt ?? c?.text ?? ""),
-      }))
+      sourceBlockId: String(c?.sourceBlockId ?? ""),
+      locator: String(c?.locator ?? ""),
+      excerpt: String(c?.excerpt ?? c?.text ?? ""),
+    }))
     : [];
   const textAr = raw.textAr && typeof raw.textAr === "object"
     ? {
-        title: typeof raw.textAr.title === "string" ? raw.textAr.title : undefined,
-        bullets: Array.isArray(raw.textAr.bullets) ? raw.textAr.bullets.map(String) : undefined,
-      }
+      title: typeof raw.textAr.title === "string" ? raw.textAr.title : undefined,
+      bullets: Array.isArray(raw.textAr.bullets) ? raw.textAr.bullets.map(String) : undefined,
+    }
     : undefined;
   return {
     title: typeof raw.title === "string" ? raw.title : "",
@@ -631,10 +631,10 @@ function normalizeArtifact(json: unknown, cloIds: string[]): SlideContentJson {
     teachingExplanation: typeof raw.teachingExplanation === "string" ? raw.teachingExplanation : "",
     learningActivity: raw.learningActivity && typeof raw.learningActivity === "object"
       ? {
-          text: typeof raw.learningActivity.text === "string" ? raw.learningActivity.text : "",
-          cognitiveAction: typeof raw.learningActivity.cognitiveAction === "string" ? raw.learningActivity.cognitiveAction : undefined,
-          hints: Array.isArray(raw.learningActivity.hints) ? raw.learningActivity.hints.map(String) : undefined,
-        }
+        text: typeof raw.learningActivity.text === "string" ? raw.learningActivity.text : "",
+        cognitiveAction: typeof raw.learningActivity.cognitiveAction === "string" ? raw.learningActivity.cognitiveAction : undefined,
+        hints: Array.isArray(raw.learningActivity.hints) ? raw.learningActivity.hints.map(String) : undefined,
+      }
       : { text: "" },
     feedback: typeof raw.feedback === "string" ? raw.feedback : "",
     mastery: typeof raw.mastery === "string" ? raw.mastery : "",
@@ -646,14 +646,14 @@ function normalizeArtifact(json: unknown, cloIds: string[]): SlideContentJson {
     citations,
     claims: Array.isArray(raw.claims)
       ? raw.claims.map((c: any) => ({
-          id: typeof c?.id === "string" ? c.id : "",
-          text: String(c?.text ?? ""),
-          type: typeof c?.type === "string" ? c.type : "SOURCE_FACT",
-          sourceIds: c?.sourceBlockId ? [String(c.sourceBlockId)] : [],
-          status: ["verified", "NEED_SOURCE", "hypothetical"].includes(c?.status) ? c.status : "NEED_SOURCE",
-          sourceBlockId: c?.sourceBlockId ? String(c.sourceBlockId) : undefined,
-          verificationStatus: ["verified", "NEED_SOURCE", "hypothetical"].includes(c?.status) ? (c.status === "verified" ? "VERIFIED" : c.status === "NEED_SOURCE" ? "UNSUPPORTED" : "VERIFIED") : "UNSUPPORTED",
-        }))
+        id: typeof c?.id === "string" ? c.id : "",
+        text: String(c?.text ?? ""),
+        type: typeof c?.type === "string" ? c.type : "SOURCE_FACT",
+        sourceIds: c?.sourceBlockId ? [String(c.sourceBlockId)] : [],
+        status: ["verified", "NEED_SOURCE", "hypothetical"].includes(c?.status) ? c.status : "NEED_SOURCE",
+        sourceBlockId: c?.sourceBlockId ? String(c.sourceBlockId) : undefined,
+        verificationStatus: ["verified", "NEED_SOURCE", "hypothetical"].includes(c?.status) ? (c.status === "verified" ? "VERIFIED" : c.status === "NEED_SOURCE" ? "UNSUPPORTED" : "VERIFIED") : "UNSUPPORTED",
+      }))
       : [],
     cloIds,
     conceptIds: Array.isArray(raw.conceptIds) ? raw.conceptIds.map(String) : [],
@@ -678,7 +678,7 @@ function buildFallbackSlide(
   const isAr = project.courseProfile.languagePolicy === "ar";
   const block = blocks[plan.slideNo % (blocks.length || 1)] || blocks[0];
   const locator = block?.locator ?? "slide:1";
-  
+
   // Sanitize raw PDF text — strip raw nucleotide sequences, hex tokens, and OCR artifacts
   const rawText = block?.text || "";
   const sanitizedText = rawText
@@ -688,227 +688,84 @@ function buildFallbackSlide(
     .trim();
 
   const cleanSnippet = sanitizedText.length > 20
-    ? sanitizedText.slice(0, 100).replace(/[^\w\s\u0600-\u06FF,.-]/gi, "")
+    ? sanitizedText.slice(0, 140).replace(/[^\w\s\u0600-\u06FF,.-]/gi, "")
     : "";
 
-  // S1..S20 Stage-tailored pedagogical defaults matching BRD v3.4 §21
-  const stageConfig: Record<number, {
-    titleEn: string;
-    titleAr: string;
-    actionEn: string;
-    actionAr: string;
-    bulletsEn: string[];
-    bulletsAr: string[];
-    insightEn: string;
-    insightAr: string;
-    analogyEn: string;
-    analogyAr: string;
-    frameworkEn: string;
-    frameworkAr: string;
-    mechanismEn: string;
-    mechanismAr: string;
-    visual: string;
-  }> = {
-    1: {
-      titleEn: plan.title || "What if we could edit target mechanisms like software code?",
-      titleAr: plan.title || "ماذا لو استطعنا تعديل الآليات المستهدفة مثل البرمجيات؟",
-      actionEn: "Think: What would have to be true for editing to work safely?",
-      actionAr: "فكر: ما الذي يجب أن يتحقق لضمان عمل التعديل بأمان؟",
-      bulletsEn: [
-        "High-Stakes Tension: Traditional methods lack site-specific precision.",
-        "Core Capability: Programmable targeting enables molecular-level control.",
-        "Driving Question: How do we move from target selection to safe, predictable outcomes?"
-      ],
-      bulletsAr: [
-        "التوتر الرئيسي: الطرق التقليدية تفتقر إلى الدقة المحددة في الموقع.",
-        "القدرة الأساسية: الاستهداف المبرمج يتيح التحكم على المستوى الجزيئي.",
-        "السؤال الموجه: كيف ننتقل من اختيار الهدف إلى مخرجات آمنة وموثوقة؟"
-      ],
-      insightEn: "Every major breakthrough starts by reframing a bottleneck into a programmable target.",
-      insightAr: "كل تحول رئيسي يبدأ بإعادة صياغة العائق إلى هدف قابل للبرمجة.",
-      analogyEn: "Think of this like replacing a blunt tool with a GPS-guided surgical scalpel.",
-      analogyAr: "تخيل هذا مثل استبدال أداة تقليدية بمشرط جراحي موجه بنظام تحديد المواقع.",
-      frameworkEn: "Tension → Capability → Driving Question",
-      frameworkAr: "التوتر → القدرة → السؤال الموجه",
-      mechanismEn: "Initial problem framing identifies the exact boundary condition where standard methods fail.",
-      mechanismAr: "تأطير المشكلة الأولية يحدد الحالة الحدية التي تفشل عندها الطرق Standard.",
-      visual: "High-impact scientific image showing target interaction"
-    },
-    2: {
-      titleEn: plan.title || "Mental Model: 5 Pillars of Domain Architecture",
-      titleAr: plan.title || "النموذج الذهني: الركائز الخمس لمهندسة المجال",
-      actionEn: "Poll: Which of these 5 pillars do you consider the most complex to control?",
-      actionAr: "تصويت: أي من هذه الركائز الخمس تعتبرها الأكثر تعقيداً في التحكم؟",
-      bulletsEn: [
-        "1. Target Recognition: Precise sequence localization and binding.",
-        "2. Enzymatic Action: Catalytic cleavage or molecular modification.",
-        "3. Repair Pathways: Endogenous cellular resolution mechanisms.",
-        "4. Specificity Control: Minimizing off-target events across the genome.",
-        "5. Delivery Systems: Transporting effectors into target cell populations."
-      ],
-      bulletsAr: [
-        "1. التعرف على الهدف: تحديد الموقع الدقيق والتسلسل.",
-        "2. الفعل الإنزيمي: القطع التحفيزي أو التعديل الجزيئي.",
-        "3. مسارات الإصلاح: آليات الاستجابة الخلوية الداخلية.",
-        "4. التحكم بالنوعية: تقليل التأثيرات خارج الهدف إلى الحد الأدنى.",
-        "5. أنظمة التوصيل: نقل العوامل إلى الخلايا المستهدفة."
-      ],
-      insightEn: "A complete system requires harmony across all 5 structural pillars.",
-      insightAr: "النظام المتكامل يتطلب التناغم بين جميع الركائز الهيكلية الخمس.",
-      analogyEn: "Think of these 5 pillars as the blueprint of a multi-stage assembly line.",
-      analogyAr: "تخيل هذه الركائز الخمس كمخطط لخط إنتاج متعدد المراحل.",
-      frameworkEn: "Recognition → Catalysis → Repair → Specificity → Delivery",
-      frameworkAr: "التعرف → التحفيز → الإصلاح → النوعية → التوصيل",
-      mechanismEn: "Each pillar addresses one distinct engineering constraint in the transformation lifecycle.",
-      mechanismAr: "كل ركيزة تعالج ضابطاً هندسياً محصناً في دورة التحول.",
-      visual: "Hub-and-spoke concept map showing the 5 pillars"
-    },
-    9: {
-      titleEn: plan.title || "Worked Calculation: Quantitative Performance Model",
-      titleAr: plan.title || "حساب تطبيقي: النموذج الكمي لتقييم الكفاءة",
-      actionEn: "Calculate: Apply $ f(x) = \\sum w_i x_i + b $ to determine optimal efficiency.",
-      actionAr: "حساب: طبق المعادلة $ f(x) = \\sum w_i x_i + b $ لتحديد الكفاءة المثلى.",
-      bulletsEn: [
-        "Context & Given Data: Weight $ w_1 = 0.6 $, Specificity score $ x_1 = 85 % $.",
-        "Formula Application: $ f(x) = (0.6 \\times 85) + (0.4 \\times 90) - 5 $.",
-        "Result & Decision: Score = $ 82.0 % $ — Exceeds the $ 80 % $ readiness threshold."
-      ],
-      bulletsAr: [
-        "السياق والبيانات: الوزن $ w_1 = 0.6 $، درجة النوعية $ x_1 = 85 % $.",
-        "تطبيق المعادلة: $ f(x) = (0.6 \\times 85) + (0.4 \\times 90) - 5 $.",
-        "النتيجة والقرار: الدرجة = $ 82.0 % $ — تتجاوز حد الجاهزية الأدنى $ 80 % $."
-      ],
-      insightEn: "Quantitative validation turns subjective choices into measurable engineering decisions.",
-      insightAr: "التحقق الكمي يحول الاختيارات الانطباعية إلى قرارات هندسية مقاسة.",
-      analogyEn: "Think of this calculation as a stress test verifying load limits before deployment.",
-      analogyAr: "تخيل هذا الحساب كاختبار جهد يحدد الحدود القصوى قبل التشغيل.",
-      frameworkEn: "Given Data → Formula Substitution → Decision Threshold",
-      frameworkAr: "البيانات المعطاة → التعويض بالمعادلة → حد اتخاذ القرار",
-      mechanismEn: "Parameters are normalized and evaluated against empirical quality thresholds.",
-      mechanismAr: "تم معايرة المتغيرات وتقييمها مقابل حدود الجودة التجريبية.",
-      visual: "Step-by-step calculation workflow diagram"
-    },
-    13: {
-      titleEn: plan.title || "Trade-Off Matrix: Efficiency vs. Specificity",
-      titleAr: plan.title || "مصفوفة المفاضلة: الكفاءة مقابل النوعية",
-      actionEn: "Decide: Which strategy would you select for a clinical-grade application?",
-      actionAr: "حدد: أي الاستراتيجيات تختار للتطبيق عالي الدقة؟",
-      bulletsEn: [
-        "Strategy A (High Efficiency): 95% cleavage rate, higher off-target risk.",
-        "Strategy B (High Specificity): 78% cleavage rate, near-zero off-target risk.",
-        "Strategy C (Balanced Design): 88% efficiency with strict PAM constraints."
-      ],
-      bulletsAr: [
-        "الاستراتيجية (أ) [كفاءة عالية]: معدل قطع 95%، مخاطرة أعلى خارج الهدف.",
-        "الاستراتيجية (ب) [نوعية فائقة]: معدل قطع 78%، مخاطرة تقارب الصفر.",
-        "الاستراتيجية (ج) [تصميم متوازن]: كفاءة 88% مع قيود صارمة."
-      ],
-      insightEn: "Engineering maturity is knowing which trade-off to accept for a given objective.",
-      insightAr: "النضج الهندسي هو معرفة المفاضلة الواجب قبولها للهدف المحدد.",
-      analogyEn: "Think of this as choosing between a racing engine and a high-security vehicle.",
-      analogyAr: "تخيل هذا كالمفاضلة بين محرك سباق وسيارات عالية الأمان.",
-      frameworkEn: "Efficiency ↔ Specificity Trade-Off Matrix",
-      frameworkAr: "مصفوفة المفاضلة بين الكفاءة والنوعية",
-      mechanismEn: "Evaluating Pareto efficiency boundaries identifies optimal trade-off points.",
-      mechanismAr: "تقييم حدود كفاءة باريتو يحدد نقاط المفاضلة المثالية.",
-      visual: "Trade-off scatter plot matrix"
-    },
-    20: {
-      titleEn: plan.title || "Final Readiness Gate: Capstone Mastery Evaluation",
-      titleAr: plan.title || "بوابة الجاهزية النهائية: تقييم الإتقان الشامل",
-      actionEn: "Final Challenge: Select the optimal strategy and defend your rationale under constraints.",
-      actionAr: "التحدي النهائي: اختر الاستراتيجية المثلى وبرر قرارك في ظل القيود.",
-      bulletsEn: [
-        "Scenario: High-precision target with 2 strict boundary constraints.",
-        "Evaluation Criterion: Correct selection + multi-factor justification.",
-        "Readiness Assessment: Minimum passing score = 3/4 checkpoints + Rubric Level 3."
-      ],
-      bulletsAr: [
-        "السيناريو: هدف عالي الدقة مع ضابطين صارمين في البيئة.",
-        "معيار التقييم: الاختيار الصحيح + التبرير متعدد العوامل.",
-        "تقييم الجاهزية: حد النجاح الأدنى = 3/4 نقاط تحقق + المستوي الثالث في السلم."
-      ],
-      insightEn: "Mastery is demonstrated when you can select, justify, and defend optimal decisions under constraint.",
-      insightAr: "يتم إثبات الإتقان عندما تستطيع اختيار وتبرير والدفاع عن القرارات المثلى تحت الضغوط.",
-      analogyEn: "Think of S20 as the final flight simulation test before commercial certification.",
-      analogyAr: "تخيل S20 كاختبار الطيران المحاكي النهائي قبل الاعتماد التجاري.",
-      frameworkEn: "Scenario → Strategy Choice → Defense → Readiness Gate Pass",
-      frameworkAr: "السيناريو → اختيار الاستراتيجية → التبرير → اجتياز بوابة الجاهزية",
-      mechanismEn: "Multi-dimensional evaluation triangulates performance across product, process, and explanation.",
-      mechanismAr: "التقييم متعدد الأبعاد يربط الأداء بين المنتج والعملية والتفسير.",
-      visual: "Readiness gate badge and milestone dashboard"
-    }
-  };
+  // SAFE PLACEHOLDER fallback. Runs ONLY when the LLM is unavailable.
+  // It must never fabricate facts or invent numbers, and must never emit
+  // internal framework labels (e.g. "Core Capability", "Driving Question").
+  // Content is drawn verbatim from the source-block snippet when available,
+  // otherwise a neutral review-pending notice. The slide is always flagged
+  // for review so faculty regenerate it before it reaches students.
+  const topic = plan.title?.trim() || "this topic";
 
-  const stage = stageConfig[plan.slideNo] || {
-    titleEn: plan.title || `Slide ${plan.slideNo}: ${plan.function.replace(/_/g, " ")}`,
-    titleAr: plan.title || `الشريحة ${plan.slideNo}: ${plan.function.replace(/_/g, " ")}`,
-    actionEn: plan.interactionType === "poll"
-      ? "Poll: Which factor presents the highest risk in this scenario? (A) Primary Risk (B) Secondary Risk (C) Constraint (D) Exception"
-      : `Pause & Discuss: How does ${plan.title || "this principle"} behave under real-world constraints?`,
-    actionAr: plan.interactionType === "poll"
-      ? "تصويت: أي الخيارات التالية يمثل الخطورة الأعلى؟ (أ) العامل الأول (ب) العامل الثاني (ج) القيد التشغيلي (د) الاستثناء"
-      : `مناقشة وتفكير: كيف يتصرف هذا المفهوم في ظل القيود الواقعية؟`,
-    bulletsEn: [
-      `${cleanSnippet || `The key mechanism behind ${plan.title || 'this topic'} works by connecting inputs to verified outcomes through a structured process.`}.`,
-      `${plan.title || 'This concept'} is essential for solving real problems in professional practice.`,
-      `Understanding how this works will help you make better decisions in related scenarios.`
-    ],
-    bulletsAr: [
-      `${cleanSnippet || `الآلية الرئيسية وراء ${plan.title || 'هذا الموضوع'} تعمل عن طريق ربط المدخلات بمحركات موثقة من خلال عملية منظمة.`}.`,
-      `${plan.title || 'هذا المفهوم'} ضروري لحل المشكلات الواقعية في الممارسة المهنية.`,
-      `فهم كيفية عمل ذلك سيساعدك على اتخاذ قرارات أفضل في السيناريوهات ذات الصلة.`
-    ],
-    insightEn: `Understanding ${plan.title || 'this concept'} requires grasping how each component contributes to the overall mechanism.`,
-    insightAr: `فهم ${plan.title || 'هذا المفهوم'} يتطلب إدراك كيفية مساهمة كل مكون في الآلية العامة.`,
-    analogyEn: `Think of this like a system with inputs, processing rules, and outputs — each part depends on the others to work correctly.`,
-    analogyAr: `تخيل هذا كنظام مكون من مدخلات وقواعد معالجة ومخرجات — كل جزء يعتمد على الآخر للعمل بشكل صحيح.`,
-    frameworkEn: `Input → Process → Verified Outcome`,
-    frameworkAr: `مدخلات → معالجة → نتيجة موثقة`,
-    mechanismEn: `This concept operates through a structured process where each step builds on the previous one to reach a verified outcome.`,
-    mechanismAr: `يعمل هذا المفهوم من خلال عملية منظمة حيث تتراكم كل خطوة على سابقتها للوصول إلى نتيجة موثقة.`,
-    visual: plan.visualIntent || `Educational diagram showing ${plan.title || 'the concept'} process flow`
-  };
+  const coreSnippet =
+    cleanSnippet ||
+    (isAr
+      ? "هذه الشريحة بحاجة إلى مراجعة المحتوى من المادة المصدرية."
+      : "This screen needs content reviewed from the source material.");
 
-  const title = isAr ? stage.titleAr : stage.titleEn;
-  const bullets = isAr ? stage.bulletsAr : stage.bulletsEn;
-  const studentAction = isAr ? stage.actionAr : stage.actionEn;
+  const title = plan.title?.trim() || (isAr ? "محتوى قيد المراجعة" : "Content pending review");
+  const bullets = [coreSnippet];
+
+  const studentAction = isAr
+    ? "راجع المادة المصدرية للتحضير للنشاط."
+    : "Review the source material to prepare for the activity.";
+
   const speakerNotes = isAr
-    ? `سيناريو المحاضر: وضح المبدأ الأساسي بوضوح. ركز على التطبيق العملي قبل بدء النشاط التفاعلي للطلاب.`
-    : `Instructor Script: Introduce the core principle clearly. Highlight the practical application before launching the student activity.`;
+    ? "ملاحظة مراجعة: لم يكتمل إنشاء هذه الشريحة تلقائياً. أعد كتابة المحتوى من المادة المصدرية قبل العرض."
+    : "Review flag: this screen was not fully generated. Rewrite the content from the source material before presenting.";
 
-  const studentCoreInsight = isAr ? stage.insightAr : stage.insightEn;
-  const studentAnalogy = isAr ? stage.analogyAr : stage.analogyEn;
-  const studentFramework = isAr ? stage.frameworkAr : stage.frameworkEn;
-  const studentMechanismExplanation = isAr ? stage.mechanismAr : stage.mechanismEn;
+  const studentCoreInsight = coreSnippet;
+  const studentAnalogy = isAr
+    ? "فكر في كيفية ارتباط هذا المفهوم بمثال مألوف لديك."
+    : "Consider how this concept connects to a familiar example.";
+  const studentFramework = "";
+  const studentMechanismExplanation = isAr
+    ? "راجع الخطوات الموثقة في المادة المصدرية لفهم آلية عمل هذا المفهوم."
+    : "Review the documented steps in the source material to understand how this concept works.";
+  const studentScenario = isAr
+    ? "راجع تطبيقات هذا المفهوم في المادة المصدرية."
+    : "Review the applications of this concept in the source material.";
+  const studentApplication = studentScenario;
 
   return {
     title,
-    purpose: isAr ? `تعليم المفاهيم الأساسية لـ ${plan.title || 'هذا المفهوم'}` : `Teach core concepts of ${plan.title || 'this topic'}.`,
-    learningObjective: isAr ? `يستطيع الطالب تطبيق وفهم المفهوم الأساسي.` : `Student can apply and explain the core concept.`,
-    academicTruth: isAr ? "مستخرج من المصادر التعليمية المعتمدة." : "Derived strictly from course material.",
-    teachingExplanation: isAr ? "شرح مبسط يركز على الفهم التأسيسي." : "Simplified explanation prioritizing core understanding.",
+    purpose: isAr
+      ? `مراجعة محتوى ${topic} من المادة المصدرية.`
+      : `Review the content of ${topic} from the source material.`,
+    learningObjective: isAr
+      ? "يستطيع الطالب فهم المفهوم بعد مراجعة المادة المصدرية."
+      : "Student can understand the concept after reviewing the source material.",
+    academicTruth: isAr
+      ? "يجب استخراج المحتوى من المادة المصدرية المعتمدة."
+      : "Content must be drawn from the approved source material.",
+    teachingExplanation: coreSnippet,
     learningActivity: { text: studentAction },
-    feedback: isAr ? "تأكيد التطبيق الصحيح وتوجيه المفاهيم الشائعة." : "Confirm correct application and guide misconceptions.",
-    mastery: isAr ? "يقوم الطالب بشرح المبدأ في سياق جديد بنجاح." : "Student explains the principle in a new context.",
+    feedback: isAr
+      ? "راجع المادة المصدرية للتحقق من الفهم."
+      : "Review the source material to confirm understanding.",
+    mastery: isAr
+      ? "يشرح الطالب المفهوم في سياق جديد بعد مراجعة المادة."
+      : "Student explains the concept in a new context after reviewing the material.",
     bullets,
     visibleContent: bullets,
-    visualIntent: stage.visual,
+    visualIntent: plan.visualIntent || (isAr ? "رسم توضيحي من المادة المصدرية" : "Diagram from the source material"),
     studentAction,
     speakerNotes,
     studentCoreInsight,
     studentAnalogy,
     studentFramework,
     studentMechanismExplanation,
-    studentScenario: isAr ? "سيناريو تطبيقي في بيئة العمل" : "Practical industry scenario",
-    studentApplication: isAr ? "تطبيق عملي مباشر في السوق" : "Direct practical application",
+    studentScenario,
+    studentApplication,
     textAr: isAr ? { title, bullets } : undefined,
     citations: [{ sourceBlockId: block?.id ?? "1", locator, excerpt: cleanSnippet || title }],
     claims: [{ text: bullets[0], status: "verified", sourceBlockId: block?.id }],
     cloIds: clos.map((c) => c.id),
     conceptIds: [],
     sourceBlockIds: [block?.id ?? "1"],
-    bloomLevel: plan.slideNo > 13 ? "Evaluate" : plan.slideNo > 8 ? "Analyze" : "Apply",
+    bloomLevel: "Understand",
     interaction: null,
     wordCount: title.split(/\s+/).length + bullets.reduce((n, b) => n + b.split(/\s+/).length, 0),
   } as SlideContentJson;
@@ -936,7 +793,7 @@ export async function generateSlideArtifact(
 
   const selectedClos = clos;
 
-  let result: { json: unknown } = { json: null };
+  let result: { json: unknown; model?: string; content?: string } = { json: null };
   try {
     result = await Promise.race([
       chatJson({
@@ -949,7 +806,7 @@ export async function generateSlideArtifact(
         setTimeout(() => reject(new Error("Slide LLM timeout (25s max)")), 25_000)
       ),
     ]);
-    await recordModelRun({ projectId: project.id, kind: "slide", result });
+    await recordModelRun({ projectId: project.id, kind: "slide", result: result as ChatResult });
   } catch (err: any) {
     console.warn(`[SlideGenerator] Slide S${plan.slideNo} fast fallback triggered: ${err.message}`);
     result = { json: null };

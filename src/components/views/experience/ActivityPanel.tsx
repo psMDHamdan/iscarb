@@ -202,7 +202,7 @@ function DefaultTaskPrompt({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           conceptTitle: concept.title,
-          taskPrompt: `Explain the concept "${concept.title}". Key insight: ${concept.coreInsight}. Mechanism: ${concept.mechanism.explanation.substring(0, 200)}. Real-world scenario: ${concept.realWorldTransfer.scenario.substring(0, 200)}`,
+          taskPrompt: `Explain the concept "${concept.title}". Key insight: ${concept.coreInsight}. Mechanism: ${(concept.mechanism || "").substring(0, 200)}. Real-world scenario: ${(concept.realWorldApplication || "").substring(0, 200)}`,
           studentAnswer: answer,
           lang: ar ? "ar" : "en",
         }),
@@ -523,7 +523,13 @@ function AssessmentMCQ({ assessment, ar, experienceId, onAnswer }: AssessmentMCQ
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [checking, setChecking] = useState(false);
-  const [result, setResult] = useState<{ correct: boolean; correctOptionId: string } | null>(null);
+  const [result, setResult] = useState<{
+    correct: boolean;
+    correctOptionId: string;
+    misconceptionFeedback?: string;
+    variantAvailable?: boolean;
+  } | null>(null);
+  const [variant, setVariant] = useState<{ variantQuestion?: string; variantExample?: string; hint?: string } | null>(null);
 
   const submitAnswer = async (optionId: string) => {
     setSelectedId(optionId);
@@ -540,7 +546,33 @@ function AssessmentMCQ({ assessment, ar, experienceId, onAnswer }: AssessmentMCQ
       );
       if (res.ok) {
         const data = await res.json();
-        setResult({ correct: Boolean(data.correct), correctOptionId: String(data.correctOptionId) });
+        setResult({
+          correct: Boolean(data.correct),
+          correctOptionId: String(data.correctOptionId),
+          misconceptionFeedback: data.misconceptionFeedback,
+          variantAvailable: Boolean(data.variantAvailable),
+        });
+        // Persist the answer server-side (session row → server-computed mastery).
+        try {
+          await fetch(
+            `/api/iscarb/lecture/experience/${encodeURIComponent(experienceId)}/session`,
+            {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                interaction: {
+                  conceptBlockId: assessment.id,
+                  activityType: "MCQ_ANSWER",
+                  studentInput: optionId,
+                  selectedOptionId: optionId,
+                  isCorrect: Boolean(data.correct),
+                },
+              }),
+            }
+          );
+        } catch {
+          /* best-effort persistence */
+        }
       } else {
         setResult({ correct: false, correctOptionId: optionId });
       }
@@ -550,6 +582,23 @@ function AssessmentMCQ({ assessment, ar, experienceId, onAnswer }: AssessmentMCQ
       setChecking(false);
       setSubmitted(true);
     }
+  };
+
+  const loadVariant = () => {
+    fetch("/api/iscarb/student/lecture/evaluate-task", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        conceptTitle: assessment.stem,
+        taskPrompt: assessment.stem,
+        mode: "remediation",
+        misconception: result?.misconceptionFeedback ?? "",
+        lang: ar ? "ar" : "en",
+      }),
+    })
+      .then((r) => r.json())
+      .then((v) => setVariant(v))
+      .catch(() => setVariant({}));
   };
 
   return (
@@ -625,7 +674,7 @@ function AssessmentMCQ({ assessment, ar, experienceId, onAnswer }: AssessmentMCQ
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           className={cn(
-            "p-4 rounded-2xl border text-sm font-medium leading-relaxed",
+            "p-4 rounded-2xl border text-sm font-medium leading-relaxed space-y-3",
             result.correct
               ? "border-emerald-200 dark:border-emerald-800 bg-emerald-50/60 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-200"
               : "border-amber-200 dark:border-amber-800 bg-amber-50/60 dark:bg-amber-950/30 text-amber-800 dark:text-amber-200"
@@ -643,16 +692,59 @@ function AssessmentMCQ({ assessment, ar, experienceId, onAnswer }: AssessmentMCQ
               <>
                 <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                 <span className="font-black text-amber-700 dark:text-amber-300">
-                  {ar ? "ليس تماماً. الإجابة الصحيحة موضحة أعلاه." : "Not quite. The correct answer is highlighted above."}
+                  {ar ? "ليست الإجابة الصحيحة" : "Not quite."}
                 </span>
               </>
             )}
           </div>
+
+          {/* Deterministic per-distractor feedback (spec §29, zero extra LLM cost) */}
           {!result.correct && (
-            <p className="text-xs text-amber-700/80 dark:text-amber-300/80">
-              {ar
-                ? "راجع المحتوى أعلاه وحاول فهم السبب. ثم انتقل للمفهوم التالي."
-                : "Review the content above and try to understand why. Then move to the next concept."}
+            <p className="text-xs text-amber-700/90 dark:text-amber-300/90 leading-relaxed">
+              {result.misconceptionFeedback ||
+                (ar
+                  ? "هذه الإجابة تعكس مفهوماً خاطئاً شائعاً. أعد قراءة الآلية وحاول مجدداً."
+                  : "That answer reflects a common misunderstanding. Re-read the mechanism and try again.")}
+            </p>
+          )}
+
+          {/* Adaptive loop: new variant on failure (full §29) */}
+          {!result.correct && result.variantAvailable && !variant && (
+            <button
+              type="button"
+              onClick={loadVariant}
+              className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:opacity-90 transition-opacity"
+            >
+              {ar ? "جرّب سؤالاً جديداً — مثال مختلف" : "Try a New Question — Different Example"}
+            </button>
+          )}
+        </motion.div>
+      )}
+
+      {/* Remediation variant display */}
+      {variant && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-3 p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/70 dark:border-indigo-800/60"
+        >
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-300 shadow-inner">
+            <Lightbulb className="h-3.5 w-3.5" />
+            {ar ? "سؤال جديد" : "New Variant"}
+          </span>
+          {variant.variantQuestion && (
+            <p className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-relaxed">
+              <StemRenderer content={variant.variantQuestion} />
+            </p>
+          )}
+          {variant.variantExample && (
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+              <StemRenderer content={variant.variantExample} />
+            </p>
+          )}
+          {variant.hint && (
+            <p className="p-3 rounded-xl bg-indigo-100/80 dark:bg-indigo-900/40 border border-indigo-200/50 dark:border-indigo-800/40 text-xs font-medium text-indigo-900 dark:text-indigo-200">
+              <StemRenderer content={variant.hint} />
             </p>
           )}
         </motion.div>

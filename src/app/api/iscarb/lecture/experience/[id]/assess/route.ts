@@ -64,7 +64,7 @@ export const POST = guard(
 
       const item = await db.lectureReadinessItem.findFirst({
         where: { projectId: artifact.projectId, slideNo: artifact.slideNo, approved: true },
-        select: { correctIndex: true },
+        select: { correctIndex: true, misconception: true },
       });
       if (!item) {
         return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
@@ -78,8 +78,17 @@ export const POST = guard(
       const chosen = Number(idxMatch[1]);
       const correct = chosen === item.correctIndex;
 
+      // Deterministic per-distractor feedback (spec §29): reuse the stored
+      // misconception tag on the readiness item — never an LLM call, never a
+      // fabricated generic, and the instructor rationale stays hidden.
+      const misconceptionFeedback = !correct && item.misconception ? item.misconception : null;
+
       return NextResponse.json(
-        { correct, correctOptionId: `opt-${item.correctIndex}` },
+        {
+          correct,
+          correctOptionId: `opt-${item.correctIndex}`,
+          ...(misconceptionFeedback ? { misconceptionFeedback, variantAvailable: true } : {}),
+        },
         { status: 200 }
       );
     }
@@ -87,7 +96,13 @@ export const POST = guard(
     // ── Path 2: canonical LearningExperience AssessmentItem ──
     const assessment = await db.assessmentItem.findUnique({
       where: { id: rawId },
-      select: { experienceId: true, correctOptionId: true },
+      select: {
+        experienceId: true,
+        correctOptionId: true,
+        options: true,
+        distractorExplanations: true,
+        instructorRationale: true,
+      },
     });
     if (assessment) {
       const experience = await db.learningExperience.findUnique({
@@ -108,8 +123,29 @@ export const POST = guard(
         }
       }
 
+      const options = (assessment.options as Array<{ id?: string; text?: string; misconceptionKey?: string }>) ?? [];
+      const selected = options.find((o) => String(o.id) === String(optionId));
+      const correct = String(optionId) === assessment.correctOptionId;
+
+      // Deterministic per-distractor feedback from stored misconception data
+      // (spec §29). Only emitted when real stored data exists — never fabricated.
+      let misconceptionFeedback: string | null = null;
+      if (!correct) {
+        const distractorExplanation = (assessment.distractorExplanations as Record<string, string> | null)?.[String(optionId)];
+        const optionMisconception = selected?.misconceptionKey;
+        misconceptionFeedback =
+          distractorExplanation ||
+          (optionMisconception
+            ? `This option targets the misconception: ${optionMisconception.replace(/_/g, " ")}.`
+            : null);
+      }
+
       return NextResponse.json(
-        { correct: String(optionId) === assessment.correctOptionId, correctOptionId: assessment.correctOptionId },
+        {
+          correct,
+          correctOptionId: assessment.correctOptionId,
+          ...(misconceptionFeedback ? { misconceptionFeedback, variantAvailable: true } : {}),
+        },
         { status: 200 }
       );
     }

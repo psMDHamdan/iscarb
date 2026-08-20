@@ -3,6 +3,7 @@ import { guard, type GuardContext } from "@/lib/api-guard";
 import { db } from "@/lib/db";
 import { StudentUxAdapter } from "@/lib/lecture/projections/student-ux-adapter";
 import { projectLegacyStudentExperience } from "@/lib/lecture/projections/legacy-student-ux-adapter";
+import { getCachedProjection, setCachedProjection, clearProjectionCache } from "@/lib/lecture/projections/projection-cache";
 import type { LearningExperience } from "@/lib/lecture/types/learning-experience";
 
 /**
@@ -19,13 +20,8 @@ const EXPERIENCE_INCLUDE = {
   evidenceReferences: true,
 } as const;
 
-// In-memory cache for fast Student Experience projection (10 second TTL)
-const projectionCache = new Map<string, { data: any; timestamp: number }>();
-const CACHE_TTL_MS = 10000;
-
 export function clearExperienceCache(id: string) {
-  projectionCache.delete(id);
-  projectionCache.delete(`PREVIEW_${id}`);
+  clearProjectionCache(id);
 }
 
 /**
@@ -96,9 +92,9 @@ export const GET = guard(
       const tenantId = ctx.session.universityId || "default";
 
       // Check cache first for sub-50ms instant response
-      const cached = projectionCache.get(rawId);
-      if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
-        return NextResponse.json(cached.data, { status: 200 });
+      const cached = getCachedProjection(rawId);
+      if (cached !== null) {
+        return NextResponse.json(cached, { status: 200 });
       }
 
       const isPreview = rawId.startsWith("PREVIEW_");
@@ -134,7 +130,7 @@ export const GET = guard(
         }
 
         if (legacy) {
-          projectionCache.set(rawId, { data: legacy, timestamp: Date.now() });
+          setCachedProjection(rawId, legacy);
           return NextResponse.json(legacy, { status: 200 });
         }
 

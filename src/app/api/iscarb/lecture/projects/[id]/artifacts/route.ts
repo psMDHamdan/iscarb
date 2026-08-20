@@ -10,6 +10,7 @@ import { NextResponse } from "next/server";
 import { guard, type GuardContext } from "@/lib/api-guard";
 import { db } from "@/lib/db";
 import { deduplicateSlideArtifacts } from "@/lib/lecture/deduplication";
+import { clearProjectionCache } from "@/lib/lecture/projections/projection-cache";
 
 export const GET = guard(
   { tier: "read", roles: ["faculty", "admin"] },
@@ -87,6 +88,10 @@ export const PATCH = guard(
         updatedAt: new Date(),
       },
     });
+
+    // Edited content changes what the student preview projects — drop the
+    // server-side cache so the next preview/projection is recomputed.
+    clearProjectionCache(id);
 
     return NextResponse.json({ success: true, artifact: updated });
   }

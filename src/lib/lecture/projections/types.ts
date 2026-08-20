@@ -79,26 +79,19 @@ export interface StudentConceptViewModel {
   titleAr?: string;
   bloomLevel: string;
   estimatedMinutes: number;
+  /** True when the underlying artifact failed QA or generation and needs faculty review. */
+  flaggedForReview?: boolean;
 
   // 5-Layer Student View (No technical field jargon)
   coreInsight: string;
-  mentalModel: {
-    analogy: string;
-    framework: string;
-  };
-  mechanism: {
-    explanation: string;
-    steps?: string[];
-  };
-  realWorldTransfer: {
-    scenario: string;
-    application: string;
-  };
-  commonPitfalls: {
+  mentalModel?: string;
+  mechanism?: string;
+  realWorldApplication?: string;
+  misconceptionAlert?: {
     misconception: string;
-    whyIncorrect: string;
-    howToThinkAboutIt: string;
-  }[];
+    whyItFails: string;
+    correction: string;
+  };
 
   // Visual Scaffolding
   visual?: {

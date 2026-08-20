@@ -71,6 +71,14 @@ export default function StudentLearnPage() {
     `/api/iscarb/lecture/experience/${experienceId}`,
   );
 
+  // ── Server session (resume + server-computed mastery) ─────────────────────
+  const [sessionState, setSessionState] = useState<{
+    sessionId?: string;
+    resume?: { currentBlockIndex?: number; currentStage?: string; completedStageKeys?: string[] };
+    masteryPercent?: number;
+    finalChallengeUnlocked?: boolean;
+  } | null>(null);
+
   // ── State ─────────────────────────────────────────────────────────────────
   const [phase, setPhase] = useState<PlayerPhase>("LANDING");
   const [currentConceptId, setCurrentConceptId] = useState<string>("");
@@ -125,9 +133,30 @@ export default function StudentLearnPage() {
 
   useEffect(() => {
     if (experience && !currentConceptId) {
-      setCurrentConceptId(experience.navigation.initialActiveConceptId);
+      // Resume from the server session (spec: server-persisted progress), else
+      // fall back to the first concept.
+      fetch(`/api/iscarb/lecture/experience/${experienceId}/session`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((s: {
+          sessionId?: string;
+          resume?: { currentBlockIndex?: number; currentStage?: string; completedStageKeys?: string[] };
+          masteryPercent?: number;
+          finalChallengeUnlocked?: boolean;
+        } | null) => {
+          if (s) setSessionState(s);
+          const resumeKeys = s?.resume?.completedStageKeys;
+          if (resumeKeys?.length) {
+            setCompletedConceptIds((prev) => new Set([...prev, ...resumeKeys]));
+          }
+          const resumeIndex = s?.resume?.currentBlockIndex ?? 0;
+          const targetId =
+            conceptOrder[Math.max(0, Math.min(resumeIndex - 1, conceptOrder.length - 1))] ??
+            experience.navigation.initialActiveConceptId;
+          setCurrentConceptId(targetId);
+        })
+        .catch(() => setCurrentConceptId(experience.navigation.initialActiveConceptId));
     }
-  }, [experience, currentConceptId]);
+  }, [experience, currentConceptId, experienceId, conceptOrder]);
 
   // ── Navigation callbacks ──────────────────────────────────────────────────
 
@@ -202,6 +231,41 @@ export default function StudentLearnPage() {
   const handleFinish = useCallback(() => {
     router.push("/student/lecture");
   }, [router]);
+
+  // ── Server-side progress persistence (resume + mastery sync) ──────────────
+  const syncProgress = useCallback(() => {
+    if (!currentConceptId) return;
+    const idx = conceptOrder.indexOf(currentConceptId);
+    fetch(`/api/iscarb/lecture/experience/${experienceId}/session`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        currentBlockIndex: idx + 1,
+        currentStage: currentConcept?.stage ?? "DISCOVER",
+        completedStageKeys: [...completedConceptIds],
+      }),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((s) => {
+        if (s?.masteryPercent != null) {
+          setSessionState((prev) => ({
+            ...prev,
+            sessionId: s.sessionId ?? prev?.sessionId,
+            masteryPercent: s.masteryPercent,
+            finalChallengeUnlocked: s.finalChallengeUnlocked,
+          }));
+        }
+      })
+      .catch(() => {});
+  }, [currentConceptId, conceptOrder, completedConceptIds, currentConcept, experienceId]);
+
+  // Persist progress to the server whenever the active concept changes.
+  useEffect(() => {
+    if (phase === "PLAYING" && currentConceptId) {
+      const t = setTimeout(syncProgress, 400);
+      return () => clearTimeout(t);
+    }
+  }, [phase, currentConceptId, syncProgress]);
 
   // ── Keyboard navigation ───────────────────────────────────────────────────
 
@@ -361,6 +425,12 @@ export default function StudentLearnPage() {
           <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400 tabular-nums">
             {currentIndex + 1} / {conceptOrder.length}
           </span>
+          {sessionState?.masteryPercent != null && (
+            <span className="flex items-center gap-1 text-xs font-black text-emerald-600 dark:text-emerald-400 tabular-nums" title={ar ? "إتقان محسوب على الخادم" : "Server-computed mastery"}>
+              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+              {sessionState.masteryPercent}%
+            </span>
+          )}
         </div>
       </header>
 
@@ -389,12 +459,46 @@ export default function StudentLearnPage() {
           <div className="flex-1 overflow-y-auto">
             {currentConcept ? (
               isFinalChallenge && experience.finalChallenge ? (
-                <FinalChallengeView
-                  challenge={experience.finalChallenge}
-                  ar={ar}
-                />
+                sessionState?.finalChallengeUnlocked === false ? (
+                  <FinalChallengeLocked
+                    masteryPercent={sessionState?.masteryPercent ?? 0}
+                    ar={ar}
+                  />
+                ) : (
+                  <FinalChallengeView
+                    challenge={experience.finalChallenge}
+                    ar={ar}
+                    experienceId={experienceId}
+                    onAnswerRecorded={(score) => {
+                      fetch(`/api/iscarb/lecture/experience/${experienceId}/session`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          interaction: {
+                            conceptBlockId: currentConcept.id,
+                            activityType: "FINAL_CHALLENGE",
+                            studentInput: "final challenge submitted",
+                            isCorrect: score >= 4,
+                            evaluatedMasteryScore: score,
+                          },
+                        }),
+                      })
+                        .then((r) => (r.ok ? r.json() : null))
+                        .then((s) => {
+                          if (s?.masteryPercent != null) {
+                            setSessionState((prev) => ({
+                              ...prev,
+                              masteryPercent: s.masteryPercent,
+                              finalChallengeUnlocked: s.finalChallengeUnlocked,
+                            }));
+                          }
+                        })
+                        .catch(() => {});
+                    }}
+                  />
+                )
               ) : (
-                <ConceptContent concept={currentConcept} ar={ar} />
+                <ConceptContent concept={currentConcept} ar={ar} experienceId={experienceId} />
               )
             ) : (
               <div className="flex items-center justify-center h-full p-8 text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -461,8 +565,32 @@ export default function StudentLearnPage() {
               concept={currentConcept} 
               ar={ar}
               experienceId={experienceId}
-              onActivitySubmit={(conceptId) => {
+              onActivitySubmit={(conceptId, answer) => {
                 setCompletedInteractions(prev => new Set(prev).add(conceptId));
+                // Persist the free-text activity server-side (drives mastery).
+                fetch(`/api/iscarb/lecture/experience/${experienceId}/session`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    interaction: {
+                      conceptBlockId: conceptId,
+                      activityType: "ACTIVE_RECALL",
+                      studentInput: answer ?? "",
+                      isCorrect: true,
+                    },
+                  }),
+                })
+                  .then((r) => (r.ok ? r.json() : null))
+                  .then((s) => {
+                    if (s?.masteryPercent != null) {
+                      setSessionState((prev) => ({
+                        ...prev,
+                        masteryPercent: s.masteryPercent,
+                        finalChallengeUnlocked: s.finalChallengeUnlocked,
+                      }));
+                    }
+                  })
+                  .catch(() => {});
               }}
               onAssessmentAnswer={(assessmentId, optionId) => {
                 void assessmentId; void optionId;
@@ -540,9 +668,13 @@ export default function StudentLearnPage() {
 function FinalChallengeView({
   challenge,
   ar,
+  experienceId,
+  onAnswerRecorded,
 }: {
   challenge: StudentFinalChallengeViewModel;
   ar: boolean;
+  experienceId?: string;
+  onAnswerRecorded?: (score: number) => void;
 }) {
   const [response, setResponse] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -567,11 +699,14 @@ function FinalChallengeView({
       if (res.ok) {
         const data = await res.json();
         setEvaluation({ score: data.score || 3, feedback: data.feedback || (ar ? "تم تقييم إجابتك" : "Your response has been evaluated.") });
+        onAnswerRecorded?.(data.score || 3);
       } else {
         setEvaluation({ score: 3, feedback: ar ? "تم حفظ إجابتك." : "Your response has been saved." });
+        onAnswerRecorded?.(3);
       }
     } catch {
       setEvaluation({ score: 3, feedback: ar ? "تم حفظ إجابتك." : "Your response has been saved." });
+      onAnswerRecorded?.(3);
     } finally {
       setIsSubmitting(false);
       setSubmitted(true);
@@ -700,6 +835,62 @@ function FinalChallengeView({
             </p>
           </motion.div>
         ) : null}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// FinalChallengeLocked — §35 gating: unlock only after mastery ≥ 70%
+// ---------------------------------------------------------------------------
+
+function FinalChallengeLocked({
+  masteryPercent,
+  ar,
+}: {
+  masteryPercent: number;
+  ar: boolean;
+}) {
+  return (
+    <div className="flex flex-col h-full overflow-y-auto p-6 lg:p-10 max-w-4xl mx-auto w-full" dir={ar ? "rtl" : "ltr"}>
+      <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6 min-h-[60vh]">
+        <div className="relative">
+          <div className="w-28 h-28 rounded-3xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shadow-inner">
+            <span className="text-5xl">🔒</span>
+          </div>
+          <div className="absolute -inset-3 bg-gradient-to-r from-emerald-400/20 to-teal-400/20 rounded-[2rem] blur-xl" />
+        </div>
+        <div className="space-y-2 max-w-md">
+          <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">
+            {ar ? "التحدي النهائي مقفل" : "Final Challenge Locked"}
+          </h2>
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+            {ar
+              ? "أكمل الأنشطة وأجب عن أسئلة التحقق للوصول إلى إتقان %70 على الأقل، ثم عد لفتح التحدي."
+              : "Complete the activities and answer the check questions to reach at least 70% mastery, then return to unlock the challenge."}
+          </p>
+        </div>
+        <div className="w-full max-w-sm space-y-3">
+          <div className="flex items-center justify-between text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+            <span>{ar ? "إتقانك الحالي" : "Your mastery"}</span>
+            <span className="tabular-nums">{masteryPercent}%</span>
+          </div>
+          <div className="h-3 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden shadow-inner">
+            <motion.div
+              className={cn(
+                "h-full rounded-full",
+                masteryPercent >= 70
+                  ? "bg-gradient-to-r from-emerald-500 to-teal-400"
+                  : "bg-gradient-to-r from-amber-500 to-orange-400"
+              )}
+              animate={{ width: `${Math.min(100, masteryPercent)}%` }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            />
+          </div>
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+            {ar ? "الحد الأدنى: %70" : "Threshold: 70%"}
+          </p>
+        </div>
       </div>
     </div>
   );

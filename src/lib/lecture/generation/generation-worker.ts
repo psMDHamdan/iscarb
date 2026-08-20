@@ -58,6 +58,9 @@ import { analyseSourceBlocks, scopeBlocksForSlide, type AnalysedBlock, type Impo
 import { generateAssessment } from "./assessment-generator";
 import { bindUnmappedSourceBlocks, persistHandoffsFromGenerate } from "./persist-handoffs";
 import { applyGenerateQualityPass } from "./generate-quality-pass";
+import { scanGeneratedSlide } from "./leak-scan";
+import { materializeExperience } from "./materialize-experience";
+import { clearProjectionCache } from "@/lib/lecture/projections/projection-cache";
 
 const JOB_PREFIX = "lecture:generate:";
 
@@ -537,6 +540,30 @@ export async function generateSlideChunk(
       const qaResult = runDeterministicQA(updatedContent);
       if (qaResult.status === "HARD_FAIL") currentPassClean = false;
 
+      // PASS: Zero-jargon / zero-invention leak scan — any artifact with
+      // internal labels, invented numbers, or placeholder scaffold text is
+      // flagged for review and will NOT reach the student experience.
+      await processInBatches(roundTargets, BATCH_SIZE, async (art) => {
+        const leakResult = scanGeneratedSlide(
+          art.draft.content as unknown as Record<string, unknown>,
+          rawBlocks
+        );
+        if (leakResult.flaggedForReview) {
+          art.draft.flagged = true;
+          currentPassClean = false;
+          art.draft.content.reviewStatus = "leak_flagged";
+          art.draft.errors.push(
+            `Leak scan: ${leakResult.jargon.length} jargon, ${leakResult.inventedNumbers.length} ungrounded numbers, ${leakResult.placeholders.length} placeholder phrases`
+          );
+          console.warn(
+            `[Worker] Leak scan flagged S${art.plan.slideNo}:`,
+            leakResult.jargon.map((j) => j.matched),
+            leakResult.inventedNumbers,
+            leakResult.placeholders
+          );
+        }
+      });
+
       // PASS: Visual QA
       await processInBatches(roundTargets, BATCH_SIZE, async (art) => {
         const visResult = await verifyVisualQuality(art.draft.content);
@@ -665,6 +692,21 @@ export async function finalizeGeneration(projectId: string): Promise<void> {
     } catch (readinessErr) {
       console.warn("Readiness assessment generation non-fatal failure:", readinessErr);
     }
+
+    // Materialize the canonical LearningExperience graph from the generated
+    // artifacts + readiness items so StudentExperienceSession /
+    // StudentBlockInteraction (FKs to LearningExperience/ConceptBlock) can be
+    // persisted, resume works, and mastery is computed server-side.
+    // Non-fatal: the legacy projection remains the fallback if this fails.
+    try {
+      await materializeExperience(projectId);
+    } catch (matErr) {
+      console.warn("[Worker] Materialize canonical experience non-fatal failure:", matErr);
+    }
+
+    // Generated content changed — drop the server-side projection cache so the
+    // next preview reflects the new artifacts/readiness (not a stale snapshot).
+    clearProjectionCache(projectId);
 
     await db.lectureProject.update({
       where: { id: projectId },

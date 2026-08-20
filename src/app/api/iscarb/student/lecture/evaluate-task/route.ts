@@ -10,6 +10,12 @@ export interface EvaluateTaskResponse {
   coachReply?: string;
 }
 
+export interface RemediationVariant {
+  variantQuestion: string;
+  variantExample: string;
+  hint: string;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -20,6 +26,7 @@ export async function POST(req: NextRequest) {
       lang = "en",
       mode = "evaluation",
       userQuestion = "",
+      misconception = "",
     } = body;
 
     const isAr = lang === "ar";
@@ -66,6 +73,78 @@ RULES:
           coachReply: isAr
             ? `ممتاز! في مفهوم ${conceptTitle}، تذكر دائماً ربط الآلية بالنظريات الأساسية.`
             : `Great question! In ${conceptTitle}, focus on how each structural component impacts the final outcome.`,
+        });
+      }
+    }
+
+    if (mode === "remediation") {
+      // Adaptive loop (spec §29/§35): after a wrong answer, generate a NEW
+      // variant — fresh example + fresh question of the same concept, targeting
+      // the stored misconception — never repeat the original question verbatim.
+      if (!taskPrompt.trim()) {
+        return NextResponse.json({
+          variantQuestion: isAr
+            ? "أعد صياغة المفهوم السابق باستخدام مثال مختلف تماماً من حياتك اليومية."
+            : "Re-express the concept using a completely different real-world example.",
+          variantExample: isAr
+            ? "فكّر في نفس المبدأ في سياق جديد واشرح كيف يتغير السلوك."
+            : "Think about the same principle in a new context and explain how the behavior changes.",
+          hint: isAr
+            ? "راجع الأجزاء التي أجبت عنها خطأ ثم طبّق الفكرة على المثال الجديد."
+            : "Review the part you got wrong, then apply the idea to the new example.",
+        });
+      }
+
+      try {
+        const result = await chatJson({
+          system: `You are an expert Socratic AI Coach inside iSCARB, a sovereign learning engine.
+The student just answered a task incorrectly and needs a REMEDIATION VARIANT.
+CONCEPT TITLE: "${conceptTitle}"
+ORIGINAL TASK PROMPT: "${taskPrompt}"
+LANGUAGE: ${isAr ? "Arabic" : "English"}.
+
+RULES:
+1. Produce a DIFFERENT example of the same concept — never reuse the original task's wording or scenario.
+2. Frame a single probing question that isolates the most likely misconception: "${misconception ?? ""}".
+3. Return ONLY a valid JSON object matching this schema:
+{
+  "variantQuestion": "A short NEW practice question for the same concept",
+  "variantExample": "A NEW concrete real-world example illustrating the concept",
+  "hint": "A focused Socratic hint pointing at the misconception"
+}`,
+          user: `Original task was: "${taskPrompt}". Generate the remediation variant.`,
+          temperature: 0.7,
+        });
+
+        const json = result.json as Partial<RemediationVariant>;
+        return NextResponse.json({
+          variantQuestion:
+            json.variantQuestion ||
+            (isAr
+              ? "بماذا يختلف تطبيق هذا المبدأ عندما يتغير السياق؟"
+              : "How does applying this principle differ when the context changes?"),
+          variantExample:
+            json.variantExample ||
+            (isAr
+              ? "تخيّل مثالاً جديداً تماماً من مجال مختلف وطبّق عليه نفس الفكرة."
+              : "Imagine a brand-new scenario from a different domain and apply the same idea to it."),
+          hint:
+            json.hint ||
+            (isAr
+              ? "ركّز على الجزء الذي أخطأت فيه وتجاهل التفاصيل غير الضرورية."
+              : "Focus on the part you got wrong and ignore the irrelevant details."),
+        });
+      } catch {
+        return NextResponse.json({
+          variantQuestion: isAr
+            ? "صف المفهوم مرة أخرى باستخدام مثال شخصي جديد بالكامل."
+            : "Describe the concept again using a completely new personal example.",
+          variantExample: isAr
+            ? "استخدم مثالاً من حياتك اليومية يختلف عن المثال الأصلي."
+            : "Use a daily-life example different from the original one.",
+          hint: isAr
+            ? "قارن إجابتك السابقة مع الشرح الأساسي وحدد أين انحرف الفهم."
+            : "Compare your previous answer with the core explanation and identify where understanding drifted.",
         });
       }
     }

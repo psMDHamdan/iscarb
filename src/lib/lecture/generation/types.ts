@@ -97,13 +97,20 @@ export interface SlideContentJson {
   assessment?: any;
   citations: CitationJson[];
   claims: any[];
-
-  // BRD 7.5: Five-Layer Content Generation
-  academicTruth?: string;
-  teachingExplanation?: string;
-  learningActivity?: any;
-  feedback?: string;
-  mastery?: string;
+  // 5-Layer Content Generation Model
+  coreInsight?: string;
+  mentalModel?: string;
+  mechanism?: string;
+  realWorldApplication?: string;
+  misconceptionAlert?: {
+    misconception: string;
+    whyItFails: string;
+    correction: string;
+  };
+  activeLearningPoll?: {
+    question: string;
+    options: { text: string; isCorrect: boolean }[];
+  };
 
   wordCount: number;
   qualityScore?: QualityScore;

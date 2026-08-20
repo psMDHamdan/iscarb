@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import type { SlideContentJson } from "@/lib/lecture/generation/types";
 import { StemRenderer } from "@/components/ui/StemRenderer";
-import { ConceptContent } from "@/components/views/experience/ConceptContent";
+import dynamic from "next/dynamic";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -66,6 +66,19 @@ const SLIDE_STATUS: Record<string, { color: string; label: string }> = {
   flagged: { color: "text-red-600 bg-red-500/10 border-red-500/30", label: "Flagged" },
 };
 
+// Deferred — ConceptContent pulls framer-motion into the bundle; it only
+// renders behind the "Student Learning Experience" tab, so load it on demand.
+const ConceptContent = dynamic(
+  () =>
+    import("@/components/views/experience/ConceptContent").then(
+      (m) => m.ConceptContent
+    ),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="h-96 rounded-2xl" />,
+  }
+);
+
 export default function StudioPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { lang } = useApp();
@@ -82,7 +95,7 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
     `/api/iscarb/lecture/projects/${id}/artifacts`,
     {
       enabled: !!id,
-      staleTime: 0,
+      staleTime: 30_000,
       refetchInterval: (query) => {
         if (query.state.status === "error" || query.state.error) return false;
         const artifacts = query.state.data?.artifacts ?? [];
@@ -97,8 +110,10 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
     ["lecture", "experience", id],
     `/api/iscarb/lecture/experience/PREVIEW_${id}`,
     {
-      enabled: !!id,
-      staleTime: 0,
+      // Fetch lazily — the projection is only rendered on the "Student Learning
+      // Experience" tab, and live-refreshes there while a generation job runs.
+      enabled: !!id && activeTab === "student_view",
+      staleTime: 30_000,
       refetchInterval: (query) => {
         if (query.state.status === "error" || query.state.error) return false;
         return !!jobId ? 2000 : false;
@@ -676,7 +691,7 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
                     </Card>
                   ) : (
                     /* Live projection of the selected concept (same API + component as the student player) */
-                    experienceQuery.isLoading ? (
+                    experienceQuery.isLoading || (!experienceQuery.data && !experienceError) ? (
                       <Skeleton className="h-96 rounded-2xl" />
                     ) : experienceError &&
                       /NOT_GENERATED|not been generated/i.test((experienceError as Error)?.message ?? "") ? (

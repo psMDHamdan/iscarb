@@ -18,6 +18,7 @@ import { db } from "@/lib/db";
 import { z } from "zod";
 import { generationJobKey } from "@/lib/lecture/generation/generation-worker";
 import { enqueueGeneration } from "@/lib/lecture/queue";
+import { checkSourceReadiness } from "@/lib/lecture/generation/source-readiness";
 import { redis } from "@/config/redis";
 
 const bodySchema = z.object({
@@ -71,6 +72,21 @@ export const POST = guard(
     // Pre-check 3 — alignment mode determined.
     if (BLOCKED_MODES.has(project.nationalAlignmentMode)) {
       return NextResponse.json({ error: "ALIGNMENT_UNDETERMINED", message: `Alignment mode '${project.nationalAlignmentMode}' blocks generation until resolved.` }, { status: 400 });
+    }
+
+    // Pre-check 4 — source material hard stop (spec §12/§38). Generation is
+    // source-grounded; never run the LLM without parseable source content.
+    const source = await checkSourceReadiness(id);
+    if (source.code !== "SOURCE_READY") {
+      return NextResponse.json(
+        {
+          error: source.code,
+          message: source.message,
+          documentCount: source.documentCount,
+          blockCount: source.blockCount,
+        },
+        { status: 400 }
+      );
     }
 
     const requested = parsed.data.slideNos ?? slidePlans.map((s) => s.slideNo);

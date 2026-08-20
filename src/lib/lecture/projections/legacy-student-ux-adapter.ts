@@ -324,53 +324,53 @@ export async function projectLegacyStudentExperience({
     );
 
     // ── Common Pitfalls: extract from all slides, not just misconception slides ──
-    const commonPitfalls: StudentConceptViewModel["commonPitfalls"] = [];
+    let misconceptionAlert: StudentConceptViewModel["misconceptionAlert"];
     const readinessItem = readinessBySlide.get(slideNo);
 
     // Source 1: explicit misconception slide
     if (fn === "misconception") {
       const pitfallText = firstNonEmpty(bullets[0], c.title);
       if (pitfallText) {
-        commonPitfalls.push({
+        misconceptionAlert = {
           misconception: cleanJargon(pitfallText),
-          whyIncorrect: firstNonEmpty(
+          whyItFails: firstNonEmpty(
             bullets[1],
             c.feedback,
             "This seems reasonable because it oversimplifies the actual mechanism. The correct understanding requires accounting for the constraints that limit this behavior.",
           ),
-          howToThinkAboutIt: firstNonEmpty(
+          correction: firstNonEmpty(
             bullets[2],
             c.mastery,
             explanation,
             `Instead, think step by step: trace the actual causal chain from input to output, checking each assumption against the real mechanism.`,
           ),
-        });
+        };
       }
     }
     // Source 2: readiness item misconception tag
-    if (readinessItem?.misconception) {
-      commonPitfalls.push({
+    if (!misconceptionAlert && readinessItem?.misconception) {
+      misconceptionAlert = {
         misconception: cleanJargon(readinessItem.misconception),
-        whyIncorrect: `This misconception targets a gap between intuitive reasoning and the formal mechanism taught in this concept.`,
-        howToThinkAboutIt: `Revisit the core mechanism: ${firstNonEmpty(c.academicTruth, explanation, coreInsight)}. The correct model resolves this confusion.`,
-      });
+        whyItFails: `This misconception targets a gap between intuitive reasoning and the formal mechanism taught in this concept.`,
+        correction: `Revisit the core mechanism: ${firstNonEmpty(c.academicTruth, explanation, coreInsight)}. The correct model resolves this confusion.`,
+      };
     }
     // Source 3: feedback field may contain misconception guidance
-    if (c.feedback && commonPitfalls.length === 0 && c.feedback.length > 30) {
-      commonPitfalls.push({
+    if (!misconceptionAlert && c.feedback && c.feedback.length > 30) {
+      misconceptionAlert = {
         misconception: firstNonEmpty(
           `Confusion about how ${title} differs from similar concepts`,
           `Assuming ${title} works without considering its key constraints`,
         ),
-        whyIncorrect: firstNonEmpty(
+        whyItFails: firstNonEmpty(
           extractFirstSentence(c.feedback),
           `This oversight leads to incorrect conclusions about the mechanism.`,
         ),
-        howToThinkAboutIt: firstNonEmpty(
+        correction: firstNonEmpty(
           explanation,
           `Focus on the specific conditions that determine when this concept applies versus when it does not.`,
         ),
-      });
+      };
     }
 
     // Activity (from learningActivity.text + studentAction + interaction type)
@@ -538,6 +538,16 @@ export async function projectLegacyStudentExperience({
 
     const conceptBloom = deriveBloom(fn, c.bloomLevel);
 
+    // Flag artifacts that failed QA / generation (fallback placeholder,
+    // leak-flagged, or awaiting faculty review) so the UI can show a banner.
+    const artifactStatus = String((artifact as { status?: unknown }).status ?? "").toUpperCase();
+    const flaggedForReview =
+      artifactStatus === "FLAGGED" ||
+      artifactStatus === "NEEDS_FACULTY_REVIEW" ||
+      (c as { reviewStatus?: string }).reviewStatus === "leak_flagged" ||
+      artifact.flagged === true ||
+      (c as { flaggedForReview?: boolean }).flaggedForReview === true;
+
     concepts[artifactId] = {
       id: artifactId,
       stage,
@@ -545,57 +555,26 @@ export async function projectLegacyStudentExperience({
       title,
       bloomLevel: conceptBloom,
       estimatedMinutes: 5,
+      flaggedForReview,
       coreInsight,
-      mentalModel: {
-        analogy: firstNonEmpty(
-          c.studentAnalogy,
-          c.analogy,
-          c.mentalModel,
-          academicAnalogy.analogy,
-          `Think of ${title} like a system with inputs, processing rules, and outputs — each component depends on the others to function correctly.`,
-          c.purpose,
-          `Imagine how this concept behaves in practice before seeing it formally.`,
-        ),
-        framework: firstNonEmpty(
-          c.studentFramework,
-          c.academicTruth,
-          academicAnalogy.framework,
-          c.learningObjective
-            ? `${c.learningObjective} — achieved through ${firstNonEmpty(c.teachingExplanation, bullets[0], title)}`
-            : null,
-          c.learningObjective,
-          explanation,
-          title,
-        ),
-      },
-      mechanism: {
-        explanation: firstNonEmpty(
-          c.studentMechanismExplanation,
-          c.teachingExplanation,
-          c.academicTruth,
-          `This concept operates through a structured mechanism: ${bullets.join(" → ") || coreInsight}`,
-        ),
-        steps: mechanismSteps,
-      },
-      realWorldTransfer: {
-        scenario: firstNonEmpty(
-          c.studentScenario,
-          c.teachingExplanation
-            ? `In practice, ${cleanJargon(c.teachingExplanation.slice(0, 200))}`
-            : null,
-          activityText(c),
-          c.studentAction,
-          `Consider a real scenario where ${title} is applied: ${bullets[0] || coreInsight}`,
-        ),
-        application: firstNonEmpty(
-          c.studentApplication,
-          c.mastery,
-          c.learningObjective,
-          `In professional practice, ${title} is applied when ${bullets[1] || bullets[0] || 'the underlying principles are used to solve real problems'}.`,
-          scenario,
-        ),
-      },
-      commonPitfalls,
+      mentalModel: firstNonEmpty(
+        c.studentAnalogy,
+        c.analogy,
+        c.mentalModel,
+        `Think of ${title} like a system with inputs, processing rules, and outputs — each component depends on the others to function correctly.`
+      ),
+      mechanism: firstNonEmpty(
+        c.studentMechanismExplanation,
+        c.teachingExplanation,
+        c.academicTruth,
+        `This concept operates through a structured mechanism: ${title}`
+      ),
+      realWorldApplication: firstNonEmpty(
+        c.studentScenario,
+        c.teachingExplanation,
+        `Consider a real scenario where ${title} is applied.`
+      ),
+      misconceptionAlert,
       activity,
       assessment,
       visual,
