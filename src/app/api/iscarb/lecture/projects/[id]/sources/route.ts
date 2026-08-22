@@ -13,6 +13,9 @@
  */
 import { NextResponse } from "next/server";
 import { createHash } from "crypto";
+
+// Source parsing may take time for large PDFs/PPTX. Extend Vercel timeout.
+export const maxDuration = 120;
 import { guard, type GuardContext } from "@/lib/api-guard";
 import { db } from "@/lib/db";
 import { uploadLectureFile, buildStorageKey } from "@/lib/lecture/storage";

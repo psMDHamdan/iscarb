@@ -485,20 +485,15 @@ export async function generateISCARBPlan(projectId: string, regenerate = false):
 
     let slides = result.json ? remapPlanIds(sanitizeAiSlides(result.json), selected, blocks) : [];
 
-    // If chatJson returned null/fallback or placeholder titles, apply topic-grounded generator
-    const hasPlaceholders = slides.length === 0 || slides.some((s) => !s.title || /^Slide \d+$/i.test(s.title.trim()));
+    // Detect generic/placeholder titles that indicate the LLM produced low-quality output.
+    // Covers: "Slide N", "Concept N", empty, or all titles identical.
+    const PLACEHOLDER_RE = /^(?:slide|concept|topic|module|unit|chapter|section)[\s_-]?\d+$/i;
+    const genericCount = slides.filter((s) => !s.title || PLACEHOLDER_RE.test(s.title.trim())).length;
+    const hasPlaceholders = slides.length === 0 || genericCount >= slides.length * 0.5;
+
     if (hasPlaceholders || (result.json as any)?.fallback) {
-      const fallbackSlides = generateTopicGroundedFallbackSlides(project.title || project.courseProfile.title, selected, blocks);
-      if (slides.length === 0) {
-        slides = fallbackSlides;
-      } else {
-        slides = slides.map((s, i) => {
-          if (!s.title || /^Slide \d+$/i.test(s.title.trim())) {
-            return fallbackSlides[i] ?? s;
-          }
-          return s;
-        });
-      }
+      console.warn(`[plan-generator] LLM produced ${genericCount}/${slides.length} generic titles — using topic-grounded fallback`);
+      slides = generateTopicGroundedFallbackSlides(project.title || project.courseProfile.title, selected, blocks);
     }
 
     slides = bindUnmappedSourceBlocks(slides, blocks);

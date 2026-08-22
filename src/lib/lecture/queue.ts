@@ -28,5 +28,8 @@ export async function enqueuePlan(projectId: string, regenerate: boolean): Promi
 }
 
 export async function enqueueParse(documentId: string): Promise<void> {
-  void parseSourceDocument(documentId);
+  // On Vercel serverless, fire-and-forget tasks are killed when the HTTP
+  // response is sent. Await the parse so source blocks are created before
+  // the upload response returns.
+  await parseSourceDocument(documentId);
 }
