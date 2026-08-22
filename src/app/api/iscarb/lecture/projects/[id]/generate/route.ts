@@ -61,10 +61,9 @@ export const POST = guard(
       return NextResponse.json({ error: "CLO_APPROVAL_REQUIRED", message: "Approve the lecture CLOs before generating content." }, { status: 400 });
     }
 
-    // Pre-check 3 — alignment mode determined.
-    if (BLOCKED_MODES.has(project.nationalAlignmentMode)) {
-      return NextResponse.json({ error: "ALIGNMENT_UNDETERMINED", message: `Alignment mode '${project.nationalAlignmentMode}' blocks generation until resolved.` }, { status: 400 });
-    }
+    // Pre-check 3 — alignment mode check removed.
+    // National alignment (jaheziah) is a review step, not a generation blocker.
+    // Faculty should be able to generate content regardless of alignment status.
 
     // Pre-check 4 — source material hard stop (spec §12/§38). Generation is
     // source-grounded; never run the LLM without parseable source content.
