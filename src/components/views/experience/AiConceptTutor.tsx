@@ -94,10 +94,19 @@ export function AiConceptTutor({ concept, ar = false, onCompleteInteraction, cla
           userMessage: textToSend,
           conceptTitle: concept.title,
           stageName: concept.stage,
-          coreInsight: concept.coreContent?.explanation || "",
+          coreInsight: concept.coreContent?.explanation || concept.visibleCopy || "",
           mentalModel: concept.coreContent?.analogy ? { analogy: concept.coreContent.analogy } : undefined,
           mechanism: concept.coreContent?.explanation || "",
+          mechanismSteps: concept.coreContent?.steps || concept.bullets || [],
           visualCaption: concept.visual?.caption,
+          hook: concept.hook || concept.headline || "",
+          commonPitfalls: concept.commonPitfalls?.map(p => ({
+            misconception: p.misconception,
+            whyWrong: p.whyWrong,
+            betterWay: p.betterWay,
+          })) || [],
+          realWorld: concept.realWorld?.application || "",
+          sourceBlocks: (concept as any).sourceBlocks || [],
         }),
       });
 

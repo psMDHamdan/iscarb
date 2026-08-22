@@ -53,20 +53,8 @@ export const POST = guard(
       return NextResponse.json({ error: "Invalid request body", details: parsed.error.flatten() }, { status: 400 });
     }
 
-    // Pre-check 1 — all 20 slide plans must exist.
-    const slidePlans = await db.lectureSlidePlan.findMany({ where: { projectId: id } });
-    if (slidePlans.length !== 20) {
-      return NextResponse.json({ error: "PLAN_INCOMPLETE", message: `Expected 20 slide plans, found ${slidePlans.length}` }, { status: 400 });
-    }
-    // BRD §6 steps 3–4, FR-010, AC-13: faculty must explicitly approve the
-    // transformation blueprint before generation. Auto-approval is removed.
-    const unapproved = slidePlans.filter((s) => !s.approved);
-    if (unapproved.length > 0) {
-      return NextResponse.json({
-        error: "PLAN_NOT_APPROVED",
-        message: `${unapproved.length} slide plan(s) are not approved. Faculty must approve the blueprint before generating content.`,
-      }, { status: 400 });
-    }
+    // Legacy Pre-check removed: We no longer require 20 LectureSlidePlans.
+    // The new LearningExperience engine (17-pass) generates 7 concept blocks dynamically.
 
     // Pre-check 2 — CLOs approved.
     if (!project.courseProfile.cloApprovedAt) {
@@ -93,8 +81,7 @@ export const POST = guard(
       );
     }
 
-    const requested = parsed.data.slideNos ?? slidePlans.map((s) => s.slideNo);
-
+    const requested = parsed.data.slideNos ?? [];
     // Clear any stale job state so GenerationProgress doesn't immediately see 'done' from a previous run
     const jobKey = generationJobKey(id);
     try {
@@ -111,8 +98,9 @@ export const POST = guard(
       }
     }
 
-    // Queue the generation (QStash chunks on Vercel; in-process in dev).
-    await enqueueGeneration(id, parsed.data.slideNos);
+    // Queue the generation (fire-and-forget in-process).
+    const { enqueueGeneration } = await import("@/lib/lecture/queue");
+    enqueueGeneration(id, requested);
 
     return NextResponse.json(
       { jobId: id, slidesQueued: requested.length },

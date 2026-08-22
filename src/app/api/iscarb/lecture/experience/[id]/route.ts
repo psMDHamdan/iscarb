@@ -99,19 +99,18 @@ export const GET = guard(
 
       const isPreview = rawId.startsWith("PREVIEW_");
 
-      // 1. Try to find a LearningExperience directly by ID or clean projectId (only if NOT in preview mode).
-      let row = null;
-      if (!isPreview) {
-        row = await db.learningExperience.findFirst({
-          where: { OR: [{ id }, { id: rawId }, { projectId: id }] },
-          orderBy: { version: "desc" },
-          include: EXPERIENCE_INCLUDE,
-        });
-        // An empty shell row (approved but never populated with concept blocks)
-        // must not win over the legacy projection — fall through to legacy data.
-        if (row && (!row.conceptBlocks || row.conceptBlocks.length === 0)) {
-          row = null;
-        }
+      // 1. Try to find a LearningExperience directly by ID or clean projectId.
+      // We do this even in preview mode now that the engine generates real LearningExperience rows.
+      let row = await db.learningExperience.findFirst({
+        where: { OR: [{ id }, { id: rawId }, { projectId: id }] },
+        orderBy: { version: "desc" },
+        include: EXPERIENCE_INCLUDE,
+      });
+
+      // An empty shell row (approved but never populated with concept blocks)
+      // must not win over the legacy projection — fall through to legacy data.
+      if (row && (!row.conceptBlocks || row.conceptBlocks.length === 0)) {
+        row = null;
       }
 
       if (!row) {

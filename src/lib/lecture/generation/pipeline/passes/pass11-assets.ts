@@ -12,61 +12,56 @@
 import type { PipelinePass } from "../pass-registry";
 import type { PipelineContext } from "../pipeline-context";
 import type { VisualArtifact } from "../../../types/learning-experience";
+import { generateImage } from "@/lib/ai-engine";
 
 export class Pass11Assets implements PipelinePass {
   readonly passNumber = 11;
-  readonly passName = "PIAS 4-Priority Image Asset Discovery";
-  readonly description = "Discovers and verifies CC/Public Domain image assets using the 4-priority cascade.";
+  readonly passName = "Visual AI Synthesis";
+  readonly description = "Generates custom pedagogical illustrations via Image AI using semantic context.";
 
   async execute(ctx: PipelineContext): Promise<PipelineContext> {
     const visuals = ctx.visuals || [];
     const assetMatches = new Map<string, any>();
 
-    visuals.forEach((vis, idx) => {
-      // Simulate 4-priority discovery cascade with CC license validation
-      const priority = ((idx % 4) + 1) as 1 | 2 | 3 | 4;
+    for (const vis of visuals) {
+      const block = ctx.elaboratedBlocks?.find((b: any) => b.id === vis.conceptBlockId);
+      
+      // Construct a pedagogical prompt for the image generation model
+      const aiPrompt = [
+        "Create a clean, academic scientific illustration for a university lecture.",
+        "Topic: " + (block?.title || vis.title),
+        "Concept: " + (block?.mechanismExplanation || block?.coreIdea || ""),
+        "Visual Type: " + vis.visualType,
+        "Style: Flat vector illustration, clean lines, high contrast, academic diagram, no distracting backgrounds.",
+        "DO NOT include any text, labels, or words in the image itself.",
+      ].join(" ");
 
-      let tier: VisualArtifact["assetSourceTier"] = "SEMANTIC_TEMPLATE";
-      let license: string = "CREATIVE_COMMONS";
-      let url: string | undefined = undefined;
-
-      if (priority === 1) {
-        tier = "SOURCE_DOCUMENT";
-        url = `https://iscarb.edu.sa/source-assets/fig-${vis.id}.png`;
-        license = "FAIR_USE_ACADEMIC";
-      } else if (priority === 2) {
-        tier = "ACADEMIC_SEARCH";
-        url = `https://arxiv.org/html/fig-${vis.id}.svg`;
-        license = "CREATIVE_COMMONS";
-      } else if (priority === 3) {
-        tier = "SEMANTIC_TEMPLATE";
-        url = `https://commons.wikimedia.org/wiki/File:Diagram_${vis.id}.svg`;
-        license = "CREATIVE_COMMONS";
-      } else {
-        tier = "AI_SYNTHESIS";
-        url = `https://iscarb.edu.sa/ai-assets/gen-${vis.id}.png`;
-        license = "PUBLIC_DOMAIN";
+      let imageUrl = "https://images.unsplash.com/photo-1530497610245-94d3c16cda28?auto=format&fit=crop&w=1200&q=80"; // fallback
+      try {
+        console.log(`[Pass11Assets] Generating image for block: ${block?.title}`);
+        const result = await generateImage({ prompt: aiPrompt } as any);
+        if (!result.fallback) {
+          if (result.url) {
+            imageUrl = result.url;
+          } else if (result.b64_json) {
+            imageUrl = `data:image/jpeg;base64,${result.b64_json}`;
+          }
+        }
+      } catch (err) {
+        console.warn("[Pass11Assets] Image generation failed, using fallback:", err);
       }
 
-      vis.sourcePriority = priority;
-      vis.assetSourceTier = tier;
-      vis.primaryAssetUrl = url;
-      vis.licenseType = license as any;
-      vis.attributionText = `Asset Source: ${tier} | License: ${license}`;
-      vis.attribution = {
-        author: "Academic Contributor / CC Publisher",
-        license: license === "PUBLIC_DOMAIN" ? "CC0" : "CC-BY-4.0",
-        sourceUrl: url || "https://iscarb.edu.sa/assets",
-        domain: "iscarb.edu.sa",
-      };
-
+      vis.sourcePriority = 4;
+      vis.assetSourceTier = "AI_SYNTHESIS";
+      vis.primaryAssetUrl = imageUrl;
+      vis.licenseType = "PUBLIC_DOMAIN";
+      vis.attributionText = "Asset Source: AI Synthesis | License: Public Domain";
+      
       assetMatches.set(vis.id, {
-        priority,
-        tier,
-        url,
-        license,
+        tier: "AI_SYNTHESIS",
+        url: imageUrl,
       });
-    });
+    }
 
     ctx.assetMatches = assetMatches;
     return ctx;

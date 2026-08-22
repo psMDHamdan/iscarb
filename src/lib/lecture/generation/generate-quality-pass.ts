@@ -238,7 +238,7 @@ export function ensureCasesExamples(
   }
 }
 
-const MAX_VISIBLE_WORDS = 40;
+const MAX_VISIBLE_WORDS = 80;
 
 function countVisibleWords(content: SlideContentJson): number {
   const titleWords = content.title ? content.title.split(/\s+/).filter(Boolean).length : 0;
@@ -255,41 +255,10 @@ function dropLastWord(text: string): string {
   return parts.slice(0, -1).join(" ");
 }
 
-/** Trim title/bullets to ≤40 visible words. Does not invent text or change gate thresholds. */
-export function enforceVisibleDensity(content: SlideContentJson): void {
-  const bullets = Array.isArray(content.body?.bullets)
-    ? content.body.bullets
-    : Array.isArray(content.bullets)
-      ? content.bullets
-      : [];
-  content.body = {
-    ...(content.body as object),
-    bullets,
-  } as SlideContentJson["body"];
-  let guard = 0;
-  while (countVisibleWords(content) > MAX_VISIBLE_WORDS && guard < 80) {
-    guard += 1;
-    let longestIdx = -1;
-    let longestLen = 0;
-    bullets.forEach((b, i) => {
-      const n = b.split(/\s+/).filter(Boolean).length;
-      if (n > longestLen) {
-        longestLen = n;
-        longestIdx = i;
-      }
-    });
-    if (longestIdx >= 0 && longestLen > 1) {
-      bullets[longestIdx] = dropLastWord(bullets[longestIdx]);
-      continue;
-    }
-    const titleWords = content.title ? content.title.split(/\s+/).filter(Boolean).length : 0;
-    if (titleWords > 1) {
-      content.title = dropLastWord(content.title);
-      continue;
-    }
-    break;
-  }
-  content.wordCount = countVisibleWords(content);
+/** Word count limit removed — depth is more important than brevity. */
+export function enforceVisibleDensity(_content: SlideContentJson): void {
+  // No-op: content density is no longer enforced.
+  // The LLM generates substantive explanations; we don't trim them.
 }
 
 export function applyGenerateQualityPass(
@@ -307,5 +276,337 @@ export function applyGenerateQualityPass(
   for (const { plan, draft } of artifacts) {
     alignStudentAction(plan, draft.content);
     enforceVisibleDensity(draft.content);
+  }
+  // Post-processing: diversity + coherence + copy detection
+  enforceDiversity(artifacts);
+  enforceSemanticCoherence(artifacts, blocks);
+  enforceVisualRequirements(artifacts);
+  detectSourceCopies(artifacts, blocks);
+}
+
+// ─── Diversity Validator ──────────────────────────────────────────────────────
+// Ensures the 20-slide deck has varied visual types, interaction patterns,
+// and content structures. No two consecutive slides should use the same layout.
+
+const VISUAL_DIVERSITY_LIMIT = 3; // max consecutive slides with same diagram type
+const INTERACTION_DIVERSITY_LIMIT = 2; // max consecutive slides with same interaction type
+
+function enforceDiversity(
+  artifacts: { plan: QualityPassPlan; draft: SlideArtifactDraft }[]
+): void {
+  const sorted = [...artifacts].sort((a, b) => a.plan.slideNo - b.plan.slideNo);
+
+  // Track consecutive visual types
+  let consecutiveVisual = 0;
+  let lastDiagramType = "";
+  // Track consecutive interaction types
+  let consecutiveInteraction = 0;
+  let lastInteractionType = "";
+  // Track interaction type distribution
+  const interactionCounts = new Map<string, number>();
+
+  for (const { plan, draft } of sorted) {
+    const visualType = draft.content.visualIntent?.diagramType || "none";
+    const interactionType = draft.content.body?.studentAction?.type || plan.interactionType || "none";
+
+    // Check visual diversity
+    if (visualType === lastDiagramType && visualType !== "none") {
+      consecutiveVisual++;
+      if (consecutiveVisual >= VISUAL_DIVERSITY_LIMIT) {
+        // Force a different diagram type for the next slide
+        const alternatives = ["mechanism", "comparison", "workflow", "data_chart", "concept_map"];
+        const different = alternatives.find((t) => t !== visualType) || "concept_map";
+        const existing = draft.content.visualIntent as any || {};
+        draft.content.visualIntent = {
+          description: `${different} diagram for ${draft.content.title || "this concept"}`,
+          sourceFigureRef: existing.sourceFigureRef ?? null,
+          generateDiagram: true,
+          diagramType: different as any,
+        };
+        consecutiveVisual = 0;
+      }
+    } else {
+      consecutiveVisual = 0;
+      lastDiagramType = visualType;
+    }
+
+    // Check interaction diversity
+    if (interactionType === lastInteractionType && interactionType !== "none") {
+      consecutiveInteraction++;
+      if (consecutiveInteraction >= INTERACTION_DIVERSITY_LIMIT) {
+        // Force a different interaction type
+        const alternatives = ["poll", "pause_discuss", "collaboration", "calculation"];
+        const different = alternatives.find((t) => t !== interactionType) || "pause_discuss";
+        draft.content.body = {
+          ...(draft.content.body || { visibleCopy: "", bullets: [] }),
+          studentAction: {
+            type: different as any,
+            stem: draft.content.body?.studentAction?.stem || `Discuss: ${draft.content.title || "this concept"}`,
+            options: different === "poll" ? draft.content.body?.studentAction?.options : undefined,
+          },
+        };
+        consecutiveInteraction = 0;
+      }
+    } else {
+      consecutiveInteraction = 0;
+      lastInteractionType = interactionType;
+    }
+
+    // Track distribution
+    interactionCounts.set(interactionType, (interactionCounts.get(interactionType) || 0) + 1);
+  }
+
+  // Ensure minimum diversity: at least 3 different interaction types across 20 slides
+  if (interactionCounts.size < 3 && sorted.length >= 10) {
+    const allInteractions = ["poll", "pause_discuss", "collaboration", "calculation"];
+    let idx = 0;
+    for (let i = 0; i < sorted.length && interactionCounts.size < 3; i++) {
+      const currentType = sorted[i].draft.content.body?.studentAction?.type || "none";
+      if (interactionCounts.get(currentType) === 1) {
+        // This is the only slide with this type — skip (don't change it)
+        continue;
+      }
+      // Replace with a less-used type
+      const leastUsed = allInteractions
+        .sort((a, b) => (interactionCounts.get(a) || 0) - (interactionCounts.get(b) || 0))[0];
+      if (leastUsed !== currentType) {
+        sorted[i].draft.content.body = {
+          ...(sorted[i].draft.content.body || { visibleCopy: "", bullets: [] }),
+          studentAction: {
+            type: leastUsed as any,
+            stem: sorted[i].draft.content.body?.studentAction?.stem || `Activity: ${sorted[i].draft.content.title || "this concept"}`,
+          },
+        };
+        interactionCounts.set(currentType, (interactionCounts.get(currentType) || 1) - 1);
+        interactionCounts.set(leastUsed, (interactionCounts.get(leastUsed) || 0) + 1);
+      }
+    }
+  }
+}
+
+// ─── Semantic Coherence Validator ─────────────────────────────────────────────
+// Checks that each slide's content is coherent — bullets should relate to the
+// title and to each other. Flags slides where bullets are from unrelated topics.
+
+function enforceSemanticCoherence(
+  artifacts: { plan: QualityPassPlan; draft: SlideArtifactDraft }[],
+  blocks: QualityPassBlock[],
+): void {
+  for (const { plan, draft } of artifacts) {
+    const content = draft.content;
+    const title = (content.title || "").toLowerCase();
+    const bullets = content.body?.bullets || [];
+
+    // Check if any bullet is from a completely different domain than the title
+    // (simple keyword overlap check)
+    const titleWords = new Set(
+      title.split(/\s+/)
+        .filter((w: string) => w.length > 3)
+        .map((w: string) => w.toLowerCase())
+    );
+
+    // Only flag if title has meaningful words and bullets are very different
+    if (titleWords.size >= 3 && bullets.length >= 2) {
+      let unrelatedCount = 0;
+      for (const bullet of bullets) {
+        const bulletWords = bullet.toLowerCase().split(/\s+/).filter((w: string) => w.length > 3);
+        const overlap = bulletWords.filter((w: string) => titleWords.has(w)).length;
+        // If less than 10% overlap and bullet is long, it might be unrelated
+        if (bulletWords.length > 5 && overlap === 0) {
+          unrelatedCount++;
+        }
+      }
+      // If most bullets seem unrelated to the title, flag for review
+      if (unrelatedCount >= Math.ceil(bullets.length * 0.5) && bullets.length >= 3) {
+        content.reviewStatus = "concept_mixing_detected";
+        draft.flagged = true;
+        if (!draft.errors) draft.errors = [];
+        draft.errors.push(`Semantic coherence warning: ${unrelatedCount}/${bullets.length} bullets may be from unrelated concepts.`);
+      }
+    }
+  }
+}
+
+// ─── Visual Requirements Enforcer ────────────────────────────────────────────
+// Ensures every slide has a meaningful visual intent. No 'none' or empty visuals.
+
+function enforceVisualRequirements(
+  artifacts: { plan: QualityPassPlan; draft: SlideArtifactDraft }[],
+): void {
+  for (const { plan, draft } of artifacts) {
+    const content = draft.content;
+    const visual = content.visualIntent;
+
+    // If visual is missing or has no description, set a default
+    if (!visual) {
+      content.visualIntent = {
+        description: `Diagram illustrating: ${content.title || "the slide concept"}`,
+        sourceFigureRef: null,
+        generateDiagram: true,
+        diagramType: inferDiagramType(plan.function),
+      };
+    } else if (!visual.description || visual.description.length < 5) {
+      visual.description = `Visual for: ${content.title || "this slide"}`;
+    }
+
+    // Ensure diagramType is set
+    if (visual && !visual.diagramType) {
+      visual.diagramType = inferDiagramType(plan.function);
+    }
+
+    // Ensure generateDiagram is true for slides that need visuals
+    if (visual && !visual.generateDiagram && plan.slideNo !== 3) {
+      // S3 (CLOs) is the only slide that legitimately doesn't need a diagram
+      visual.generateDiagram = true;
+    }
+  }
+}
+
+/** Infer the best diagram type based on the slide's pedagogical function. */
+function inferDiagramType(fn: string): "mechanism" | "comparison" | "workflow" | "data_chart" | "concept_map" {
+  const typeMap: Record<string, "mechanism" | "comparison" | "workflow" | "data_chart" | "concept_map"> = {
+    problem: "data_chart",
+    mental_map: "concept_map",
+    clos: "concept_map",
+    prior_knowledge: "concept_map",
+    core_concept: "mechanism",
+    mechanism: "mechanism",
+    misconception: "comparison",
+    worked_example: "workflow",
+    guided_practice: "workflow",
+    independent_practice: "data_chart",
+    deeper_mechanism: "mechanism",
+    trade_off: "comparison",
+    real_case: "workflow",
+    guided_application: "workflow",
+    independent_application: "data_chart",
+    decision_challenge: "data_chart",
+    transfer_challenge: "concept_map",
+    rubric: "concept_map",
+    evidence: "concept_map",
+    readiness: "data_chart",
+  };
+  return typeMap[fn] || "mechanism";
+}
+
+// ─── Source Copy Detection ───────────────────────────────────────────────────
+// Detects when the LLM has copied raw source text verbatim instead of
+// transforming it into an educational explanation.
+//
+// The rule: RAG → evidence, not RAG → final slide text.
+// The AI must synthesize and explain. It must NOT copy paragraphs, bullet
+// lists, malformed source fragments, page artifacts, or OCR errors.
+
+const SOURCE_COPY_PATTERNS: RegExp[] = [
+  // Raw numbered references
+  /^\d+\s+(Note|Figure|Table|Chapter|Section|Reference)\b/i,
+  // Section numbering
+  /^\d+\.\d+\.?\d*\s+[A-Z]/i,
+  // Package/product listings
+  /^Package contents:/i,
+  /^SKU\s+GE/i,
+  // Figure/table references
+  /^Figure\s+\d+/i,
+  /^Fig\.\s*\d+/i,
+  /^Table\s+\d+/i,
+  // Reagent/protocol lists
+  /^Related (Optional )?Reagents:/i,
+  /^Total volume\s+\d+/i,
+  /^\d+\s*[μu]L\s+(Forward|Reverse|Oligo)/i,
+  // Catalog numbers
+  /\(SKU\s+GE\d+\)/i,
+  // Raw protocol steps
+  /^Incubate (the reaction )?at \d+/i,
+  /^Add \d+\s*[μu]L/i,
+  // Page artifacts
+  /^\d+\s+References\s+\d+/i,
+  /^References\s+\d+/i,
+  // OCR artifacts
+  /^\d+ Note:/i,
+];
+
+/**
+ * Check if a bullet is likely a raw copy from source material.
+ * Returns true if the bullet matches known source-copy patterns.
+ */
+function isSourceCopy(bullet: string): boolean {
+  const trimmed = bullet.trim();
+  // Very short bullets are OK (they're usually rewritten)
+  if (trimmed.split(/\s+/).length < 4) return false;
+  for (const pat of SOURCE_COPY_PATTERNS) {
+    if (pat.test(trimmed)) return true;
+  }
+  return false;
+}
+
+/**
+ * Compute a simple n-gram overlap score between two texts.
+ * Returns a value between 0 (no overlap) and 1 (identical).
+ */
+function ngramOverlap(text1: string, text2: string, n: number = 3): number {
+  const words1 = text1.toLowerCase().split(/\s+/).filter(Boolean);
+  const words2 = text2.toLowerCase().split(/\s+/).filter(Boolean);
+  if (words1.length < n || words2.length < n) return 0;
+
+  const getNgrams = (words: string[]): Set<string> => {
+    const ngrams = new Set<string>();
+    for (let i = 0; i <= words.length - n; i++) {
+      ngrams.add(words.slice(i, i + n).join(" "));
+    }
+    return ngrams;
+  };
+
+  const ngrams1 = getNgrams(words1);
+  const ngrams2 = getNgrams(words2);
+  let overlap = 0;
+  for (const ng of ngrams1) {
+    if (ngrams2.has(ng)) overlap++;
+  }
+  return overlap / Math.max(ngrams1.size, 1);
+}
+
+/**
+ * Detect and flag source-copy violations in generated artifacts.
+ * For each bullet, check:
+ 1. Does it match raw source patterns (product codes, figure refs, etc.)?
+ 2. Is it >80% similar to a source block? (verbatim copy)
+ *
+ * Flagged artifacts get a reviewStatus so faculty can see them.
+ * We do NOT hard-reject — faculty should decide whether the copy is acceptable.
+ */
+export function detectSourceCopies(
+  artifacts: { plan: QualityPassPlan; draft: SlideArtifactDraft }[],
+  blocks: QualityPassBlock[],
+): void {
+  for (const { plan, draft } of artifacts) {
+    const bullets = draft.content.body?.bullets || [];
+    const violations: string[] = [];
+
+    for (let i = 0; i < bullets.length; i++) {
+      const bullet = bullets[i];
+
+      // Check 1: Raw source pattern
+      if (isSourceCopy(bullet)) {
+        violations.push(`Bullet ${i + 1}: matches raw source pattern`);
+        continue;
+      }
+
+      // Check 2: High n-gram overlap with any source block
+      for (const block of blocks) {
+        if (!block.text || block.text.length < 30) continue;
+        const overlap = ngramOverlap(bullet, block.text);
+        if (overlap > 0.7) {
+          violations.push(`Bullet ${i + 1}: ${Math.round(overlap * 100)}% similar to source block ${block.id}`);
+          break;
+        }
+      }
+    }
+
+    if (violations.length > 0) {
+      draft.content.reviewStatus = "source_copy_detected";
+      draft.flagged = true;
+      if (!draft.errors) draft.errors = [];
+      draft.errors.push(`Source copy detected in ${violations.length} bullet(s): ${violations.slice(0, 3).join('; ')}`);
+    }
   }
 }

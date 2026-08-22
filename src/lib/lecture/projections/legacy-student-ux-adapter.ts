@@ -343,6 +343,10 @@ export async function projectLegacyStudentExperience({
 
   const projectId = project.id;
 
+  const blueprint = await db.learningBlueprint.findFirst({
+    where: { experienceId: projectId },
+  });
+
   // 2. Load plans + artifacts + readiness items + learning units.
   const [plans, allArtifacts, allItems] = await Promise.all([
     db.lectureSlidePlan.findMany({ where: { projectId }, orderBy: { slideNo: "asc" } }),
@@ -381,10 +385,25 @@ export async function projectLegacyStudentExperience({
     const bullets = takeBullets(c);
     const title = cleanJargon(c.title) || `Concept ${artifact.slideNo}`;
 
+    // ── studentExperience: inline teaching data from the new generator ──
+    const rawJson = (artifact.contentJson ?? {}) as Record<string, unknown>;
+    const se = rawJson.studentExperience && typeof rawJson.studentExperience === "object"
+      ? (rawJson.studentExperience as Record<string, unknown>)
+      : null;
+    const seCore = se?.coreContent && typeof se.coreContent === "object"
+      ? (se.coreContent as Record<string, unknown>)
+      : null;
+    const seInteractive = se?.interactive && typeof se.interactive === "object"
+      ? (se.interactive as Record<string, unknown>)
+      : null;
+    const seRealWorld = se?.realWorld && typeof se.realWorld === "object"
+      ? (se.realWorld as Record<string, unknown>)
+      : null;
+    const sePitfalls = Array.isArray(se?.commonPitfalls) ? (se!.commonPitfalls as Array<Record<string, unknown>>) : [];
+
     // ── Core Insight: prefer the richest available signal ──
-    // Priority: faculty override > body.visibleCopy (new format) >
-    //           teachingExplanation first sentence > academicTruth >
-    //           learningObjective > bullets[0]
+    // Priority: studentExperience.hook > studentExperience.headline > faculty override >
+    //           body.visibleCopy > teachingExplanation > academicTruth > bullets[0]
     const extractFirstSentence = (text?: string | null): string => {
       if (!text) return "";
       const cleaned = cleanJargon(text);
@@ -392,51 +411,67 @@ export async function projectLegacyStudentExperience({
       return match ? match[0].trim() : cleaned;
     };
 
-    // body.visibleCopy is the primary content field in the new SlideContentJson
     const bodyVisibleCopy = (() => {
       const v = c.body?.visibleCopy;
       if (!v || isPlaceholder(v) || isSourceFragment(v)) return "";
       return cleanJargon(v);
     })();
 
+    // Prefer studentExperience fields when available
+    const seHook = typeof se?.hook === "string" ? cleanJargon(se.hook) : "";
+    const seExplanation = typeof seCore?.explanation === "string" ? cleanJargon(seCore.explanation as string) : "";
+    const seAnalogy = typeof seCore?.analogy === "string" ? cleanJargon(seCore.analogy as string) : "";
+    const seSteps = Array.isArray(seCore?.steps)
+      ? (seCore.steps as unknown[]).map((s) => cleanJargon(String(s))).filter(Boolean)
+      : [];
+    const seHeadline = typeof se?.headline === "string" ? cleanJargon(se.headline) : "";
+
     const coreInsight = firstNonEmpty(
+      seHook,
+      seExplanation,
       c.studentCoreInsight,
       bodyVisibleCopy,
-      extractFirstSentence(c.teachingExplanation),
-      c.academicTruth,
+      extractFirstSentence((c as Record<string, unknown>).teachingExplanation as string),
+      (c as Record<string, unknown>).academicTruth as string,
       c.learningObjective,
       bullets[0],
-      c.mastery,
+      (c as Record<string, unknown>).mastery as string,
     ) || cleanJargon(title);
 
-    // ── Explanation: prefer mechanism-first explanation ──
+    // ── Explanation: prefer studentExperience > teachingExplanation > body.visibleCopy ──
     const explanation = firstNonEmpty(
-      c.studentMechanismExplanation,
-      c.teachingExplanation,
-      c.academicTruth,
+      seExplanation,
+      (c as Record<string, unknown>).studentMechanismExplanation as string,
+      (c as Record<string, unknown>).teachingExplanation as string,
+      (c as Record<string, unknown>).academicTruth as string,
       bodyVisibleCopy,
-      c.feedback,
+      (c as Record<string, unknown>).feedback as string,
       coreInsight,
     ) || (bullets.length > 1 ? bullets.join(". ") : coreInsight);
 
-    // ── Analogy: use faculty override or generated analogy field ──
+    // ── Analogy: studentExperience > faculty override > generated analogy ──
     const analogy = firstNonEmpty(
+      seAnalogy,
       c.studentAnalogy,
       c.analogy,
       c.mentalModel,
     );
 
-    // ── Scenario / real-world transfer ──
+    // ── Mechanism steps: studentExperience > bullets ──
+    const mechanismStepsFromSE = seSteps.length > 0 ? seSteps : undefined;
+
+    // ── Scenario / real-world transfer: studentExperience > bullets fallback ──
+    const seRWApp = typeof seRealWorld?.application === "string" ? cleanJargon(seRealWorld.application as string) : "";
+    const seRWScn = typeof seRealWorld?.scenario === "string" ? cleanJargon(seRealWorld.scenario as string) : "";
     const scenario = firstNonEmpty(
+      seRWScn,
       c.studentScenario,
       c.studentApplication,
-      bullets[2],
-      bullets[1],
-      c.mastery,
+      (c as Record<string, unknown>).mastery as string,
     );
     const application = firstNonEmpty(
+      seRWApp,
       c.studentApplication,
-      bullets[3] ?? bullets[2],
       c.learningObjective,
     );
 
@@ -535,10 +570,13 @@ export async function projectLegacyStudentExperience({
       svgCode: visualSpec?.svgCode || renderedSvg,
     };
 
+    // Prefer studentExperience mechanism steps (from studentExperience.coreContent.steps)
     const mechanismSteps: string[] | undefined = (() => {
+      if (mechanismStepsFromSE && mechanismStepsFromSE.length > 1) return mechanismStepsFromSE;
       if (bullets.length >= 2 && bullets.every((b) => b.length > 10)) return bullets;
-      if (c.teachingExplanation && c.teachingExplanation.length > 60) {
-        const sentences = c.teachingExplanation
+      const rawTeachingExplanation = (c as Record<string, unknown>).teachingExplanation as string | undefined;
+      if (rawTeachingExplanation && rawTeachingExplanation.length > 60) {
+        const sentences = rawTeachingExplanation
           .split(/(?<=[.!?])\s+/)
           .map((s: string) => cleanJargon(s).trim())
           .filter((s: string) => s.length > 15);
@@ -620,6 +658,19 @@ export async function projectLegacyStudentExperience({
         }
         : undefined,
 
+      // ── commonPitfalls: from studentExperience or empty ──
+      commonPitfalls: sePitfalls.length > 0
+        ? sePitfalls.map((p) => ({
+            misconception: typeof p.misconception === "string" ? cleanJargon(p.misconception) : "",
+            whyWrong: typeof p.whyWrong === "string" ? cleanJargon(p.whyWrong) : "",
+            betterWay: typeof p.betterWay === "string" ? cleanJargon(p.betterWay) : "",
+          })).filter((p) => p.misconception && p.betterWay)
+        : undefined,
+
+      // ── headline and hook: from studentExperience ──
+      headline: seHeadline || coreInsight,
+      hook: seHook || coreInsight,
+
       // ── Visual ──
       visual,
       sourceCitation,
@@ -663,10 +714,16 @@ export async function projectLegacyStudentExperience({
   const courseProfile = project.courseProfile as any;
   const courseTitle = courseProfile?.title || project.title || "Lecture";
   const clos: Array<{ text?: string; code?: string }> = courseProfile?.teacherEnteredClos ?? [];
-  const learningOutcomes = clos
-    .map((clo) => cleanJargon(clo.text || clo.code || ""))
-    .filter((t) => t.length > 0)
-    .slice(0, 6);
+  let learningOutcomes = (blueprint?.learningOutcomes as any[] || [])
+    .map((o) => cleanJargon(o.text))
+    .filter(Boolean);
+
+  if (learningOutcomes.length === 0) {
+    learningOutcomes = clos
+      .map((clo) => cleanJargon(clo.text || clo.code || ""))
+      .filter((t) => t.length > 0)
+      .slice(0, 6);
+  }
 
   // Prerequisites from the prior-knowledge slide (slide 4).
   const priorArtifact = sorted.find((a) => planBySlide.get(Number(a.slideNo))?.function === "prior_knowledge");
@@ -678,6 +735,7 @@ export async function projectLegacyStudentExperience({
   const hookContent = asContent(hookArtifact?.contentJson);
   const hookNarrative = cleanJargon(
     firstNonEmpty(
+      blueprint?.narrativeArc,
       hookContent.purpose,
       hookContent.teachingExplanation,
       hookContent.academicTruth,

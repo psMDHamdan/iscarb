@@ -47,17 +47,17 @@ function unwrapReply(content: string): string {
 
 const MODE_PROMPTS: Record<string, string> = {
   explain_simple:
-    "You are a patient, simple tutor. Explain the concept in clear, everyday language with ZERO jargon. Use short sentences and plain words a university student would understand. Structure the reply as 3-6 short bullet points.",
+    "You are a deep, patient tutor helping a university student truly UNDERSTAND a concept. Explain in clear language with ZERO jargon. Structure: What it is → How it works → Why it matters → What breaks when it fails. Use 4-6 bullet points. Ground every claim in the source material provided.",
   analogy:
-    "You are a creative tutor. Give ONE memorable, concrete real-world analogy that captures the heart of this concept, then briefly explain how each part of the analogy maps to the concept. Keep it warm and vivid.",
+    "You are a creative tutor. Give ONE vivid, domain-specific analogy that maps EVERY PART of the analogy to the concept. Show the mapping explicitly. For example: 'EcoRI is like scissors that cut paper at a specific word — but the word must appear on both pages (palindrome), and the cut must be offset (sticky ends) so the two pages can interlock when pasted back together.' Make the analogy concrete and memorable.",
   step_by_step:
-    "You are a methodical tutor. Explain the concept step-by-step as numbered points, from foundation to detail. Each step must be one clean idea. End with a one-line takeaway.",
+    "You are a methodical tutor. Explain the mechanism step-by-step as numbered points, from prerequisite to application. Each step must build on the previous one. End with: 'This is why understanding this mechanism matters: [one-line insight].' Ground each step in the source material.",
   quiz_me:
-    "You are an engaging tutor. Ask ONE focused multiple-choice question that checks understanding of this concept, with exactly four options (A-D). After the options, give a brief hint — do not reveal the answer yet.",
+    "You are an engaging tutor. Ask ONE scenario-based multiple-choice question that tests MECHANISM understanding (not recall). Present a specific scenario where the student must reason about what would happen. Give exactly four options (A-D). Distractors must represent REAL misconceptions students actually hold. After the options, give a brief strategic hint — do not reveal the answer.",
   hint:
-    "You are a supportive tutor giving a hint for a practice question. Do NOT give away the full answer. Give one strategic nudge, phrased as a question or a short steer, in 1-2 sentences.",
+    "You are a supportive tutor giving a hint for a practice question. Do NOT give away the full answer. Give one strategic nudge that points toward the MECHANISM the student needs to reason about. Phrase as a question or short steer, in 1-2 sentences.",
   custom:
-    "You are a warm, patient AI tutor helping a university student understand a lecture concept. Answer their question directly in simple, clear language. Use short paragraphs or bullet points. Keep responses focused and friendly.",
+    "You are a deep, patient AI tutor helping a university student truly understand a lecture concept. Answer their question directly using the source material provided. Ground your explanation in the specific facts, mechanisms, and examples from the source. Use short paragraphs or bullet points. When explaining mechanisms, use numbered steps. When the student asks 'why', trace the causal chain. Keep responses focused, accurate, and source-grounded.",
 };
 
 export const POST = guard(
@@ -76,7 +76,12 @@ export const POST = guard(
       coreInsight,
       mentalModel,
       mechanism,
+      mechanismSteps,
       visualCaption,
+      hook,
+      commonPitfalls,
+      realWorld,
+      sourceBlocks,
       assessmentStem,
     } = body as Record<string, unknown>;
 
@@ -96,12 +101,27 @@ export const POST = guard(
     const caption = typeof visualCaption === "string" ? visualCaption : "";
     const stem = typeof assessmentStem === "string" ? assessmentStem : "";
 
+    const mechSteps = Array.isArray(mechanismSteps) ? mechanismSteps.filter((s: unknown) => typeof s === "string").join(" → ") : "";
+    const pitfalls = Array.isArray(commonPitfalls) ? commonPitfalls.map((p: any) =>
+      `Misconception: ${p.misconception || ""}. Why wrong: ${p.whyWrong || ""}. Better: ${p.betterWay || ""}`
+    ).join("; ") : "";
+    const hookText = typeof hook === "string" ? hook : "";
+    const rw = typeof realWorld === "string" ? realWorld : "";
+    const srcBlocks = Array.isArray(sourceBlocks)
+      ? sourceBlocks.filter((b: any) => typeof b === "object" && b?.text).map((b: any) => b.text.slice(0, 300)).join("; ")
+      : "";
+
     const context = [
       `Concept: "${title}"${stage ? ` (stage: ${stage})` : ""}`,
+      hookText ? `Scenario/Hook: ${hookText}` : "",
       insight ? `Core insight: ${insight}` : "",
-      analogyText ? `Analogy used in lesson: ${analogyText}` : "",
       mech ? `Mechanism: ${mech.slice(0, 600)}` : "",
+      mechSteps ? `Mechanism steps: ${mechSteps}` : "",
+      analogyText ? `Analogy used in lesson: ${analogyText}` : "",
       caption ? `Visual caption: ${caption}` : "",
+      pitfalls ? `Common misconceptions: ${pitfalls}` : "",
+      rw ? `Real-world application: ${rw}` : "",
+      srcBlocks ? `Source material excerpts: ${srcBlocks}` : "",
       stem ? `The practice question being attempted: ${stem}` : "",
     ]
       .filter(Boolean)

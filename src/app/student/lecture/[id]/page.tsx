@@ -314,15 +314,7 @@ export default function StudentLearnPage() {
           {experience.courseTitle}
         </h1>
 
-        {/* Faculty Edit in Studio Shortcut — studio is keyed by projectId */}
-        <Link
-          href={`/faculty/lecture/${experience.projectId || experienceId.replace(/^PREVIEW_/, "")}/studio/${currentIndex + 1}`}
-          target="_blank"
-          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 transition-colors shadow-xs"
-        >
-          <Edit3 className="h-3.5 w-3.5 text-emerald-700" />
-          {ar ? "تعديل في الاستوديو" : "Edit in Studio"}
-        </Link>
+        {/* Edit in Studio — hidden from students, faculty-only */}
 
         {/* Progress */}
         <div className="hidden sm:flex items-center gap-2 min-w-[140px]">

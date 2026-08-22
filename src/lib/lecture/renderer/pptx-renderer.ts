@@ -92,42 +92,56 @@ export async function renderPPTX(
 
     // 3. Right Visual Card
     const spec = content.visualSpec;
-    const academicVisual = getAcademicVisualForSlide(
-      artifact.slideNo,
-      title,
-      `${content.title} ${bullets.join(" ")} ${content.speakerNotes || ""}`
-    );
+    // ── Visual: SVG > Wikipedia image > text description ──────────────────
+    const svgCode = (content as any).visual?.svgCode || (content as any).vectorSvgCode;
+    const wikipediaUrl = (content as any).visualIntent?.fetchedImageUrl || (content as any).visualIntent?.imageUrl;
+    const viDesc = typeof content.visualIntent === "object" && content.visualIntent?.description
+      ? content.visualIntent.description
+      : typeof content.visualIntent === "string" ? content.visualIntent : "";
 
-    if (academicVisual && academicVisual.imageUrl) {
-      slide.addShape("roundRect", {
-        x: 5.4, y: 1.5, w: 4.1, h: 4.6, fill: { color: "FAFAFA" }, line: { color: "A7F3D0", width: 1.5 }, rectRadius: 0.15
-      });
+    // Visual box
+    slide.addShape("roundRect", {
+      x: 5.4, y: 1.5, w: 4.1, h: 4.6, fill: { color: "FAFAFA" }, line: { color: "A7F3D0", width: 1.5 }, rectRadius: 0.15
+    });
+
+    let visualAdded = false;
+
+    // 1. Try local SVG (chemistry/physics/math diagrams)
+    if (!visualAdded && svgCode && typeof svgCode === "string" && svgCode.includes("<svg")) {
       try {
+        const svgBase64 = Buffer.from(svgCode).toString("base64");
         slide.addImage({
-          path: academicVisual.imageUrl,
+          data: `data:image/svg+xml;base64,${svgBase64}`,
           x: 5.5, y: 1.6, w: 3.9, h: 2.7
         });
-      } catch {
-        slide.addShape("roundRect", { x: 5.5, y: 1.6, w: 3.9, h: 2.7, fill: { color: "E2E8F0" }, rectRadius: 0.1 });
-      }
-      slide.addText(academicVisual.title, {
-        x: 5.55, y: 4.4, w: 2.5, h: 0.3, fontSize: 11, color: "065F46", bold: true, fontFace: t.fontEnglish
-      });
-      // Intentionally no badge — "Scenario Visual" label must never appear on student slides.
-      slide.addText(academicVisual.caption.slice(0, 85), {
-        x: 5.55, y: 4.75, w: 3.8, h: 1.2, fontSize: 9, color: "64748B", italic: true, fontFace: t.fontEnglish
-      });
-    } else {
-      slide.addShape("roundRect", {
-        x: 5.4, y: 1.5, w: 4.1, h: 4.6, fill: { color: "FAFAFA" }, line: { color: "A7F3D0", width: 1.5 }, rectRadius: 0.15
-      });
-      const viDesc = typeof content.visualIntent === "object" && content.visualIntent?.description
-        ? content.visualIntent.description
-        : typeof content.visualIntent === "string" ? content.visualIntent : "Instructional Model";
+        visualAdded = true;
+      } catch { /* fall through */ }
+    }
+
+    // 2. Try Wikipedia/Wikimedia image (real scientific diagrams)
+    if (!visualAdded && wikipediaUrl && typeof wikipediaUrl === "string" && wikipediaUrl.startsWith("http")) {
+      try {
+        slide.addImage({
+          path: wikipediaUrl,
+          x: 5.5, y: 1.6, w: 3.9, h: 2.7
+        });
+        visualAdded = true;
+      } catch { /* fall through */ }
+    }
+
+    // 3. Fallback: text description of what the visual should show
+    if (!visualAdded && viDesc) {
       slide.addText(viDesc, {
-        x: 5.55, y: 3.0, w: 3.8, h: 1.5, fontSize: 12, color: "0F7B8A", bold: true, align: "center", fontFace: t.fontEnglish
+        x: 5.55, y: 2.2, w: 3.8, h: 2.0, fontSize: 11, color: "0F7B8A", bold: true, align: "center", fontFace: t.fontEnglish,
+        valign: "middle",
       });
     }
+
+    // Visual caption
+    const visualTitle = viDesc || "Visual";
+    slide.addText(visualTitle.slice(0, 80), {
+      x: 5.55, y: 4.4, w: 3.8, h: 0.3, fontSize: 10, color: "065F46", bold: true, fontFace: t.fontEnglish
+    });
 
     // 4. Left Content Bullets
     if (bullets.length > 0) {

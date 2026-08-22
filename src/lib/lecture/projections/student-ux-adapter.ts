@@ -10,6 +10,7 @@
 import { BaseProjectionAdapter } from "./base-adapter";
 import { cleanJargon, cleanObjectJargon } from "./utils/jargon-cleaner";
 import { getAcademicAnalogyForSlide } from "@/lib/lecture/academic-analogies";
+import { getAcademicVisualForSlide } from "@/lib/lecture/academic-visuals";
 import { MathChemTransformer } from "../renderer/math-chem-transformer";
 import { PEDAGOGICAL_STAGES, type LearningExperience, type PedagogicalStage } from "../types/learning-experience";
 import type {
@@ -122,9 +123,38 @@ export class StudentUxAdapter extends BaseProjectionAdapter<LearningExperience, 
         // iSCARB Content Compiler Schema
         visibleCopy: coreInsightHtml,
         bullets: block.keyTakeaways?.map((t) => MathChemTransformer.transformToHtml(cleanJargon(t))) || [],
-        studentAction: undefined, // Populated from activity below if needed, or left undefined if handled by activity field.
+        studentAction: undefined,
 
-        // Visual Scaffolding
+        // Core Content — drives the ConceptContent center panel
+        coreContent: {
+          explanation: mechanismExplanationHtml || coreInsightHtml || "",
+          analogy: cleanJargon(block.intuitionMentalModel) || academicAnalogy?.analogy || undefined,
+          steps: block.keyTakeaways && block.keyTakeaways.length >= 2
+            ? block.keyTakeaways.map((t) => MathChemTransformer.transformToHtml(cleanJargon(t)))
+            : mechanismExplanationHtml
+              ? mechanismExplanationHtml.split(/(?<=[.!?])\s+/).filter(s => s.length > 15).slice(0, 5)
+              : undefined,
+        } as any,
+
+        // Real World — drives the purple "Real World" panel
+        realWorld: transferScenarioHtml
+          ? {
+              application: transferScenarioHtml,
+              scenario: transferScenarioHtml,
+              derivedLabel: "system-suggested" as const,
+            }
+          : undefined,
+
+        // Common Pitfalls — drives the amber pitfall cards
+        commonPitfalls: block.misconceptionAlert
+          ? [{
+              misconception: cleanJargon(block.misconceptionAlert),
+              whyWrong: "This conflicts with core principles derived from the source material.",
+              betterWay: "Review the explanation above for the correct understanding.",
+            }]
+          : undefined,
+
+        // Visual Scaffolding — use stored visual, or fallback to academic visual library
         visual: visual
           ? {
               visualType: visual.visualType,
@@ -134,7 +164,20 @@ export class StudentUxAdapter extends BaseProjectionAdapter<LearningExperience, 
               imageUrl: visual.primaryAssetUrl,
               attribution: visual.attributionText || visual.attribution?.license,
             }
-          : undefined,
+          : (() => {
+              // Fallback: use the curated academic visual library
+              const fallbackVisual = getAcademicVisualForSlide(
+                block.orderIndex,
+                block.title,
+                `${block.academicTruth || ""} ${block.coreIdea || ""} ${(block.keyTakeaways || []).join(" ")}`
+              );
+              return {
+                title: cleanJargon(fallbackVisual.title),
+                caption: cleanJargon(fallbackVisual.caption),
+                imageUrl: fallbackVisual.imageUrl,
+                visualType: "concept_model",
+              };
+            })(),
 
         // Interactive Activity (Answers stripped + MathChem transformation)
         activity: activity

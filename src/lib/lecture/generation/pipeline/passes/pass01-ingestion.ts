@@ -63,31 +63,19 @@ export class Pass01Ingestion implements PipelinePass {
     const sourceChunks: SourceChunk[] = [];
 
     rawDocs.forEach((doc, docIdx) => {
-      // 1. Clean boilerplate (TOC, references, excessive whitespace)
-      const cleanedText = doc.text
-        .replace(/\bTable\s+of\s+Contents\b[\s\S]*?(?=\n\s*\n\w)/gi, "")
-        .replace(/\bReferences\b[\s\S]*$/gi, "")
-        .replace(/\r\n/g, "\n")
-        .replace(/\n{3,}/g, "\n\n")
-        .trim();
+      const chunkText = doc.text.trim();
+      if (!chunkText) return;
+      const tokenEstimate = Math.max(1, Math.round(chunkText.length / 4));
+      const sha256Hash = createHash("sha256").update(chunkText).digest("hex");
 
-      // 2. Sentence-based chunking (~300-800 tokens or paragraphs)
-      const paragraphs = cleanedText.split(/\n\n+/).filter((p) => p.trim().length > 0);
-
-      paragraphs.forEach((para, pIdx) => {
-        const chunkText = para.trim();
-        const tokenEstimate = Math.max(1, Math.round(chunkText.length / 4));
-        const sha256Hash = createHash("sha256").update(chunkText).digest("hex");
-
-        sourceChunks.push({
-          id: `chunk-${docIdx + 1}-${pIdx + 1}`,
-          sourceDocumentId: doc.id,
-          locator: `${doc.title}, Section ${pIdx + 1}`,
-          text: chunkText,
-          tokenCount: tokenEstimate,
-          criticality: pIdx === 0 ? "critical" : pIdx <= 3 ? "important" : "supporting",
-          sha256Hash,
-        });
+      sourceChunks.push({
+        id: doc.id,
+        sourceDocumentId: doc.id,
+        locator: `${doc.title}, Block ${docIdx + 1}`,
+        text: chunkText,
+        tokenCount: tokenEstimate,
+        criticality: docIdx === 0 ? "critical" : docIdx <= 3 ? "important" : "supporting",
+        sha256Hash,
       });
     });
 

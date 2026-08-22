@@ -22,10 +22,10 @@ function getNextNvidiaKeyIndex(totalKeys: number): number {
 // We round-robin across 5 NVIDIA keys, so a higher global cap lets each key
 // run several concurrent requests (5 keys × 8 = 40 in-flight max).
 const AI_CONCURRENCY_MAX = Math.min(
-  40,
+  10,
   Math.max(
     1,
-    Number.parseInt(process.env.AI_CONCURRENCY_MAX || "20", 10) || 20,
+    Number.parseInt(process.env.AI_CONCURRENCY_MAX || "5", 10) || 5,
   ),
 );
 let activeAICalls = 0;
@@ -87,7 +87,7 @@ const MAX_RETRIES = RETRY_BASE_DELAYS_MS.length;
 // budget on a stall. 20s bounds the worst case while still allowing long
 // generation calls to complete on capable models without spurious timeouts
 // that trigger expensive cross-key failover.
-const FETCH_TIMEOUT_MS = 20_000;
+const FETCH_TIMEOUT_MS = 60_000;
 
 function getRetryDelay(attempt: number, retryAfter?: number): number {
   if (retryAfter && retryAfter > 0) {
@@ -368,6 +368,7 @@ export interface ChatResult {
   latencyMs: number;
   model: string;
   guarded: boolean;
+  finishReason?: string;
 }
 
 export async function chatJson(opts: {
@@ -390,9 +391,14 @@ export async function chatJson(opts: {
       temperature: opts.temperature ?? 0.4,
       model,
       max_tokens: 4096,
+      response_format: { type: "json_object" },
     } as never);
     const content = res?.choices?.[0]?.message?.content ?? "";
+    const finishReason = res?.choices?.[0]?.finish_reason ?? undefined;
     const json = extractJson(content);
+    if (json && typeof json === "object" && !Array.isArray(json)) {
+      (json as any).finish_reason = finishReason;
+    }
     return {
       content,
       json,
@@ -400,6 +406,7 @@ export async function chatJson(opts: {
       latencyMs: Date.now() - t0,
       model,
       guarded: true,
+      finishReason,
     };
   } catch (err) {
     console.error("AI Engine chatJson failed:", err);
@@ -441,6 +448,65 @@ export async function chatText(opts: {
     return {
       content: `AI service temporarily unavailable: ${errorMsg}. Please try again later.`,
       json: null,
+      latencyMs: Date.now() - t0,
+      model: "fallback",
+      guarded: true,
+    };
+  }
+}
+
+export async function chatVisionJson(opts: {
+  system: string;
+  user: string;
+  imageUrl: string;
+  temperature?: number;
+  model?: string;
+  guardrails?: boolean;
+}): Promise<ChatResult> {
+  const t0 = Date.now();
+  const client = await getClient();
+  const model = opts.model || "meta/llama-3.2-11b-vision-instruct";
+  const system = opts.guardrails === false ? opts.system : withGuardrails(opts.system);
+  try {
+    const res = await client.chat.completions.create({
+      messages: [
+        { role: "system", content: system },
+        { 
+          role: "user", 
+          content: [
+            { type: "text", text: opts.user },
+            { type: "image_url", image_url: { url: opts.imageUrl } }
+          ]
+        },
+      ],
+      temperature: opts.temperature ?? 0.2,
+      model,
+      max_tokens: 1024,
+      response_format: { type: "json_object" },
+    } as never);
+    
+    const content = res?.choices?.[0]?.message?.content ?? "";
+    const finishReason = res?.choices?.[0]?.finish_reason ?? undefined;
+    const json = extractJson(content);
+    if (json && typeof json === "object" && !Array.isArray(json)) {
+      (json as any).finish_reason = finishReason;
+    }
+    
+    return {
+      content,
+      json,
+      usage: res?.usage as never,
+      latencyMs: Date.now() - t0,
+      model,
+      guarded: true,
+      finishReason,
+    };
+  } catch (err) {
+    console.error("AI Engine chatVisionJson failed:", err);
+    const errorMsg = err instanceof Error ? err.message : "Unknown error";
+    return {
+      content: `{"error": "AI vision service temporarily unavailable: ${errorMsg}", "fallback": true}`,
+      json: { error: "AI vision service temporarily unavailable", fallback: true },
       latencyMs: Date.now() - t0,
       model: "fallback",
       guarded: true,

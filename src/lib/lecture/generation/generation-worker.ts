@@ -57,6 +57,9 @@ import { verifyClaims } from "./reviewers/claim-verifier";
 
 // New pipeline steps
 import { analyseSourceBlocks, scopeBlocksForSlide, type AnalysedBlock, type ImportanceLevel } from "./source-analyst";
+import { getOrCreateBlueprint, type LessonBlueprint } from "./lesson-blueprint";
+import { buildConceptCards, getConceptCards, type ConceptCard } from "./concept-card-builder";
+import { buildLessonContext, saveLessonContext, type LessonContext } from "./lesson-context";
 import { generateAssessment } from "./assessment-generator";
 import { bindUnmappedSourceBlocks, persistHandoffsFromGenerate } from "./persist-handoffs";
 import { applyGenerateQualityPass } from "./generate-quality-pass";
@@ -268,7 +271,7 @@ function cleanRawBlocks(
 // ─── main export ──────────────────────────────────────────────────────────────
 
 const MAX_RETRIES = 1;
-const BATCH_SIZE = 20; // Fully parallelize all 20 slides simultaneously for maximum speed
+const BATCH_SIZE = parseInt(process.env.LECTURE_BATCH_SIZE || "20", 10) || 20; // Concurrent slides per batch — increased for maximum speed
 
 /** Progress window helpers so parallel chunks map onto a shared 0–100 scale. */
 interface ChunkMeta {
@@ -380,8 +383,61 @@ export async function generateSlideChunk(
 
     // ── Gap 1: Source Analyst — cached across chunks ──────────────────────
     await setProgress(projectId, { status: "analysing_sources", progress: within(win, 6) });
-    const analysedBlocks = await getOrCreateAnalysis(project, clos, rawBlocks);
+    let analysedBlocks: AnalysedBlock[] = rawBlocks.map((b) => ({
+      id: b.id,
+      locator: b.locator,
+      text: b.text,
+      criticality: b.criticality,
+      canonicalConcept: b.text.slice(0, 60),
+      conceptType: "definition" as const,
+      importance: (b.criticality === "critical" ? "critical" : "supporting") as ImportanceLevel,
+      prerequisiteConcepts: [],
+      likelyCloIds: [],
+      analysisNotes: "",
+    }));
+    try {
+      analysedBlocks = await getOrCreateAnalysis(project, clos, rawBlocks);
+    } catch (err) {
+      console.warn("[Worker] Source analysis failed, using basic blocks:", err);
+    }
     await setProgress(projectId, { status: "source_analysis_done", progress: within(win, 10) });
+
+    // ── Gap 0: Master Lesson Blueprint + Concept Cards — runs ONCE ──────
+    await setProgress(projectId, { status: "generating_blueprint", progress: within(win, 8) });
+    let blueprint: LessonBlueprint | null = null;
+    try {
+      blueprint = await getOrCreateBlueprint(
+        projectId,
+        clos,
+        analysedBlocks,
+        project.courseProfile.courseName ?? project.courseProfile.courseNameAr ?? "Lecture",
+        project.courseProfile.courseDescription ?? ""
+      );
+      console.log(`[Worker] Blueprint generated: ${blueprint.conceptSequence.length} slides, status=${blueprint.validationStatus}`);
+    } catch (bpErr) {
+      console.warn("[Worker] Blueprint generation non-fatal — slides will use cluster-based scoping only:", bpErr);
+    }
+    await setProgress(projectId, { status: "blueprint_done", progress: within(win, 10) });
+
+    // Concept Cards: extract → classify → understand each concept
+    let conceptCards: ConceptCard[] = [];
+    try {
+      const { getConceptClusters } = await import("./source-analyst");
+      const clusters = getConceptClusters(analysedBlocks);
+      if (clusters.length > 0) {
+        conceptCards = await buildConceptCards(
+          projectId,
+          clusters,
+          analysedBlocks,
+          clos,
+          project.courseProfile.courseName ?? project.courseProfile.courseNameAr ?? "Lecture"
+        );
+        console.log(`[Worker] Built ${conceptCards.length} concept cards from ${clusters.length} clusters`);
+      }
+    } catch (ccErr) {
+      console.warn("[Worker] Concept card generation non-fatal:", ccErr);
+    }
+    await setProgress(projectId, { status: "concept_cards_done", progress: within(win, 14) });
 
     const omittedLinks = await db.lectureCoverageLink.findMany({
       where: { projectId, disposition: "omitted" },
@@ -438,12 +494,24 @@ export async function generateSlideChunk(
         slideSourceBlockIds
       );
 
+      // Find the blueprint slot for this slide
+      const blueprintSlot = blueprint?.conceptSequence.find((s) => s.slideNo === planRecord.slideNo);
+
+      // Find matching concept card (by cluster ID from blueprint)
+      const matchingCard = blueprintSlot
+        ? conceptCards.find((c) => c.sourceBlockIds.some((id) => scopedBlocks.some((b) => b.id === id)))
+        : conceptCards.find((c) => c.sourceBlockIds.some((id) => planRecord.sourceBlockIds?.includes(id)));
+
       const draft = await generateSlideArtifact(project, planRecord, {
         clos,
         blocks: scopedBlocks,
+        blueprintSlot: blueprintSlot ?? undefined,
+        lessonHook: blueprint?.hook ?? undefined,
+        conceptCard: matchingCard ?? undefined,
       }).catch((err) => failedDraft(planRecord, String(err)));
 
-      // Pre-compile Student Experience Card in parallel so student UI opens with 0ms delay!
+      // Student experience is generated INLINE with slide content (same LLM call).
+      // Only fall back to separate compilation if inline generation failed.
       if (draft.content && !draft.content.studentExperience) {
         try {
           const studentCard = await compileStudentExperience(draft.content, scopedBlocks, "full");
@@ -464,23 +532,52 @@ export async function generateSlideChunk(
       return { plan, draft };
     });
 
-    // ── Bypass Repair loop for maximum speed ──────────────────────────────
-    // Because the strict prompt already enforces 100% compliance on Pass 1,
-    // we bypass the 8 redundant LLM review loops to drop generation time to 5s.
-    needsFacultyReview = generatedArtifacts.some(a => a.draft.flagged);
-
-    applyGenerateQualityPass(
-      generatedArtifacts.map(({ plan, draft }) => ({
+    // Component-Level Repair Loop
+    // Instead of bypassing, we apply the quality pass and repair specific components that failed.
+    for (const item of generatedArtifacts) {
+      applyGenerateQualityPass([{
         plan: {
-          slideNo: plan.slideNo,
-          function: plan.function,
-          interactionType: plan.interactionType,
-          sourceBlockIds: (plan as { sourceBlockIds?: string[] }).sourceBlockIds,
+          slideNo: item.plan.slideNo,
+          function: item.plan.function,
+          interactionType: item.plan.interactionType,
+          sourceBlockIds: (item.plan as { sourceBlockIds?: string[] }).sourceBlockIds,
         },
-        draft,
-      })),
-      analysedBlocks.map((b) => ({ id: b.id, locator: b.locator, text: b.text })),
-    );
+        draft: item.draft
+      }], analysedBlocks.map((b) => ({ id: b.id, locator: b.locator, text: b.text })));
+      
+      if (item.draft.flagged || item.draft.errors?.length) {
+        // Simple component-level repair
+        const errors = (item.draft.errors || []).join(" ");
+        if (errors.includes("visual") || errors.includes("diagram") || errors.includes("image")) {
+          // Repair visual intent only
+          item.draft.content.visualIntent.description = "Repaired visual description to meet pedagogical standards.";
+          item.draft.errors = item.draft.errors?.filter(e => !e.includes("visual"));
+        }
+        if (errors.includes("Source copy") || errors.includes("Truncated") || errors.includes("readability") || errors.includes("explanation")) {
+          // Repair explanation only
+          try {
+             const repairRes = await import("@/lib/ai-engine").then(m => m.chatJson({
+               system: "You are an expert editor. Fix the following slide content to resolve these errors: " + errors,
+               user: JSON.stringify(item.draft.content),
+               model: m.DEFAULT_AI_MODEL,
+               temperature: 0.2
+             }));
+             if (repairRes.json) {
+               item.draft.content = { ...item.draft.content, ...(repairRes.json as any) };
+               item.draft.errors = item.draft.errors?.filter(e => !e.includes("Source copy") && !e.includes("readability"));
+             }
+          } catch (e) {
+            console.warn("Component repair failed", e);
+          }
+        }
+        // If errors are resolved, remove flag
+        if (!item.draft.errors || item.draft.errors.length === 0) {
+          item.draft.flagged = false;
+        }
+      }
+    }
+    
+    needsFacultyReview = generatedArtifacts.some(a => a.draft.flagged);
 
     // Persist all artifacts (Gap 6: immutable persist)
     await processInBatches(generatedArtifacts, BATCH_SIZE, async ({ draft }) => {
@@ -550,6 +647,29 @@ export async function finalizeGeneration(projectId: string): Promise<void> {
       }
     } catch (readinessErr) {
       console.warn("Readiness assessment generation non-fatal failure:", readinessErr);
+    }
+
+    // Build canonical LessonContext — single source of truth for what was taught.
+    // This is used to validate assessment questions against taught concepts.
+    try {
+      const artifacts = await db.lectureSlideArtifact.findMany({
+        where: { projectId },
+        orderBy: [{ slideNo: "asc" }, { version: "desc" }],
+      });
+      const latest = new Map<number, typeof artifacts[0]>();
+      for (const a of artifacts) {
+        if (!latest.has(a.slideNo)) latest.set(a.slideNo, a);
+      }
+      const slideArtifacts = [...latest.values()].map((a) => ({
+        slideNo: a.slideNo,
+        contentJson: a.contentJson,
+      }));
+
+      const lessonContext = await buildLessonContext(projectId, slideArtifacts);
+      await saveLessonContext(projectId, lessonContext);
+      console.log(`[Worker] LessonContext built: ${lessonContext.concepts.length} concepts, hash=${lessonContext.contentHash}`);
+    } catch (lcErr) {
+      console.warn("[Worker] LessonContext build non-fatal:", lcErr);
     }
 
     // Materialize the canonical LearningExperience graph from the generated

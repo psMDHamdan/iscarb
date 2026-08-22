@@ -279,10 +279,16 @@ export async function getSession(req: NextRequest): Promise<Session> {
     const isFaculty = clientRole === "faculty" || referer.includes("/faculty/") || reqPath.includes("/faculty/") || reqPath.includes("/lecture/");
 
     if (isFaculty) {
+      // Resolve the real universityId so tenant-guard can match projects
+      const { db } = await import("@/lib/db");
+      const facultyUser = await db.user.findFirst({
+        where: { universityId: { not: null } },
+        select: { id: true, universityId: true },
+      });
       return {
         role: "faculty",
-        userId: "dev-faculty-user",
-        universityId: null,
+        userId: facultyUser?.id ?? "dev-faculty-user",
+        universityId: facultyUser?.universityId ?? null,
         universityCode: DEV_UNIVERSITY_CODE,
         organizationId: null,
         scopes: ["read:all", "write:all"],

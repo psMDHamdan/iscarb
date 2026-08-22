@@ -1,4 +1,4 @@
-import { chatJson } from "@/lib/ai-engine";
+import { chatJson, DEFAULT_AI_MODEL } from "@/lib/ai-engine";
 import type { SlideContentJson, ReviewResult } from "../types";
 
 const SCREENSHOT_QA_PROMPT = `
@@ -45,7 +45,7 @@ Visual Connections Count: ${slide.visualSpec?.connections?.length || 0}
 Text Blocks: ${(slide.body?.bullets || []).join(" | ")}
 `;
 
-    const reviewJson = await chatJson(prompt, "gpt-4o-mini", SCREENSHOT_QA_PROMPT);
+    const reviewJson = await chatJson(prompt, DEFAULT_AI_MODEL, SCREENSHOT_QA_PROMPT);
     
     if (reviewJson.status === "HARD_FAIL" || reviewJson.failedRules?.length > 0) {
       failures.push({

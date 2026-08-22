@@ -1,49 +1,25 @@
 "use client";
 
-/**
- * ConceptContent — center panel rendering a single ConceptBlock.
- *
- * Renders the 5-layer student view in a visually rich, scrollable layout:
- *   1. Stage badge + concept title
- *   2. Core insight
- *   3. Mental model (analogy + framework)
- *   4. Mechanism (explanation + steps)
- *   5. Interactive Visual Showcase (High-res biological models + Lightbox zoom)
- *   6. Real-world transfer (scenario + application)
- *   7. Common pitfalls
- *
- * No internal jargon — pure student-facing content.
- */
-
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useMemo } from "react";
+import { motion } from "framer-motion";
 import {
   Lightbulb,
-  Puzzle,
   Cog,
   Eye,
   Globe,
   AlertTriangle,
-  Quote,
-  Maximize2,
+  HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getAcademicVisualForSlide } from "@/lib/lecture/academic-visuals";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { StemRenderer } from "@/components/ui/StemRenderer";
-
+import { DynamicMermaid } from "@/components/ui/DynamicMermaid";
 import type {
   StudentConceptViewModel,
   PedagogicalPhase,
 } from "@/lib/lecture/projections/types";
 
 // ---------------------------------------------------------------------------
-// Props
+// Props & Metadata
 // ---------------------------------------------------------------------------
 
 interface ConceptContentProps {
@@ -51,31 +27,25 @@ interface ConceptContentProps {
   ar: boolean;
 }
 
-// ---------------------------------------------------------------------------
-// Stage badge metadata
-// ---------------------------------------------------------------------------
-
 const STAGE_BADGE: Record<PedagogicalPhase, { labelEn: string; labelAr: string; color: string }> = {
-  DISCOVER: { labelEn: "Discover", labelAr: "اكتشف", color: "bg-emerald-600 text-white" },
-  UNDERSTAND: { labelEn: "Understand", labelAr: "افهم", color: "bg-teal-600 text-white" },
-  EXPLORE: { labelEn: "Explore", labelAr: "استكشف", color: "bg-blue-600 text-white" },
-  PRACTICE: { labelEn: "Practice", labelAr: "تدرّب", color: "bg-indigo-600 text-white" },
-  APPLY: { labelEn: "Apply", labelAr: "طبّق", color: "bg-purple-600 text-white" },
-  CHALLENGE: { labelEn: "Challenge", labelAr: "تحدَّ", color: "bg-rose-600 text-white" },
-  MASTER: { labelEn: "Master", labelAr: "أتقن", color: "bg-amber-600 text-white" },
+  DISCOVER: { labelEn: "Discover", labelAr: "اكتشف", color: "emerald" },
+  UNDERSTAND: { labelEn: "Understand", labelAr: "افهم", color: "teal" },
+  EXPLORE: { labelEn: "Explore", labelAr: "استكشف", color: "blue" },
+  PRACTICE: { labelEn: "Practice", labelAr: "تدرّب", color: "indigo" },
+  APPLY: { labelEn: "Apply", labelAr: "طبّق", color: "purple" },
+  CHALLENGE: { labelEn: "Challenge", labelAr: "تحدَّ", color: "rose" },
+  MASTER: { labelEn: "Master", labelAr: "أتقن", color: "amber" },
 };
 
 // ---------------------------------------------------------------------------
-// ConceptContent
+// Main Component
 // ---------------------------------------------------------------------------
 
 export function ConceptContent({ concept, ar }: ConceptContentProps) {
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const badge = STAGE_BADGE[concept.stage] || STAGE_BADGE.DISCOVER;
   const dir = ar ? "rtl" : "ltr";
+  const badgeInfo = STAGE_BADGE[concept.stage] || STAGE_BADGE.DISCOVER;
 
-  // ── Resolve display content with layered fallbacks ──────────────────────
-  // Priority: coreContent fields (new compiler) → visibleCopy/bullets (legacy)
+  // -- Derived Content --
   const explanation =
     concept.coreContent?.explanation ||
     concept.visibleCopy ||
@@ -83,342 +53,227 @@ export function ConceptContent({ concept, ar }: ConceptContentProps) {
     "";
 
   const analogy = concept.coreContent?.analogy || "";
-
   const mechanismSteps: string[] =
     concept.coreContent?.steps ||
     (concept.bullets?.length && concept.bullets.length > 1 ? concept.bullets : []);
 
-  const realWorldScenario =
-    concept.realWorld?.scenario ||
-    concept.realWorld?.application ||
-    (concept.bullets?.length && concept.bullets.length > 2 ? concept.bullets.slice(1).join(" ") : "") ||
-    "";
+  const realWorldScenario = concept.realWorld?.scenario || "";
+  const realWorldApplication = concept.realWorld?.application || "";
+  const hook = concept.hook || concept.headline || "";
 
-  const realWorldApplication =
-    concept.realWorld?.application ||
-    "";
-
-  // ── Visual fallback ──────────────────────────────────────────────────────
-  const fallbackVisual = getAcademicVisualForSlide(
-    concept.orderIndex,
-    concept.title,
-    `${explanation} ${analogy}`
-  );
-
-  const rawVisualUrl = concept.visual?.imageUrl;
-  const isInvalidUrl =
-    !rawVisualUrl ||
-    rawVisualUrl.endsWith(".pdf") ||
-    rawVisualUrl.endsWith(".djvu") ||
-    rawVisualUrl.endsWith(".ogg") ||
-    rawVisualUrl.endsWith(".webm") ||
-    rawVisualUrl.toLowerCase().includes("flag") ||
-    rawVisualUrl.toLowerCase().includes("oklahoma");
-
-  const displayImage = isInvalidUrl ? fallbackVisual.imageUrl : rawVisualUrl;
-  const displayTitle = concept.visual?.title || fallbackVisual.title;
-  const displayCaption = concept.visual?.caption || fallbackVisual.caption;
+  // Visuals
+  const rawVisualUrl = concept.visual?.imageUrl || (concept.visual as any)?.fetchedImageUrl;
+  // If it's a real generated image (not a fallback unsplash), we prioritize it heavily.
+  const isStockUrl = rawVisualUrl?.includes("unsplash") || rawVisualUrl?.includes("pollinations");
+  const displayImage = rawVisualUrl; // We will show it even if stock, but style it nicely.
+  const svgCode = concept.visual?.svgCode;
+  const displayTitle = concept.visual?.title || concept.title;
+  const displayCaption = concept.visual?.caption || "";
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={concept.id}
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -16 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
-        className="flex flex-col h-full overflow-y-auto"
-        dir={dir}
-      >
-        <div className="flex-1 space-y-5 p-5 lg:p-6 max-w-3xl mx-auto w-full">
-
-          {/* ── Stage Badge + Title ─────────────────────────────────────── */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span
-                className={cn(
-                  "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-xs",
-                  badge.color
-                )}
-              >
-                {ar ? badge.labelAr : badge.labelEn}
-              </span>
-              <span className="text-xs text-slate-400 dark:text-slate-500 font-mono">
-                {ar ? `المفهوم ${concept.orderIndex}` : `Concept ${concept.orderIndex}`}
-              </span>
-              {concept.estimatedMinutes > 0 && (
-                <span className="text-xs text-slate-400 dark:text-slate-500">
-                  • ~{concept.estimatedMinutes} {ar ? "دقيقة" : "min"}
-                </span>
-              )}
+    <div
+      className="flex-1 overflow-y-auto w-full h-full bg-slate-50 dark:bg-[#09090b] text-slate-900 dark:text-slate-100 p-4 md:p-8 custom-scrollbar relative"
+      dir={dir}
+    >
+      <div className="max-w-5xl mx-auto space-y-8 pb-32">
+        {/* HEADER */}
+        <header className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-${badgeInfo.color}-100 dark:bg-${badgeInfo.color}-900/30 text-${badgeInfo.color}-700 dark:text-${badgeInfo.color}-300 border border-${badgeInfo.color}-200 dark:border-${badgeInfo.color}-800/50`}>
+              {ar ? badgeInfo.labelAr : badgeInfo.labelEn}
             </div>
+          </div>
+          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+            {concept.title}
+          </h1>
+        </header>
 
-            <h2 className="text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              <StemRenderer content={concept.title} inline />
-            </h2>
+        {/* BENTO GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* LEFT COLUMN: Narrative & Visuals */}
+          <div className="lg:col-span-8 space-y-6">
+            
+            {/* The Hook / Scenario */}
+            {hook && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-6 rounded-3xl bg-rose-50/80 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/50 backdrop-blur-sm shadow-sm"
+              >
+                <div className="flex items-center gap-2 mb-3 text-rose-600 dark:text-rose-400">
+                  <HelpCircle className="w-5 h-5" />
+                  <h3 className="text-sm font-bold uppercase tracking-widest">{ar ? "السيناريو" : "The Scenario"}</h3>
+                </div>
+                <div className="text-lg md:text-xl font-medium text-slate-800 dark:text-slate-200 leading-relaxed">
+                  <StemRenderer content={hook} />
+                </div>
+              </motion.div>
+            )}
+
+            {/* Core Concept & Analogy */}
+            {explanation && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm"
+              >
+                <div className="flex items-center gap-2 mb-3 text-emerald-600 dark:text-emerald-400">
+                  <Lightbulb className="w-5 h-5" />
+                  <h3 className="text-sm font-bold uppercase tracking-widest">{ar ? "المفهوم الأساسي" : "Core Concept"}</h3>
+                </div>
+                <div className="text-base text-slate-700 dark:text-slate-300 leading-relaxed space-y-4">
+                  <StemRenderer content={explanation} />
+                  {analogy && (
+                    <div className="mt-4 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border-l-4 border-emerald-400 dark:border-emerald-600">
+                      <p className="text-sm font-semibold italic text-emerald-800 dark:text-emerald-200">
+                        "{analogy}"
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Visual Focal Point */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg relative group"
+            >
+              {/* Image priority over SVG */}
+              {displayImage ? (
+                <div className="relative aspect-video w-full overflow-hidden bg-slate-950 flex items-center justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={displayImage}
+                    alt={displayTitle}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-90"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent pointer-events-none" />
+                  <div className="absolute bottom-4 left-6 right-6">
+                    <h4 className="text-white font-bold text-lg drop-shadow-md">{displayTitle}</h4>
+                    {displayCaption && (
+                      <p className="text-slate-200 text-sm font-medium drop-shadow-sm mt-1 line-clamp-2">
+                        {displayCaption}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : svgCode ? (
+                <div className="p-6 bg-white dark:bg-slate-900 flex flex-col items-center justify-center min-h-[300px]">
+                  <div
+                    className="w-full h-full flex justify-center [&>svg]:max-w-full [&>svg]:h-auto"
+                    dangerouslySetInnerHTML={{ __html: svgCode }}
+                  />
+                  {displayCaption && (
+                    <p className="text-slate-500 text-sm mt-4 italic text-center">{displayCaption}</p>
+                  )}
+                </div>
+              ) : (
+                <div className="p-6 bg-white dark:bg-slate-900 min-h-[300px] flex items-center justify-center">
+                  <DynamicMermaid
+                    conceptTitle={concept.title}
+                    explanation={explanation}
+                    mechanismSteps={mechanismSteps}
+                  />
+                </div>
+              )}
+            </motion.div>
+
           </div>
 
-          {/* ── Core Insight ────────────────────────────────────────────── */}
-          {explanation ? (
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent border-l-4 border-emerald-500 dark:border-emerald-400 dark:from-emerald-950/30">
-              <div className="flex items-start gap-3">
-                <Lightbulb className="h-5 w-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
-                <p className="text-base font-semibold text-slate-800 dark:text-slate-200 leading-relaxed">
-                  <StemRenderer content={explanation} inline />
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="p-4 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-sm text-center">
-              {ar ? "المحتوى قيد المراجعة — سيتوفر قريباً" : "Content is being reviewed and will be available soon."}
-            </div>
-          )}
-
-          {/* ── Mental Model ────────────────────────────────────────────── */}
-          {(analogy || explanation) && (
-            <SectionCard
-              icon={<Puzzle className="h-4 w-4" />}
-              label={ar ? "تخيلها كالتالي" : "Think of It Like This"}
-              accentColor="emerald"
-            >
-              <div className="space-y-3">
-                {analogy && (
-                  <div className="flex items-start gap-2.5">
-                    <Quote className="h-4 w-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-1 opacity-70" />
-                    <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed italic">
-                      <StemRenderer content={analogy} inline />
-                    </p>
-                  </div>
-                )}
-
-                {explanation && (
-                  <div className={analogy ? "pt-2.5 border-t border-emerald-100/60 dark:border-slate-800" : ""}>
-                    <p className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-[#0E6C3C]" />
-                      {ar ? "الإطار المفاهيمي" : "Core Framework"}
-                    </p>
-                    <div className="text-sm font-medium text-slate-800 dark:text-slate-200 leading-relaxed bg-emerald-50/40 dark:bg-emerald-950/20 p-3 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
-                      <StemRenderer content={explanation} />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </SectionCard>
-          )}
-
-          {/* ── Mechanism ───────────────────────────────────────────────── */}
-          {(explanation || mechanismSteps.length > 0) && (
-            <SectionCard
-              icon={<Cog className="h-4 w-4" />}
-              label={ar ? "كيف تعمل الآلية؟" : "How It Works"}
-              accentColor="blue"
-            >
-              <div className="space-y-3">
-                {explanation && (
-                  <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                    <StemRenderer content={explanation} />
-                  </div>
-                )}
-
-                {mechanismSteps.length > 1 && (
-                  <ol className="space-y-2 pt-1">
-                    {mechanismSteps.map((step, i) => (
-                      <li
-                        key={i}
-                        className="flex items-start gap-2.5 text-xs text-slate-600 dark:text-slate-400"
-                      >
-                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 flex items-center justify-center text-[10px] font-bold border border-blue-400/20">
+          {/* RIGHT COLUMN: Mechanisms & Application */}
+          <div className="lg:col-span-4 space-y-6">
+            
+            {/* Mechanism Stepper */}
+            {mechanismSteps.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="p-6 rounded-3xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/50 backdrop-blur-sm"
+              >
+                <div className="flex items-center gap-2 mb-6 text-blue-600 dark:text-blue-400">
+                  <Cog className="w-5 h-5" />
+                  <h3 className="text-sm font-bold uppercase tracking-widest">{ar ? "كيف تعمل الآلية" : "How It Works"}</h3>
+                </div>
+                
+                <div className="space-y-0 relative">
+                  {mechanismSteps.map((step, i) => (
+                    <div key={i} className="relative">
+                      {i < mechanismSteps.length - 1 && (
+                        <div className="absolute left-[15px] top-[30px] w-0.5 h-full bg-blue-200 dark:bg-blue-800" />
+                      )}
+                      <div className="flex items-start gap-4 relative z-10 pb-6">
+                        <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center text-sm font-extrabold shadow-sm">
                           {i + 1}
                         </span>
-                        <span className="leading-relaxed font-medium">
-                          <StemRenderer content={step} inline />
-                        </span>
-                      </li>
-                    ))}
-                  </ol>
-                )}
-              </div>
-            </SectionCard>
-          )}
-
-          {/* ── Visual (Interactive Visual Showcase) ────────────────────────── */}
-          <SectionCard
-            icon={<Eye className="h-4 w-4" />}
-            label={displayTitle || (ar ? "التصور المرئي" : "Visual & Molecular Models")}
-            accentColor="indigo"
-          >
-            <div className="space-y-3">
-              {displayImage && (
-                <div
-                  onClick={() => setIsLightboxOpen(true)}
-                  className="group relative rounded-2xl overflow-hidden border border-emerald-200/90 shadow-sm bg-white p-2.5 cursor-pointer hover:shadow-md transition-all"
-                  title={ar ? "انقر لتكبير الصورة بدقة عالية" : "Click to expand high-resolution diagram"}
-                >
-                  <img
-                    src={
-                      displayImage.startsWith("http")
-                        ? `/api/iscarb/image-proxy?url=${encodeURIComponent(displayImage)}`
-                        : displayImage
-                    }
-                    alt={displayCaption || displayTitle}
-                    className="w-full rounded-xl object-contain max-h-96 mx-auto group-hover:scale-101 transition-transform duration-200"
-                    loading="lazy"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = fallbackVisual.imageUrl;
-                    }}
-                  />
-                  <div className="absolute bottom-4 right-4 bg-black/75 hover:bg-black text-white text-[11px] font-bold px-2.5 py-1.5 rounded-xl backdrop-blur-xs flex items-center gap-1.5 shadow-lg opacity-85 group-hover:opacity-100 transition-opacity">
-                    <Maximize2 className="h-3.5 w-3.5" />
-                    <span>{ar ? "تكبير" : "Expand"}</span>
-                  </div>
-                </div>
-              )}
-
-              {concept.visual?.svgCode && (
-                <div
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-slate-50 dark:bg-slate-900/60 p-2"
-                  // eslint-disable-next-line react/no-danger
-                  dangerouslySetInnerHTML={{ __html: concept.visual.svgCode }}
-                />
-              )}
-
-              {displayCaption && (
-                <div className="p-3 rounded-xl bg-emerald-50/50 border border-emerald-100 text-xs text-slate-700 text-center font-medium leading-relaxed italic">
-                  <StemRenderer content={displayCaption} inline />
-                </div>
-              )}
-            </div>
-          </SectionCard>
-
-          {/* ── Real-World Transfer ─────────────────────────────────────── */}
-          {(realWorldScenario || realWorldApplication) && (
-            <SectionCard
-              icon={<Globe className="h-4 w-4" />}
-              label={ar ? "في الواقع" : "In the Real World"}
-              accentColor="purple"
-            >
-              <div className="space-y-2">
-                {realWorldScenario && (
-                  <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-semibold">
-                    <StemRenderer content={realWorldScenario} />
-                  </div>
-                )}
-                {realWorldApplication && realWorldApplication !== realWorldScenario && (
-                  <div className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                    <StemRenderer content={realWorldApplication} />
-                  </div>
-                )}
-              </div>
-            </SectionCard>
-          )}
-
-          {/* ── Common Pitfalls ─────────────────────────────────────────── */}
-          {concept.commonPitfalls && concept.commonPitfalls.length > 0 && (
-            <SectionCard
-              icon={<AlertTriangle className="h-4 w-4" />}
-              label={ar ? "أخطاء شائعة" : "Common Pitfalls"}
-              accentColor="amber"
-            >
-              <div className="space-y-3">
-                {concept.commonPitfalls.map((pitfall, i) => (
-                  <div
-                    key={i}
-                    className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-1.5 text-xs"
-                  >
-                    <div className="flex items-center gap-1.5 font-bold text-amber-800 dark:text-amber-300">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                      <span>
-                        <StemRenderer content={pitfall.misconception} inline />
-                      </span>
+                        <div className="flex-1 pt-1 text-sm text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
+                          <StemRenderer content={step} />
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-slate-600 dark:text-slate-400 pl-3">
-                      <span className="font-semibold text-rose-600 dark:text-rose-400">
-                        {ar ? "لماذا خطأ: " : "Why incorrect: "}
-                      </span>
-                      <StemRenderer content={pitfall.whyWrong} inline />
-                    </p>
-                    <p className="text-slate-700 dark:text-slate-300 pl-3 font-medium">
-                      <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                        {ar ? "الصواب: " : "Better way: "}
-                      </span>
-                      <StemRenderer content={pitfall.betterWay} inline />
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </SectionCard>
-          )}
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
+            {/* Real World Transfer */}
+            {(realWorldScenario || realWorldApplication) && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+                className="p-6 rounded-3xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/50"
+              >
+                <div className="flex items-center gap-2 mb-3 text-purple-600 dark:text-purple-400">
+                  <Globe className="w-5 h-5" />
+                  <h3 className="text-sm font-bold uppercase tracking-widest">{ar ? "الواقع" : "Real World"}</h3>
+                </div>
+                <div className="text-sm text-slate-700 dark:text-slate-300 space-y-3">
+                  {realWorldScenario && <p className="font-semibold">{realWorldScenario}</p>}
+                  {realWorldApplication && realWorldApplication !== realWorldScenario && (
+                    <StemRenderer content={realWorldApplication} />
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Pitfalls */}
+            {concept.commonPitfalls && concept.commonPitfalls.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 }}
+                className="p-6 rounded-3xl bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50"
+              >
+                <div className="flex items-center gap-2 mb-4 text-amber-600 dark:text-amber-500">
+                  <AlertTriangle className="w-5 h-5" />
+                  <h3 className="text-sm font-bold uppercase tracking-widest">{ar ? "أخطاء شائعة" : "Common Pitfalls"}</h3>
+                </div>
+                <div className="space-y-4">
+                  {concept.commonPitfalls.map((pitfall, i) => (
+                    <div key={i} className="text-sm">
+                      <p className="font-semibold text-slate-800 dark:text-slate-200 line-through decoration-red-500/50 decoration-2">
+                        {pitfall.misconception}
+                      </p>
+                      <p className="text-slate-600 dark:text-slate-400 mt-1">
+                        <span className="font-bold text-amber-600 dark:text-amber-500 mr-1">Actually:</span>
+                        {pitfall.betterWay}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+          </div>
         </div>
 
-        {/* Full-screen Lightbox Dialog */}
-        <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
-          <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col p-4 bg-white text-slate-900 border border-emerald-200 rounded-2xl shadow-2xl">
-            <DialogHeader className="pb-2 border-b border-emerald-100">
-              <DialogTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Eye className="h-4 w-4 text-[#0E6C3C]" />
-                {displayTitle}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="flex-1 overflow-auto p-2 flex items-center justify-center">
-              <img
-                src={
-                  displayImage.startsWith("http")
-                    ? `/api/iscarb/image-proxy?url=${encodeURIComponent(displayImage)}`
-                    : displayImage
-                }
-                alt={displayTitle}
-                className="max-h-[70vh] w-auto object-contain rounded-xl shadow-md border border-slate-100"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = fallbackVisual.imageUrl;
-                }}
-              />
-            </div>
-            {displayCaption && (
-              <p className="text-xs text-slate-600 text-center italic border-t border-slate-100 pt-2 font-medium">
-                {displayCaption}
-              </p>
-            )}
-          </DialogContent>
-        </Dialog>
-      </motion.div>
-    </AnimatePresence>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// SectionCard helper
-// ---------------------------------------------------------------------------
-
-interface SectionCardProps {
-  icon: React.ReactNode;
-  label: string;
-  accentColor: "emerald" | "blue" | "indigo" | "purple" | "amber";
-  children: React.ReactNode;
-}
-
-const ACCENT_STYLES = {
-  emerald: "border-emerald-200/80 bg-white dark:bg-slate-900 dark:border-emerald-900/40 text-emerald-700 dark:text-emerald-400",
-  blue: "border-blue-200/80 bg-white dark:bg-slate-900 dark:border-blue-900/40 text-blue-700 dark:text-blue-400",
-  indigo: "border-indigo-200/80 bg-white dark:bg-slate-900 dark:border-indigo-900/40 text-indigo-700 dark:text-indigo-400",
-  purple: "border-purple-200/80 bg-white dark:bg-slate-900 dark:border-purple-900/40 text-purple-700 dark:text-purple-400",
-  amber: "border-amber-200/80 bg-white dark:bg-slate-900 dark:border-amber-900/40 text-amber-700 dark:text-amber-400",
-};
-
-function SectionCard({ icon, label, accentColor, children }: SectionCardProps) {
-  const styles = ACCENT_STYLES[accentColor];
-
-  return (
-    <div className={cn("p-4 rounded-2xl border shadow-xs transition-all", styles)}>
-      <div className="flex items-center gap-2 mb-3">
-        <span className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-current">
-          {icon}
-        </span>
-        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
-          {label}
-        </h3>
       </div>
-      {children}
     </div>
   );
 }

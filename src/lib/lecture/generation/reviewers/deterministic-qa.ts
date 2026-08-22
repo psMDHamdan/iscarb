@@ -31,13 +31,10 @@ export function runDeterministicQA(
   let readinessChecks = 0;
 
   slides.forEach((slide) => {
-    if (slide.wordCount > 40) {
-      result.failedRules.push(`Slide ${slide.slideNo}: Word count ${slide.wordCount} > 40`);
-      result.status = "SOFT_FAIL";
-    }
+    // Word count limit removed — depth is more important than brevity.
     const bullets = slide.body?.bullets?.length || 0;
-    if (bullets > 5) {
-      result.failedRules.push(`Slide ${slide.slideNo}: Bullet count ${bullets} > 5`);
+    if (bullets > 10) {
+      result.failedRules.push(`Slide ${slide.slideNo}: Bullet count ${bullets} > 10`);
       result.status = "SOFT_FAIL";
     }
 
@@ -53,6 +50,26 @@ export function runDeterministicQA(
       result.status = "HARD_FAIL";
     }
   });
+
+  // Diversity checks
+  const diagramTypes = new Map<string, number>();
+  const interactionTypes = new Map<string, number>();
+  for (const slide of slides) {
+    const diagramType = slide.visualIntent?.diagramType || "none";
+    diagramTypes.set(diagramType, (diagramTypes.get(diagramType) || 0) + 1);
+    const interactionType = slide.body?.studentAction?.type || "none";
+    interactionTypes.set(interactionType, (interactionTypes.get(interactionType) || 0) + 1);
+  }
+  // At least 3 different diagram types across the deck
+  if (diagramTypes.size < 3) {
+    result.failedRules.push(`Diversity: only ${diagramTypes.size} diagram types — need >= 3`);
+    if (result.status === "PASS") result.status = "SOFT_FAIL";
+  }
+  // At least 3 different interaction types
+  if (interactionTypes.size < 3) {
+    result.failedRules.push(`Diversity: only ${interactionTypes.size} interaction types — need >= 3`);
+    if (result.status === "PASS") result.status = "SOFT_FAIL";
+  }
 
   if (visualPlans < 18) {
     result.failedRules.push(`Requires >= 18 visual plans, found ${visualPlans}`);

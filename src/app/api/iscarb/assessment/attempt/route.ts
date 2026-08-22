@@ -14,15 +14,49 @@ export const POST = guard({ tier: "write", roles: ["student"] }, async (req, ctx
   const body = await parseJSON(req);
   if (!body) return jsonErrorResponse("Invalid request body");
 
-  const { specialization } = body as { specialization: string };
-  if (!specialization) return jsonErrorResponse("specialization required", 400);
+  const bodyObj = body as Record<string, unknown>;
+  let specialization = (bodyObj.specialization as string | undefined)?.trim();
+  const backgroundType = (bodyObj.backgroundType as string | undefined)?.trim() || "unspecified";
+  const customQuestionContext = (bodyObj.customQuestionContext as string | undefined)?.trim() || null;
+  const selectedDomain = (bodyObj.selectedDomain as string | undefined)?.trim() || null;
 
   const resolved = await resolveStudentIdFromSession(ctx.session);
   if (!resolved.ok) return NextResponse.json({ error: resolved.message }, { status: resolved.status });
 
+  // Fetch stored specialization from DB if not provided by frontend to ensure SINGLE SOURCE OF TRUTH
+  if (!specialization) {
+    const studentRecord = await db.student.findUnique({
+      where: { id: resolved.studentId },
+      select: { program: true },
+    });
+    if (studentRecord?.program) {
+      specialization = studentRecord.program;
+    }
+  }
+
+  if (!specialization) {
+    return jsonErrorResponse("Specialization is required to generate an assessment.", 400);
+  } else {
+    // Save specialization permanently to Student profile
+    try {
+      await db.student.update({
+        where: { id: resolved.studentId },
+        data: { program: specialization },
+      });
+    } catch {
+      // Ignore update error if schema constraints differ
+    }
+  }
+
   const { attemptId, set } = await ensureAttemptExamGeneration({
     studentId: resolved.studentId,
     specialization,
+    context: {
+      userId: resolved.studentId,
+      backgroundType,
+      customQuestionContext,
+      selectedDomain
+    }
   });
 
   return NextResponse.json({

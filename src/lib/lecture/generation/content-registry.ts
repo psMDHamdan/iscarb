@@ -51,8 +51,8 @@ export class ContentRegistry {
     if (sig1 === sig2) return 1.0;
     const tokens1 = new Set(sig1.split("_"));
     const tokens2 = new Set(sig2.split("_"));
-    const intersection = new Set([...tokens1].filter((x) => tokens2.has(x)));
-    const union = new Set([...tokens1, ...tokens2]);
+    const intersection = new Set(Array.from(tokens1).filter((x) => tokens2.has(x)));
+    const union = new Set([...Array.from(tokens1), ...Array.from(tokens2)]);
     return union.size === 0 ? 0 : intersection.size / union.size;
   }
 
@@ -67,7 +67,7 @@ export class ContentRegistry {
     const newSig = ContentRegistry.computeSignature(item.promptOrStem);
     const newAnswerSig = item.answerOrSolution ? ContentRegistry.computeSignature(item.answerOrSolution) : "";
 
-    for (const existing of this.items.values()) {
+    for (const existing of Array.from(this.items.values())) {
       // 1. Exact Duplicate
       if (existing.promptOrStem.trim().toLowerCase() === item.promptOrStem.trim().toLowerCase()) {
         return { accepted: false, reason: `Exact duplicate of item ${existing.contentId}` };

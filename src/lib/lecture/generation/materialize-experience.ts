@@ -174,13 +174,52 @@ export async function materializeExperience(projectId: string): Promise<{ experi
     const stage = stageForSlide(fn, slideNo, isLast);
 
     const title = cleanJargon(c.title) || `Concept ${slideNo}`;
-    const bullets = Array.isArray(c.bullets)
-      ? c.bullets.map((b: string) => cleanJargon(b)).filter((b: string) => b.length > 0)
-      : Array.isArray(c.visibleContent)
-        ? c.visibleContent.map((b: string) => cleanJargon(b)).filter((b: string) => b.length > 0)
-        : [];
-    const explanation = firstNonEmpty(c.teachingExplanation, c.academicTruth, bullets.join(". "));
-    const coreInsight = firstNonEmpty(c.studentCoreInsight, c.academicTruth, c.learningObjective, bullets[0], title);
+
+    // New generator stores content inside `body.visibleCopy` / `body.bullets`;
+    // legacy generator stored it flat at `c.bullets` / `c.teachingExplanation`.
+    const bodyBullets = Array.isArray(c.body?.bullets) ? c.body.bullets : [];
+    const legacyBullets = Array.isArray(c.bullets) ? c.bullets : (Array.isArray(c.visibleContent) ? c.visibleContent : []);
+    const allBullets = [...bodyBullets, ...legacyBullets]
+      .map((b: string) => cleanJargon(b))
+      .filter((b: string) => b.length > 0);
+    const bullets = [...new Set(allBullets)]; // deduplicate
+
+    // visibleCopy is the primary explanation in the new format
+    const bodyVisibleCopy = c.body?.visibleCopy ? cleanJargon(c.body.visibleCopy) : "";
+
+    // studentExperience (inline) fields from the new generator
+    const se = c.studentExperience || {};
+    const seExplanation = se.coreContent?.explanation ? cleanJargon(se.coreContent.explanation) : "";
+    const seAnalogy = se.coreContent?.analogy ? cleanJargon(se.coreContent.analogy) : "";
+    const seSteps = Array.isArray(se.coreContent?.steps) ? se.coreContent.steps.map((s: string) => cleanJargon(s)).filter(Boolean) : [];
+
+    const explanation = firstNonEmpty(seExplanation, bodyVisibleCopy, c.teachingExplanation, c.academicTruth, bullets.join(". "));
+    const coreInsight = firstNonEmpty(bodyVisibleCopy, seExplanation, c.studentCoreInsight, c.academicTruth, c.learningObjective, bullets[0], title);
+
+    // Mechanism steps: prefer inline studentExperience steps > body bullets > legacy
+    const mechanismSteps = seSteps.length > 0 ? seSteps : (bullets.length >= 2 ? bullets.slice(0, 5) : []);
+
+    // Interactive prompt from body.studentAction (new) or flat studentAction (legacy)
+    const rawAction = c.body?.studentAction;
+    const interactivePrompt = rawAction?.stem ? cleanJargon(rawAction.stem) : (typeof c.studentAction === "string" ? cleanJargon(c.studentAction) : "");
+    const interactiveOptions = Array.isArray(rawAction?.options) ? rawAction.options : [];
+
+    // Real-world / application
+    const realWorld = firstNonEmpty(
+      se.realWorld?.application,
+      se.realWorld?.scenario,
+      c.studentScenario,
+      c.studentApplication,
+      c.mastery,
+    ) || "";
+
+    // Misconception from inline or legacy
+    const misconception = (() => {
+      if (se.commonPitfalls && Array.isArray(se.commonPitfalls) && se.commonPitfalls.length > 0) {
+        return se.commonPitfalls.map((p: any) => `${p.misconception || ""} → ${p.betterWay || ""}`).join("; ");
+      }
+      return cleanJargon(c.feedback) || "";
+    })();
 
     const flagged = isFlagged(artifact.status, c.reviewStatus);
 
@@ -202,12 +241,12 @@ export async function materializeExperience(projectId: string): Promise<{ experi
           : Array.isArray(c.citations)
             ? c.citations.map((ci: any) => String(ci.sourceBlockId)).filter(Boolean)
             : [],
-        academicTruth: cleanJargon(c.academicTruth) || coreInsight,
-        intuitionMentalModel: firstNonEmpty(c.studentAnalogy, c.analogy, "Consider how this connects to a familiar example."),
-        mechanismExplanation: explanation,
-        realWorldTransfer: firstNonEmpty(c.studentScenario, c.studentApplication, c.mastery, "Review the applications in the source material."),
-        misconceptionAlert: cleanJargon(c.feedback) || "",
-        coreIdea: cleanJargon(c.studentFramework || c.academicTruth || coreInsight),
+        academicTruth: explanation || coreInsight,
+        intuitionMentalModel: firstNonEmpty(seAnalogy, c.studentAnalogy, c.analogy) || "",
+        mechanismExplanation: mechanismSteps.length > 0 ? mechanismSteps.join(". ") : explanation,
+        realWorldTransfer: realWorld || "",
+        misconceptionAlert: misconception,
+        coreIdea: coreInsight,
         keyTakeaways: bullets.slice(0, 5),
         keywords: [],
         estimatedMinutes: 5,
@@ -239,32 +278,47 @@ export async function materializeExperience(projectId: string): Promise<{ experi
       }
     }
 
-    // Learning activity from learningActivity / studentAction.
-    const activityText = (() => {
+    // Learning activity from body.studentAction (new) or learningActivity (legacy).
+    const activityPrompt = (() => {
+      // New format: body.studentAction.stem
+      if (rawAction?.stem) {
+        const s = cleanJargon(rawAction.stem);
+        if (s && s.length > 5) return s;
+      }
+      // Inline studentExperience interactive prompt
+      if (se.interactive?.prompt) {
+        const s = cleanJargon(se.interactive.prompt);
+        if (s && s.length > 5) return s;
+      }
+      // Legacy: learningActivity
       const la = c.learningActivity;
       if (typeof la === "string") return cleanJargon(la);
       if (la && typeof la === "object" && typeof la.text === "string") return cleanJargon(la.text);
-      return cleanJargon(c.studentAction);
+      // Legacy: flat studentAction string
+      if (typeof c.studentAction === "string") return cleanJargon(c.studentAction);
+      return "";
     })();
-    if (activityText) {
+    if (activityPrompt) {
       try {
         await db.learningActivity.create({
           data: {
             id: randomUUID(),
             experienceId: experience.id,
             conceptBlockId: block.id,
-            activityType: "ACTIVE_RECALL",
+            activityType: rawAction?.type === "poll" ? "POLL" : (rawAction?.type === "calculation" ? "CALCULATION" : "ACTIVE_RECALL"),
             title: cleanJargon(c.purpose) || "Your Task",
-            prompt: activityText,
+            prompt: activityPrompt,
             promptAr: c.textAr?.bullets?.join(" ") ? cleanJargon(c.textAr.bullets.join(" ")) : undefined,
-            actionVerb: plan?.interactionType === "poll" ? "Predict" : "Explain",
+            actionVerb: rawAction?.type === "poll" ? "Predict" : (plan?.interactionType === "poll" ? "Predict" : "Explain"),
             scaffoldingLevel: fn && (fn.includes("independent") || fn.includes("challenge")) ? "independent" : "guided",
             initialContext: null,
             expectedResponseCriteria: null,
-            modelAnswer: cleanJargon(c.mastery) || null,
-            progressiveHints: Array.isArray(c.learningActivity?.hints)
-              ? c.learningActivity.hints.map((h: string) => cleanJargon(h))
-              : [],
+            modelAnswer: cleanJargon(c.mastery) || (rawAction?.rationale ? cleanJargon(rawAction.rationale) : null),
+            progressiveHints: (() => {
+              if (se.interactive?.hints && Array.isArray(se.interactive.hints)) return se.interactive.hints.map((h: string) => cleanJargon(h));
+              if (Array.isArray(c.learningActivity?.hints)) return c.learningActivity.hints.map((h: string) => cleanJargon(h));
+              return [];
+            })(),
             misconceptionTriggers: null,
             orderIndex: 1,
           },

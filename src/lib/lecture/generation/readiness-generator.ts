@@ -8,12 +8,12 @@
  * In OFFICIAL_JAHEZIAH mode a sourceLocator (SKU/SLO) is added.
  */
 import { db } from "@/lib/db";
-import { chatJson } from "@/lib/ai-engine";
+import { chatJson, DEFAULT_AI_MODEL } from "@/lib/ai-engine";
 import type { CourseLearningOutcome } from "@/lib/assessment/ai-question-generation.service";
 import { recordModelRun } from "./model-run";
 import type { LectureProjectWithRelations, ReadinessItemJson } from "./types";
 
-const MODEL = "gpt-4o";
+const MODEL = DEFAULT_AI_MODEL;
 
 /** Fetch accepted alignment links for OFFICIAL_JAHEZIAH mode. */
 async function fetchOfficialOutcomes(projectId: string): Promise<{ outcomeId: string; outcomeText: string; sourceLocator: string }[]> {
@@ -50,8 +50,34 @@ function promptFor(
         ? "\nGenerate output in English AND Arabic."
         : "";
 
-  const system =
-    "You are an expert university assessment designer. Generate one CLO-aligned conceptual readiness check. Return STRICT valid JSON only. Exactly one option must be correct (isCorrect: true). Ensure questions test deep comprehension, not just basic recall." + langInstruction;
+  const system = [
+    "You are an expert university assessment designer specializing in MECHANISTIC questions.",
+    "",
+    "Generate one CLO-aligned conceptual readiness check. Return STRICT valid JSON only.",
+    "",
+    "RULES:",
+    "1. The question MUST test MECHANISM understanding, not just recall.",
+    "   BAD: 'What is recombinant cloning?'",
+    "   GOOD: 'You cut both a plasmid and a DNA insert with the same restriction enzyme. The fragments have compatible sticky ends, but many transformed colonies contain empty vector. Which additional step most directly reduces this outcome?'",
+    "",
+    "2. Distractors must be PLAUSIBLE and represent REAL misconceptions students actually hold.",
+    "   Each wrong option should reflect a common misunderstanding of the mechanism.",
+    "",
+    "3. The question stem should present a SPECIFIC SCENARIO with concrete details, not a vague abstract question.",
+    "",
+    "4. Exactly one option must be correct (isCorrect: true).",
+    "",
+    "5. Rationale must explain WHY the correct answer is correct AND WHY each wrong answer is wrong.",
+    "",
+    "6. Never generate questions like: 'Which statement accurately describes...?' or 'Which of the following is true?' — these are too generic.",
+    "Instead: present a specific scenario and ask what would happen, why, or how to fix it.",
+    "",
+    "7. FORMULAS: When the question involves equations or formulas, use LaTeX notation:",
+    "   - Inline: $F = ma$, $E = mc^2$, $\Delta G = -RT \ln K_{eq}$",
+    "   - Explain variables: '$F$ is force (N), $m$ is mass (kg), $a$ is acceleration (m/s²)'",
+    "   - For chemistry: $\text{CH}_3\text{COOH} + \text{NaOH} \rightarrow \text{CH}_3\text{COONa} + \text{H}_2\text{O}$",
+    "   - NEVER write formulas as plain text — always use LaTeX $...$ notation"
+  ].join("\n") + langInstruction;
   const user = [
     `Generate one CLO-aligned readiness check for ${label}:`,
     `Course Learning Outcome: ${clo.number}: ${clo.text}`,
@@ -129,6 +155,20 @@ export async function generateReadinessItems(project: LectureProjectWithRelation
     select: { slideNo: true, cloIds: true },
   });
 
+  // Load what was actually TAUGHT in the slides (for validation)
+  const latestArtifacts = await db.lectureSlideArtifact.findMany({
+    where: { projectId: project.id },
+    orderBy: [{ slideNo: "asc" }, { version: "desc" }],
+  });
+  const latestMap = new Map<number, typeof latestArtifacts[0]>();
+  for (const a of latestArtifacts) {
+    if (!latestMap.has(a.slideNo)) latestMap.set(a.slideNo, a);
+  }
+  const taughtContent = [...latestMap.values()].map((a) => {
+    const c = a.contentJson as any;
+    return `${c?.title || ""} ${(c?.body?.bullets || []).join(" ")}`;
+  }).join(" ");
+
   const cloForRange = (range: [number, number]): CourseLearningOutcome => {
     const usedIds = slidePlans
       .filter((s) => s.slideNo >= range[0] && s.slideNo <= range[1])
@@ -147,14 +187,15 @@ export async function generateReadinessItems(project: LectureProjectWithRelation
   // of 4 sequential round-trips.
   const gateClo = clos[clos.length - 1] || clos[0];
   const block0 = blocks[0] ?? { text: project.title, id: "sb-1" };
-  const official = officialOutcomes[0];
-
-  const slotTasks = SLOTS.map(async (slot) => {
+  const official = officialOutcomes[0];    const slotTasks = SLOTS.map(async (slot) => {
     const clo = cloForRange(slot.range);
     const block = blocks.find((b) => b.criticality === "critical") ?? blocks[0] ?? { text: project.title, id: "sb-1" };
 
+    // CRITICAL: Pass taught content to the LLM so questions come from what was taught
+    const taughtBlock = { text: `${block.text}\n\nWHAT WAS ACTUALLY TAUGHT IN THIS LESSON:\n${taughtContent.slice(0, 1500)}` };
+
     try {
-      const { system, user } = promptFor(slot.label, clo, block, project.nationalAlignmentMode, official, project.courseProfile.languagePolicy as string);
+      const { system, user } = promptFor(slot.label, clo, taughtBlock, project.nationalAlignmentMode, official, project.courseProfile.languagePolicy as string);
       const result = await chatJson({ system, user, temperature: 0.3, model: MODEL });
       await recordModelRun({ projectId: project.id, kind: "readiness", result });
       const json = result.json as Record<string, unknown> | null;
@@ -165,19 +206,21 @@ export async function generateReadinessItems(project: LectureProjectWithRelation
       console.warn(`[readiness-generator] Slot S${slot.slideNo} LLM call failed, using normalized fallback`, e);
     }
 
-    // Fallback item if LLM failed
+    // Fallback item if LLM failed — use taught content for specificity
+    const fallbackTitle = latestMap.get(slot.slideNo)?.contentJson?.title || clo.text;
+    const fallbackBullets = (latestMap.get(slot.slideNo)?.contentJson?.body?.bullets || []).slice(0, 3);
     return normalizeItem(
       {
-        stem: `Which statement accurately identifies the core principle of ${clo.text}?`,
+        stem: `Based on the lesson content about: ${fallbackTitle}. ${fallbackBullets[0] ? `The lesson explained that ${fallbackBullets[0].slice(0, 100)}.` : ""} Which of the following correctly describes this concept?`,
         options: [
-          { id: "A", text: "The foundational framework aligns with verified academic theory.", isCorrect: true },
-          { id: "B", text: "The phenomenon occurs randomly without governing laws.", isCorrect: false },
-          { id: "C", text: "The concept contradicts empirical observation.", isCorrect: false },
-          { id: "D", text: "The interaction depends entirely on extraneous noise.", isCorrect: false },
+          { id: "A", text: fallbackBullets[0] || "This is the correct understanding of the concept.", isCorrect: true },
+          { id: "B", text: `This concept does not apply to ${clo.text}.`, isCorrect: false },
+          { id: "C", text: `The mechanism works in reverse.`, isCorrect: false },
+          { id: "D", text: `This is unrelated to the course material.`, isCorrect: false },
         ],
         difficulty: "medium",
-        rationale: `Understanding ${clo.number} requires mastery of the validated mechanisms.`,
-        misconception: "Assuming passive unguided progression.",
+        rationale: `This question tests understanding of: ${fallbackTitle}.`,
+        misconception: "Confusing this concept with unrelated topics.",
       },
       clo.id,
       block.id,

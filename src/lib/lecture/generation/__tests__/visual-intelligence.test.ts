@@ -144,14 +144,15 @@ describe("Visual Intelligence Pipeline", () => {
     expect(composed.visibleContent[0]).toBe("From measurement to decision");
   });
 
-  it("aiFindAcademicImage prefers a curated match and skips the LLM", async () => {
+  it("aiFindAcademicImage returns local visual info without external URLs", async () => {
     const result = await aiFindAcademicImage({
       title: "Protein Folding",
       bullets: ["folds into native conformation"],
       slideNo: 5,
     });
-    expect(hoisted.chatJson).not.toHaveBeenCalled();
-    expect(result.imageUrl).toBe("https://images.unsplash.com/curated-protein-folding");
-    expect(result.title).toBe("Protein Folding & Structure");
+    // LOCAL-FIRST: no external image URL, no LLM call
+    expect(result.imageUrl).toBeUndefined();
+    expect(result.title).toBe("Protein Folding");
+    expect(result.visualType).toBe("Diagram");
   });
 });

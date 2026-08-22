@@ -382,6 +382,14 @@ interface RawLLMQuestion {
   options: string[];
   optionsAr?: string[];
   correctIndex: number;
+  validation?: {
+    frameworkAppliedCorrectly: boolean;
+    exactlyOneBestAnswer: boolean;
+    allOptionsPlausible: boolean;
+    correctAnswerNotObvious: boolean;
+    specializationRelevant: boolean;
+    taskOptionAlignment: boolean;
+  };
 }
 
 // ── System prompt builder ────────────────────────────────────────────────────
@@ -394,6 +402,7 @@ function buildSystemPrompt(
   profile: SpecializationProfile,
   previousFailures: string[],
   usedTopics: string[] = [],
+  context?: import("./assessment-types").AssessmentContext | null
 ): string {
   const failureNote =
     previousFailures.length > 0
@@ -403,6 +412,14 @@ function buildSystemPrompt(
     usedTopics.length > 0
       ? `\nALREADY-USED SCENARIO AREAS IN THIS EXAM (the candidate already answered questions about these — generate a DIFFERENT professional problem):\n${usedTopics.map((t) => `  • ${t}`).join("\n")}\n`
       : "";
+
+  const customContextStr = context?.customQuestionContext
+    ? `\nUSER SPECIFIC CONTEXT:\nThe user explicitly requested to focus on: "${context.customQuestionContext}". You MUST integrate this into the scenario.\n`
+    : "";
+
+  const backgroundStr = context?.backgroundType && context.backgroundType !== "unspecified"
+    ? `\nUSER BACKGROUND TYPE: ${context.backgroundType}\nEnsure the scenario is appropriate for a ${context.backgroundType} professional.\n`
+    : "";
 
   return `You are the iSCARB Specialization-Aware Assessment Question Generator.
 
@@ -415,6 +432,9 @@ CRITICAL RULES — violating any rule invalidates your entire response:
 6. The correct answer position must be index ${Math.floor(Math.random() * 4)} (0-based).
 7. Do NOT generate generic scenarios. Do NOT use phrases like "tell me about a time" or "describe a situation."
 ${failureNote}
+${varietyNote}
+${customContextStr}
+${backgroundStr}
 ${renderProfileForPrompt(profile)}
 
 SCENARIO REQUIREMENTS (all must be present):
@@ -428,17 +448,20 @@ SCENARIO REQUIREMENTS (all must be present):
 
 OPTION REQUIREMENTS (MCQ OPTION QUALITY ENGINE — HARD MODE):
   □ FOUR DIFFERENT, PLAUSIBLE PROFESSIONAL APPROACHES to the exact same scenario and task.
-  □ EACH OPTION MUST BE A DISTINCT, MUTUALLY EXCLUSIVE APPROACH. If a competent candidate
-    would pick two of your options for the same reason, the question is INVALID — rewrite
-    one of them so it fails on a different, identifiable weakness (e.g. right principle but
-    wrong priority; good action but incomplete; strong short-term fix but no long-term control;
-    team-level improvement that dodges personal accountability).
-  □ DO NOT include "Option 0:", "Option 1:", or any prefixes in option text. Return pure action + rationale + trade-off text.
+  □ Each option MUST be 1–4 meaningful sentences long.
+  □ Options MUST follow this structure (you MUST randomize the actual correct answer index):
+      • Strong but flawed due to one important issue
+      • Plausible but incomplete or poorly prioritized
+      • Another credible approach with a hidden trade-off
+      • Best answer, but not obviously superior
+  □ FRAMEWORK VALIDATION RULE: If the module involves a framework (e.g. STAR):
+      - The correct option MUST demonstrate the framework through content (e.g. specific Situation, Task, Action, Result), not merely state the names of the steps.
+      - Distractors MUST contain realistic partial applications or sequencing errors (e.g. Situation + Action but no personal responsibility, Result-first narrative that fails to establish context, General skills summary instead of an example, Team actions without individual contribution, Chronology that obscures decision-making).
+      - Do NOT make the correct option obviously identifiable by explicitly listing the framework steps ("First I would state the situation...").
+  □ DO NOT include "Option A:", "Option B:", or any prefixes in option text. Return pure text.
   □ Every option MUST directly answer the task using concepts from ${specialization}.
-  □ Competing trade-offs: balance accuracy vs latency, speed vs reliability, security vs usability, short-term vs maintainability.
-  □ Equal depth and comparable length across options (30–60 words per option).
-  □ Avoid "longest option = correct" or superior language ("best practice", "optimal", "comprehensive", "robustly") only in the correct choice.
-  □ No generic options ("Ask manager", "Communicate with stakeholders", "Do nothing").
+  □ Equal depth, length, sophistication, and realism across all options. The correct answer MUST NOT be visibly longer.
+  □ No trivial distractors ("Ask manager", "Communicate", "Do nothing", "Work harder").
   □ Each option MUST combine: [SPECIFIC DOMAIN ACTION] + [RATIONALE] + [TRADE-OFF].
 
 HIGH-DIFFICULTY MCQ QUALITY GATE
@@ -542,11 +565,13 @@ Ensure that 'scenario', 'task', and 'options' are EXCLUSIVELY in English. Only t
     "<Option D in Arabic (فصحى أكاديمية)>"
   ],
   "correctIndex": <0|1|2|3>,
-  "selfCritiqueScore": {
-    "specializationRelevance": <0-10>,
-    "competencyRelevance": <0-10>,
+  "validation": {
+    "frameworkAppliedCorrectly": <true|false>,
+    "exactlyOneBestAnswer": <true|false>,
     "allOptionsPlausible": <true|false>,
-    "genericityTestPassed": <true|false>
+    "correctAnswerNotObvious": <true|false>,
+    "specializationRelevant": <true|false>,
+    "taskOptionAlignment": <true|false>
   }
 }`;
 }
@@ -571,8 +596,8 @@ function buildUserPrompt(
     `The correct option must NOT be identifiable from length, hedging language, or obvious moral superiority.`,
     ``,
     `After generating the question, perform your internal self-critique.`,
-    `Only return the JSON if selfCritiqueScore.specializationRelevance >= 8 AND allOptionsPlausible = true AND genericityTestPassed = true.`,
-    `If not, fix the question and return the corrected version.`,
+    `Only return the JSON if ALL 6 validation booleans are true.`,
+    `If any validation fails, fix the question and return the corrected version.`,
   ].join("\n");
 }
 
@@ -585,8 +610,9 @@ export async function generateSpecializationQuestion(params: {
   moduleTitle: string;
   moduleFramework: string;
   usedTopics?: string[];
+  context?: import("./assessment-types").AssessmentContext | null;
 }): Promise<GeneratedMCQ> {
-  const { specialization, competency, moduleCode, moduleTitle, moduleFramework, usedTopics } = params;
+  const { specialization, competency, moduleCode, moduleTitle, moduleFramework, usedTopics, context } = params;
 
   const profile = getSpecializationProfile(specialization);
   let lastFailures: string[] = [];
@@ -594,7 +620,7 @@ export async function generateSpecializationQuestion(params: {
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     const systemPrompt = buildSystemPrompt(
       specialization, competency, moduleTitle, moduleFramework,
-      profile, lastFailures, usedTopics ?? [],
+      profile, lastFailures, usedTopics ?? [], context
     );
     const userPrompt = buildUserPrompt(specialization, competency, moduleTitle, attempt);
 
@@ -627,13 +653,27 @@ export async function generateSpecializationQuestion(params: {
       options: Array.isArray(raw.options) ? raw.options.map(String) : [],
       optionsAr: Array.isArray(raw.optionsAr) ? raw.optionsAr.map(String) : undefined,
       correctIndex: typeof raw.correctIndex === "number" ? raw.correctIndex : 0,
+      validation: raw.validation as RawLLMQuestion['validation']
     };
+
+    // Evaluate LLM post-generation validation 
+    if (q.validation) {
+      const failedChecks = Object.entries(q.validation)
+        .filter(([_, passed]) => passed !== true)
+        .map(([check]) => check);
+      
+      if (failedChecks.length > 0) {
+        lastFailures = [`LLM_VALIDATION_FAILED: ${failedChecks.join(', ')}`];
+        console.warn(`[spec-gen] attempt ${attempt + 1} failed LLM validation:`, failedChecks);
+        continue;
+      }
+    }
 
     // Validate
     const validation = validateQuestion(q, specialization, competency, profile);
     if (!validation.passed) {
       console.warn(`[spec-gen] attempt ${attempt + 1} failed validation:`, validation.failures);
-      // BYPASS: To achieve maximum speed, we skip the slow retry loops.
+      // BYPASS: To achieve maximum speed, we skip the slow retry loops for structural/heuristic failures.
       // lastFailures = validation.failures;
       // continue;
     }
@@ -746,10 +786,10 @@ BATCH MODE — generate ${pending.length} questions in ONE response:
   □ The user message lists each item with its own competency, module, and correct answer position.
   □ The single 'correct answer position' instruction above does NOT apply — use each item's own position.
   □ Return STRICT JSON with EXACTLY ${pending.length} entries, in the same order as the user's list:
-    { "questions": [ { "scenario": "...", "scenarioAr": "...", "task": "...", "taskAr": "...", "options": ["...","...","...","..."], "optionsAr": ["...","...","...","..."], "correctIndex": <0-3>, "selfCritiqueScore": { "specializationRelevance": <0-10>, "competencyRelevance": <0-10>, "allOptionsPlausible": <true|false>, "genericityTestPassed": <true|false> } }, ... ] }
+    { "questions": [ { "scenario": "...", "scenarioAr": "...", "task": "...", "taskAr": "...", "options": ["...","...","...","..."], "optionsAr": ["...","...","...","..."], "correctIndex": <0-3>, "validation": { "frameworkAppliedCorrectly": <true|false>, "exactlyOneBestAnswer": <true|false>, "allOptionsPlausible": <true|false>, "correctAnswerNotObvious": <true|false>, "specializationRelevant": <true|false>, "taskOptionAlignment": <true|false> } }, ... ] }
   □ Each entry MUST include scenarioAr, taskAr, and optionsAr — fluent high-register Modern Standard Arabic (فصحى أكاديمية) translations.
   □ Each entry is a full, self-contained question that independently satisfies ALL scenario/option/task requirements above.
-  □ Self-critique every entry before returning — only include entries where specializationRelevance >= 8, allOptionsPlausible = true and genericityTestPassed = true.`;
+  □ Self-critique every entry before returning — only include entries where ALL 6 validation booleans are true.`;
 
     const userLines = pending.map(
       (p, k) =>
@@ -802,7 +842,21 @@ BATCH MODE — generate ${pending.length} questions in ONE response:
         options: entry.options.map(String),
         optionsAr: Array.isArray(entry.optionsAr) ? entry.optionsAr.map(String) : undefined,
         correctIndex: typeof entry.correctIndex === "number" ? entry.correctIndex : 0,
+        validation: entry.validation as RawLLMQuestion['validation']
       };
+
+      if (q.validation) {
+        const failedChecks = Object.entries(q.validation)
+          .filter(([_, passed]) => passed !== true)
+          .map(([check]) => check);
+        
+        if (failedChecks.length > 0) {
+          lastFailures = [`LLM_VALIDATION_FAILED: ${failedChecks.join(', ')}`];
+          console.warn(`[spec-gen] batch attempt ${attempt + 1} entry ${k + 1} failed LLM validation:`, failedChecks);
+          stillPending.push(pending[k]!);
+          continue;
+        }
+      }
 
       // Same 9-check validation as the single-question path.
       const validation = validateQuestion(q, specialization, item.competency, profile);

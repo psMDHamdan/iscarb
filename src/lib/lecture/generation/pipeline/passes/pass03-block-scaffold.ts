@@ -33,7 +33,7 @@ export class Pass03BlockScaffold implements PipelinePass {
       const matchingNode = nodes[idx];
 
       const block: Partial<ConceptBlock> = {
-        id: `concept-block-${orderIndex}`,
+        id: `concept-${ctx.projectId}-${orderIndex}`,
         experienceId: ctx.projectId,
         orderIndex,
         slug: `concept-${orderIndex}-${stage.toLowerCase()}`,

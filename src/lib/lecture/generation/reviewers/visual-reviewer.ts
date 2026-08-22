@@ -1,4 +1,4 @@
-import { chatJson } from "@/lib/ai-engine";
+import { chatJson, DEFAULT_AI_MODEL } from "@/lib/ai-engine";
 import type { SlideContentJson, ReviewResult } from "../types";
 
 const VISUAL_REVIEW_PROMPT = `
@@ -70,7 +70,7 @@ Composition: \${slide.compositionLayout}
 Text Blocks: \${(slide.body?.bullets || []).join(" | ")}
 `;
 
-  const reviewJson = await chatJson(prompt, "gpt-4o", VISUAL_REVIEW_PROMPT);
+  const reviewJson = await chatJson(prompt, DEFAULT_AI_MODEL, VISUAL_REVIEW_PROMPT);
   
   const result: ReviewResult = {
     status: reviewJson.status,

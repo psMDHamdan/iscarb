@@ -152,6 +152,11 @@ export const POST = guard(
       data: { status: "approved" },
     });
 
+    await db.learningExperience.updateMany({
+      where: { projectId: id },
+      data: { status: "approved", publishedAt: approvedAt },
+    });
+
     return NextResponse.json(
       {
         versionId: version.id,

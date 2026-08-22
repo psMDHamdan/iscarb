@@ -1,4 +1,4 @@
-import { chatJson } from "@/lib/ai-engine";
+import { chatJson, DEFAULT_AI_MODEL } from "@/lib/ai-engine";
 import { SlideContentJson, ReviewResult } from "../types";
 
 export async function verifyAssessment(
@@ -56,7 +56,7 @@ Return a JSON object:
 }
 `;
 
-  const response = await chatJson({ user: prompt, model: "gpt-4o" });
+  const response = await chatJson({ user: prompt, model: DEFAULT_AI_MODEL });
   const json = (response.json || {}) as any; 
 
   const result: ReviewResult = {

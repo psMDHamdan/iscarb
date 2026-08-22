@@ -45,19 +45,13 @@ function localizeBullet(item: string, targetLang: "en" | "ar" | "fr"): string {
       return "Review model concepts and standards (Project Management Tool Simulation - Critical Path).";
     }
     if (trimmed.includes("مراجعة معايير ومفاهيم الموديل")) {
-      const tagMatch = trimmed.match(/\(([^)]+)\)/);
-      const tag = tagMatch ? ` (${tagMatch[1]})` : "";
-      return `Review model concepts and performance standards${tag}.`;
+      return "Review model concepts and performance standards.";
     }
     if (trimmed.includes("التقييم الذاتي للمهارات")) {
-      const tagMatch = trimmed.match(/\(([^)]+)\)/);
-      const tag = tagMatch ? ` (${tagMatch[1]})` : "";
-      return `Self-assessment of skills according to industry framework${tag}.`;
+      return "Self-assessment of skills according to industry framework.";
     }
     if (trimmed.includes("تحليل الوظيفة")) {
-      const tagMatch = trimmed.match(/\(([^)]+)\)/);
-      const tag = tagMatch ? ` (${tagMatch[1]})` : "";
-      return `Core Job Analysis & Competency Assessment${tag}.`;
+      return "Core Job Analysis & Competency Assessment.";
     }
     return "Review core domain standards and application guidelines.";
   }

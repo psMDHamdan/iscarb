@@ -8856,6 +8856,27 @@ model LectureStudentProgress {
   @@index([organizationId])
 }
 
+model LectureStudentMastery {
+  id              String   @id @default(cuid())
+  organizationId  String?
+  projectId       String
+  studentId       String
+  conceptId       String
+  correctCount    Int      @default(0)
+  incorrectCount  Int      @default(0)
+  mastered        Boolean  @default(false)
+  masteredAt      DateTime?
+  lastAttemptAt   DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([projectId, studentId, conceptId])
+  @@index([projectId])
+  @@index([studentId])
+  @@index([conceptId])
+  @@index([mastered])
+}
+
 model StudentLectureSession {
   id              String   @id @default(cuid())
   projectId       String

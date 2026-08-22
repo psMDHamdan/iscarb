@@ -1,4 +1,4 @@
-import { chatJson } from "@/lib/ai-engine";
+import { chatJson, DEFAULT_AI_MODEL } from "@/lib/ai-engine";
 import type { SlideContentJson } from "./types";
 
 const COMPOSER_SYSTEM_PROMPT = `
@@ -96,7 +96,7 @@ Output the composition JSON.
     system: COMPOSER_SYSTEM_PROMPT,
     user: prompt,
     temperature: 0.3,
-    model: "gpt-4o",
+    model: DEFAULT_AI_MODEL,
   });
   
   const json = (composition.json ?? {}) as Record<string, unknown>;

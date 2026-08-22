@@ -39,6 +39,7 @@ import {
 import { cn } from "@/lib/utils";
 import { StemRenderer } from "@/components/ui/StemRenderer";
 import { AiConceptTutor } from "./AiConceptTutor";
+import { DeepDiveRagPanel } from "./DeepDiveRagPanel";
 
 import type { StudentConceptViewModel } from "@/lib/lecture/projections/types";
 
@@ -59,7 +60,7 @@ export interface ActivityPanelProps {
 // Tab type
 // ---------------------------------------------------------------------------
 
-type ActiveTab = "task" | "tutor";
+type ActiveTab = "task" | "tutor" | "deep_dive";
 
 // ---------------------------------------------------------------------------
 // ActivityPanel — root
@@ -108,6 +109,12 @@ export function ActivityPanel({
           icon={<MessageCircle className="h-3.5 w-3.5" />}
           label={ar ? "اسأل المعلم" : "Ask AI Tutor"}
         />
+        <TabButton
+          active={activeTab === "deep_dive"}
+          onClick={() => setActiveTab("deep_dive")}
+          icon={<BookMarked className="h-3.5 w-3.5" />}
+          label={ar ? "تعمق أكثر" : "Deep Dive"}
+        />
       </div>
 
       {/* ── Panel Body ──────────────────────────────────────────────── */}
@@ -148,6 +155,21 @@ export function ActivityPanel({
               ) : (
                 <KeyPointsSummary concept={concept} ar={ar} />
               )}
+            </motion.div>
+          ) : activeTab === "deep_dive" ? (
+            <motion.div
+              key={`deep_dive-${concept.id}`}
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -8 }}
+              transition={{ duration: 0.18 }}
+              className="h-full"
+            >
+              <DeepDiveRagPanel 
+                conceptTitle={concept.title}
+                stageName={concept.stage}
+                coreInsight={concept.coreContent?.explanation || concept.visibleCopy || ""}
+              />
             </motion.div>
           ) : (
             <motion.div
@@ -487,6 +509,12 @@ function AssessmentMCQ({
           conceptTitle: concept.title,
           stageName: concept.stage,
           coreInsight: concept.coreContent?.explanation || concept.visibleCopy || "",
+          mechanismSteps: concept.coreContent?.steps || concept.bullets || [],
+          commonPitfalls: concept.commonPitfalls?.map(p => ({
+            misconception: p.misconception,
+            whyWrong: p.whyWrong,
+            betterWay: p.betterWay,
+          })) || [],
           assessmentStem: assessment.stem,
         }),
       });

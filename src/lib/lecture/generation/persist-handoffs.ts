@@ -321,16 +321,16 @@ export async function persistHandoffsFromGenerate(
     }),
   ]);
 
-  const knownBlockIds = new Set(project.sourceBlocks.map((b) => b.id));
-  const omittedBlockIds = new Set(omittedLinks.map((l) => l.blockId));
+  const knownBlockIds = new Set<string>(project.sourceBlocks.map((b: { id: string }) => b.id));
+  const omittedBlockIds = new Set<string>(omittedLinks.map((l: { blockId: string }) => l.blockId));
   const boundPlans = bindUnmappedSourceBlocks(
     plans,
-    project.sourceBlocks,
+    project.sourceBlocks.map((b: { id: string; criticality?: string | null }) => ({ id: b.id, criticality: b.criticality })),
     omittedBlockIds,
     slideNos,
   );
   for (const plan of boundPlans) {
-    const original = plans.find((p) => p.slideNo === plan.slideNo);
+    const original = plans.find((p: { slideNo: number; sourceBlockIds: string[] }) => p.slideNo === plan.slideNo);
     const before = JSON.stringify(original?.sourceBlockIds ?? []);
     const after = JSON.stringify(plan.sourceBlockIds);
     if (before === after) continue;
@@ -365,7 +365,7 @@ export async function persistHandoffsFromGenerate(
 
   const specialty = (project.courseProfile.specialty ?? "").trim().toLowerCase();
   const matchedStandard = standards.find(
-    (s) => (s.specialtyKey ?? "").trim().toLowerCase() === specialty,
+    (s: { specialtyKey?: string | null }) => (s.specialtyKey ?? "").trim().toLowerCase() === specialty,
   );
   const officialOutcomeIds = extractOfficialOutcomeIds(matchedStandard);
   const mode = resolveHandoffAlignmentMode(
@@ -376,7 +376,7 @@ export async function persistHandoffsFromGenerate(
   const clos = closFromProfile(project.courseProfile.teacherEnteredClos);
   const knownCloIds = new Set(clos.map((c) => c.id).filter(Boolean));
   const artifactsBySlide = latestArtifactBySlide(artifacts);
-  const blocksById = new Map(project.sourceBlocks.map((b) => [b.id, { locator: b.locator }]));
+  const blocksById = new Map<string, { locator: string | null }>(project.sourceBlocks.map((b: { id: string; locator: string | null }) => [b.id, { locator: b.locator }]));
   const drafts = buildAlignmentDrafts({
     plans,
     artifactsBySlide,

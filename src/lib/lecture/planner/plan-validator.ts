@@ -20,23 +20,8 @@ export const FIXED_SLOTS = new Set(Array.from({ length: 20 }, (_, i) => i + 1));
 
 /** §7.1 canonical function per fixed slot. */
 export const FIXED_SLOT_FUNCTION: Record<number, string> = {
-  1: "hook",
-  2: "domain_spine",
+  1: "hook_question",
   3: "clos",
-  4: "h_stack",
-  5: "foundation",
-  6: "foundation",
-  7: "foundation",
-  8: "misconception",
-  9: "calculation",
-  10: "deep_dive",
-  11: "deep_dive",
-  12: "deep_dive",
-  13: "trade_off",
-  14: "application",
-  15: "application",
-  16: "application",
-  17: "application",
   18: "rubric",
   19: "evidence",
   20: "readiness",
@@ -76,11 +61,28 @@ export function validatePlanStructure(slides: SlideLike[]): ValidationError[] {
   const collaboration = slides.filter((s) => s.interactionType === "collaboration").length;
   if (collaboration < 1) errors.push({ rule: "collaboration_count", message: `Only ${collaboration} — need ≥1` });
 
-  // Fixed-slot function integrity.
+  // Fixed-slot function integrity (only for strictly fixed slots).
   for (const [slideNo, fn] of Object.entries(FIXED_SLOT_FUNCTION)) {
     const slide = slides.find((s) => s.slideNo === Number(slideNo));
     if (slide && slide.function !== fn) {
       errors.push({ rule: "fixed_slot_function", message: `S${slideNo} must be "${fn}", got "${slide.function}"` });
+    }
+  }
+
+  // Ensure layout/function doesn't repeat > 2 times consecutively
+  const sortedSlides = [...slides].sort((a, b) => a.slideNo - b.slideNo);
+  let consecutiveCount = 1;
+  let lastFunction = sortedSlides[0]?.function;
+  for (let i = 1; i < sortedSlides.length; i++) {
+    const currentFunction = sortedSlides[i].function;
+    if (currentFunction === lastFunction && currentFunction !== "clos") {
+      consecutiveCount++;
+      if (consecutiveCount > 2) {
+        errors.push({ rule: "repetitive_layout", message: `Layout "${currentFunction}" used > 2 times consecutively (starting S${sortedSlides[i-2].slideNo})` });
+      }
+    } else {
+      consecutiveCount = 1;
+      lastFunction = currentFunction;
     }
   }
 

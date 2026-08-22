@@ -198,22 +198,17 @@ export function buildPlanPrompt(
     "}",
     "",
     "MANDATORY S1–S20 SLOT CONTRACT:",
-    "S1: hook (One high-stakes question, tension, or real-world problem)",
-    "S2: domain_spine (5-7 pillars representing the lecture domain)",
+    "S1: hook_question (One high-stakes question, tension, or real-world problem)",
+    "S2: simple_explanation (Domain spine or overview)",
     "S3: clos (Verbatim faculty CLOs — do NOT alter text)",
-    "S4: h_stack (Human, technical, and market value + readiness)",
-    "S5: foundation (Definitions, core equations/concepts)",
-    "S6: foundation (Core concept expansion)",
-    "S7: foundation (Core concept expansion)",
-    "S8: misconception (MANDATORY: 'Why Simple X Lies' - correct misconceptions)",
-    "S9: calculation (MANDATORY: Step-by-step worked calculation / formula derivation)",
-    "S10: deep_dive (Technical mechanisms and deep analysis)",
-    "S11: deep_dive (Requirements, rules, and constraints)",
-    "S12: deep_dive (Layered protection, robustness, and stability)",
-    "S13: trade_off (Systemic trade-offs and parameter balancing)",
-    "S14: application (Real-world domain application)",
-    "S15: application (Guided case study & verification evidence)",
-    "S16: application (Collaborative workshop or scenario exercise)",
+    "S4: analogy or simple_explanation (Prior knowledge connection)",
+    "S5-S7: labeled_diagram, process_steps, comparison, or simple_explanation (Core concepts)",
+    "S8: misconception_challenge (MANDATORY: 'Why Simple X Lies' - correct misconceptions)",
+    "S9: worked_example or calculation (MANDATORY: Step-by-step)",
+    "S10-S12: concept_map, comparison, or process_steps (Deep dive into mechanisms)",
+    "S13: comparison (Systemic trade-offs and parameter balancing)",
+    "S14-S15: case_study, prediction, or application (Real-world domain application)",
+    "S16: interactive_activity (Collaborative workshop or scenario exercise)",
     "S17: application (Saudi/local career context + practice problems)",
     "S18: rubric (Four performance levels with observable criteria)",
     "S19: evidence (Triangulation: product, process, and oral explanation)",
@@ -396,29 +391,8 @@ export function generateTopicGroundedFallbackSlides(
   const getBlockId = (idx: number) => (blockIds[idx % Math.max(1, blockIds.length)] ? [blockIds[idx % Math.max(1, blockIds.length)]] : []);
   const getCloId = (idx: number) => (cloIds[idx % Math.max(1, cloIds.length)] ? [cloIds[idx % Math.max(1, cloIds.length)]] : []);
 
-  const tLower = cleanTopic.toLowerCase();
-  let calcTitle = `Quantitative Analysis & Formula Derivation for ${topicTitle}`;
-  let tradeOffTitle = `Systemic Trade-offs & Parameter Balancing in ${topicTitle}`;
-
-  if (/crispr|gene|cas9|sgrna|dna|edit|genome/i.test(tLower)) {
-    calcTitle = `Cleavage Rate Kinetics $v = \\frac{V_{max} [S]}{K_m + [S]}$ & Off-Target Probability`;
-    tradeOffTitle = `Homology-Directed Repair (HDR) vs Non-Homologous End Joining (NHEJ)`;
-  } else if (/math|calc|linear|algebra|stat|probability|matrix|vector/i.test(tLower)) {
-    calcTitle = `Step-by-Step Derivation & Formula Analysis $\\sum_{i=1}^n x_i$`;
-    tradeOffTitle = `Precision vs Computational Complexity in ${topicTitle}`;
-  } else if (/physic|force|motion|energy|quantum|thermo|fluid|mechanic/i.test(tLower)) {
-    calcTitle = `Quantitative Physics Calculation ($F = m a$ & $E_k = \\frac{1}{2} m v^2$)`;
-    tradeOffTitle = `Energy Efficiency vs Conservation Bounds in ${topicTitle}`;
-  } else if (/engine|circuit|signal|control|stress|strain|struct/i.test(tLower)) {
-    calcTitle = `Transfer Function $H(s)$ & Stress Analysis $\\sigma = \\frac{F}{A}$`;
-    tradeOffTitle = `Safety Margin vs Material Cost Constraints`;
-  } else if (/bio|chem|genet|cell|molecul|pharmac|organ/i.test(tLower)) {
-    calcTitle = `Michaelis-Menten Rate Kinetics $v = \\frac{V_{max} [S]}{K_m + [S]}$`;
-    tradeOffTitle = `Metabolic Rate vs Cellular Homeostasis`;
-  } else if (/code|comput|software|algorithm|data|security|network/i.test(tLower)) {
-    calcTitle = `Algorithmic Complexity Analysis $O(N \\log N)$ & Risk Exposure`;
-    tradeOffTitle = `Centralized Architecture vs Distributed Performance`;
-  }
+  const calcTitle = `Quantitative Analysis & Worked Example for ${topicTitle}`;
+  const tradeOffTitle = `Systemic Trade-offs & Parameter Balancing in ${topicTitle}`;
 
   const progression: { fn: string; title: string; interaction: string | null }[] = [
     { fn: "hook", title: `What Makes ${topicTitle} Essential?`, interaction: "poll" },
@@ -489,13 +463,13 @@ export async function generateISCARBPlan(projectId: string, regenerate = false):
       languagePolicy: project.courseProfile.languagePolicy as string,
     });
 
-    // 12s High-Quality Timeout Race: Allow AI model time to generate deep, content-grounded titles & objectives
+    // 45s High-Quality Timeout Race: Allow AI model time to generate deep, content-grounded titles & objectives
     let result: { json: unknown } = { json: null };
     try {
       result = await Promise.race([
         chatJson({ system, user, temperature: 0.3 }),
         new Promise<{ json: null }>((_, reject) =>
-          setTimeout(() => reject(new Error("Plan AI generation timeout (12s max)")), 12000)
+          setTimeout(() => reject(new Error("Plan AI generation timeout (45s max)")), 45000)
         ),
       ]);
     } catch (err: any) {

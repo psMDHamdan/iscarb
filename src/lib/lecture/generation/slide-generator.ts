@@ -41,6 +41,16 @@ const FORBIDDEN_PHRASES: RegExp[] = [
   /Calculate this worked example using the source method/i,
   /Which option matches the source concept/i,
 
+  // Source Text Leakage (Raw textbook/source fragments)
+  /\bFigure\s+\d+\.?\d*\b/i,
+  /\bFig\.\s*\d+\.?\d*\b/i,
+  /\bTable\s+\d+\.?\d*\b/i,
+  /\bChapter\s+\d+\b/i,
+  /as shown in the figure above/i,
+  /shown in the figure/i,
+  /as seen in the table/i,
+  /\bpage\s+\d+\b/i,
+
   // Generic boilerplate that leaked from prompt templates
   /High-performance,?\s*secure execution/i,
   /Aligned with National Digital Transformation/i,
@@ -105,6 +115,34 @@ function hasForbiddenContent(content: SlideContentJson, courseTitle: string, cou
   return false;
 }
 
+/**
+ * Checks if any string value in the content object ends with a trailing ellipsis
+ * or appears to be an incomplete sentence, indicating the LLM hit a token limit.
+ */
+function isTruncatedContent(content: any): boolean {
+  if (!content) return false;
+  if (typeof content === "string") {
+    const s = content.trim();
+    if (s.endsWith("...") || s.endsWith("…")) {
+      console.warn(`[SlideGenerator] TRUNCATION detected: ${s.slice(0, 50)}...`);
+      return true;
+    }
+    // Check for obvious trailing conjunctions indicating a cut-off sentence
+    if (/(?<=\b)(and|or|but|because|if|then|with|the|a|an|in|on|at|by|for|to)$/i.test(s)) {
+      console.warn(`[SlideGenerator] TRUNCATION (trailing word) detected: ${s.slice(0, 50)}...`);
+      return true;
+    }
+    return false;
+  }
+  if (Array.isArray(content)) {
+    return content.some(isTruncatedContent);
+  }
+  if (typeof content === "object") {
+    return Object.values(content).some(isTruncatedContent);
+  }
+  return false;
+}
+
 function countVisibleWords(content: SlideContentJson): number {
   const titleWords = content.title ? content.title.split(/\s+/).filter(Boolean).length : 0;
   const visibleCopyWords = content.body?.visibleCopy ? content.body.visibleCopy.split(/\s+/).filter(Boolean).length : 0;
@@ -151,21 +189,38 @@ The source gives you FACTS. YOU give the student UNDERSTANDING.
 
 Your output will be REJECTED if it contains ANY of the following:
 
-1. Internal IDs or hashes:
+1. NEVER output a textbook section heading as a bullet or title (e.g., "8.1 Introduction" or "Chapter 3:"). Strip the numbering and headers.
+2. NEVER output sentences that end abruptly with an ellipsis ("...") or open parenthesis "(...". The text MUST be complete, grammatically sound, and fully realized. If the source is truncated, finish the thought conceptually or exclude it.
+3. Do NOT repeat the lesson title as the first bullet of every slide.
+4. No generic boilerplate ("This chapter discusses...").
+5. Internal IDs or hashes:
    ❌ "Design target sequence (cmt14fy1g0009onsbby7pm5q9)"
    ❌ "(cmt14fy1g0009onsbby7pm5q9)"
    → Strip ALL parenthetical alphanumeric strings >15 characters.
-
-2. Raw catalog / product codes:
+6. Raw catalog / product codes:
    ❌ "SKU GE100019"
    ❌ "pCas-Guide-Nickase (SKU GE100019)"
    → Mention the tool by name only if pedagogically necessary.
-
-3. Raw figure references:
+7. Raw figure references:
    ❌ "41 Figure 17. Vector maps of AAVS1 donor vectors"
    ❌ "Fig. 2 . Scheme of genome - editing knockout kit"
    → NEVER include "Figure X" or "Fig. X" in slide text.
    → If the source has a diagram, describe what it SHOWS, not its caption.
+
+## LAYERED CONTENT (The 5-Layer Model)
+Every Concept Block contains EXACTLY ONE primary concept.
+
+The student sees the content in this sequence. Each layer has a specific job:
+
+1. **title** (string)
+   - A bold assertion, question, or contrast. Never just a noun.
+   - Max 8 words. No textbook chapter numbers.
+
+2. **visibleCopy** (string) 
+   - A one-sentence bridge explaining the slide's purpose.
+
+3. **bullets** (array of strings)
+   - Domain-specific facts rewritten from the source.
 
 4. Raw protocol steps:
    ❌ "Incubate the reaction at 37°C for 3 hrs"
@@ -215,6 +270,36 @@ For EVERY bullet, apply ONE of these transformations:
 | Product list | → Concept explanation | Instead of "SKU GE100052" → "The ROSA26 locus offers an alternative safe harbor for transgene integration." |
 | Raw sequence | → Functional meaning | Instead of "GATCGAGTGCCG..." → "The sgRNA scaffold sequence binds Cas9 and positions the nuclease domains for cleavage." |
 | Measurement | → Design reasoning | Instead of "100 ng/μL" → "At 100 ng/μL, a 100 μL transfection delivers 10 μg of DNA — but efficiency depends on cell type and chemistry." |
+
+## FORMULA AND EQUATION RULES
+
+When the source contains formulas, equations, or mathematical expressions:
+
+1. **ALWAYS use LaTeX notation** for formulas in bullets and visibleCopy.
+   - Inline formulas: wrap in single dollar signs: $F = ma$, $E = mc^2$, $\Delta G = -RT \ln K_{eq}$
+   - Block/display formulas: wrap in double dollar signs: $$\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}$$
+
+2. **Explain every variable** in the formula immediately after presenting it.
+   BAD: "The force equals mass times acceleration: F = ma"
+   GOOD: "Newton's second law states $F = ma$, where $F$ is force (N), $m$ is mass (kg), and $a$ is acceleration (m/s²)."
+
+3. **Show the derivation step by step** when a formula is derived from simpler ones.
+   Use $$ for each step:
+   $$F = ma$$
+   $$W = F \cdot d = mad$$
+   $$KE = \frac{1}{2}mv^2$$
+
+4. **Never write formulas as plain text.** The system renders LaTeX automatically.
+   BAD: "F = ma"
+   GOOD: "$F = ma$"
+
+5. **For physics**: include units in LaTeX: $v = 9.8 \text{ m/s}^2 \times t$
+
+6. **For chemistry**: use proper chemical notation: $\text{CH}_3\text{COOH} + \text{NaOH} \rightarrow \text{CH}_3\text{COONa} + \text{H}_2\text{O}$
+
+7. **For math**: use proper mathematical notation: $\sum_{i=1}^{n} x_i$, $\frac{d}{dx}[f(x)]$, $\lim_{x \to \infty}$
+
+8. **For biology**: use sequence notation: $5'-\text{GAATTC}-3'$ for DNA sequences.
 
 ## PEDAGOGICAL STRUCTURE (20-Slide iSCARB Contract)
 
@@ -328,10 +413,14 @@ Return STRICT JSON. No markdown, no code fences, no prose outside JSON.
   "slideNo": number,
   "function": "string from SlidePlan",
   "title": "<specific, provocative, contains a number or named entity>",
+  "knowledgeExtraction": [
+    "<Extract the PURE KNOWLEDGE from the source here first. Strip away all formatting, figure references, and textbook wording.>",
+    "..."
+  ],
   "body": {
     "visibleCopy": "<one sentence of context, or empty>",
     "bullets": [
-      "<domain-specific fact, rewritten from source — NOT copy-pasted>",
+      "<domain-specific fact, rewritten from the knowledge extraction — NOT copy-pasted from source>",
       "..."
     ],
     "studentAction": {
@@ -359,7 +448,30 @@ Return STRICT JSON. No markdown, no code fences, no prose outside JSON.
     "mappedBlockIds": ["block-X", "block-Y"],
     "omissionReason": null
   },
-  "cloLinks": ["clo-1", "clo-2"]
+  "cloLinks": ["clo-1", "clo-2"],
+
+  "studentExperience": {
+    "headline": "<short, specific headline <= 8 words>",
+    "hook": "<a specific scenario: what went wrong, a real consequence, or a decision the learner must make. Include a specific event, number, or named entity.",
+    "coreContent": {
+      "explanation": "<3-5 sentences: What it is → How it works → Why it matters → What breaks when it fails>",
+      "analogy": "<a vivid, domain-specific analogy where EVERY PART maps to the concept, or null>",
+      "steps": ["<step 1>", "<step 2>", "<step 3>"]
+    },
+    "interactive": {
+      "type": "poll | calculation | drag_drop | reflection",
+      "prompt": "<a scenario-based question testing MECHANISM understanding, not recall>",
+      "options": ["<option A>", "<option B>", "<option C>", "<option D>"],
+      "hints": ["<hint 1: structural cue>", "<hint 2: partial mechanism>", "<hint 3: near-answer>"],
+      "reveal": {
+        "correct": "<correct letter>",
+        "explanation": "<WHY the correct answer is correct, using causal chain>",
+        "whyOthersWrong": {"A": "<reason>", "C": "<reason>"}
+      }
+    },
+    "commonPitfalls": [{"misconception": "<specific wrong belief>", "whyWrong": "<why>", "betterWay": "<correct approach>"}],
+    "realWorld": {"application": "<specific application>", "sourceUrl": null, "derivedLabel": "system-suggested"}
+  }
 }
 
 ## QUALITY CHECKLIST — Verify Before Outputting
@@ -369,16 +481,56 @@ Return STRICT JSON. No markdown, no code fences, no prose outside JSON.
 [ ] Did I strip ALL figure captions like "Figure 17. Vector maps..."?
 [ ] Did I strip ALL raw protocol steps like "Incubate at 37°C"?
 [ ] Did I strip ALL package contents like "Package contents: 2 vials"?
-[ ] Did I strip ALL generic prompts like "Compare the options"?
+[ ] Did I strip ALL generic prompts like "Compare the options" or "Which option matches"?
 [ ] Did I rewrite EVERY source fragment into a pedagogical sentence?
 [ ] Does the title contain a specific event, number, or named entity?
 [ ] Does every bullet explain WHY the fact matters, not just WHAT it is?
 [ ] Are poll options plausible, domain-specific, and each with reasoning?
 [ ] Does notes.answers explain WHY correct AND why each wrong option fails?
-[ ] Does visualIntent describe a specific diagram with named elements?
-[ ] Is the total word count (title + visibleCopy + bullets) ≤ 40?
+[ ] Does visualIntent describe a SPECIFIC diagram with named elements, layout, and colors?
+[ ] Is the content substantive and deep (aim for 50-80 words, not 20-30)?
+[ ] If this is a HOOK slide (S1), is the hook SOURCE_BACKED or explicitly HYPOTHETICAL?
+[ ] Are student action questions MECHANISTIC (testing reasoning) not just recall?
+[ ] Is the diagramType set to a specific type (mechanism|comparison|workflow|data_chart|concept_map)?
 
 If ANY checkbox is NO, regenerate the slide.
+
+## STUDENT EXPERIENCE (INLINE)
+
+ALSO generate the "studentExperience" field in your JSON output. This is the DEEP LEARNING CARD that students interact with.
+
+The studentExperience must have:
+- headline: Short, specific (<=8 words)
+- hook: A specific scenario with numbers/names that creates curiosity
+- coreContent.explanation: 3-5 sentences (What → How → Why → What breaks)
+- coreContent.analogy: A vivid domain-specific analogy (or null)
+- coreContent.steps: 3-5 mechanism steps
+- interactive: A scenario-based question testing MECHANISM understanding
+- commonPitfalls: A specific misconception from the source
+- realWorld: A specific application with causal chain
+
+This replaces the separate student experience compiler — you generate it in ONE PASS.
+
+## HOOK VALIDATION
+
+If slideNo = 1 or the title starts with 'When' or 'Case Study':
+- The hook MUST be SOURCE_BACKED (supported by a source block) or explicitly marked HYPOTHETICAL.
+- NEVER present a fabricated scenario as a real event.
+- Include hook_type in the output: "SOURCE_BACKED" or "HYPOTHETICAL".
+
+## QUESTION QUALITY
+
+NEVER generate questions like:
+- "What is [X]?"
+- "Which option matches the source concept?"
+- "How does this apply in operations?"
+- "What happens?"
+
+ALWAYS generate questions that test MECHANISM understanding:
+- "You cut both a plasmid and a DNA insert with the same restriction enzyme. The fragments have compatible sticky ends, but many transformed colonies contain empty vector. Which additional step most directly reduces this outcome?"
+- "If the polymerase lacks proofreading activity, what specific error pattern would accumulate in the amplified product over 30 cycles?"
+
+Distractors must be plausible and represent REAL misconceptions students actually hold.
 
 LANGUAGE: ${languagePolicy === "ar" ? "Output in Arabic." : "Output in English."}
 ${langInstruction}`;
@@ -610,9 +762,53 @@ function userPrompt(
   clos: CourseLearningOutcome[],
   blocks: { id: string; locator: string; text: string }[],
   nationalAlignmentMode: boolean,
-  languagePolicy: string
+  languagePolicy: string,
+  blueprintSlot?: { slideNo: number; conceptClusterId: string; conceptLabel: string; pedagogicalPurpose: string; keyQuestion: string; bloomLevel: string },
+  lessonHook?: string,
+  conceptCard?: any
 ): string {
   const guidance = FUNCTION_GUIDANCE[plan.function] || FUNCTION_GUIDANCE["core_concept"];
+
+  // Blueprint context: constrains what this slide MUST teach
+  const blueprintLines: string[] = [];
+  if (blueprintSlot) {
+    blueprintLines.push(
+      ``,
+      `## MASTER LESSON BLUEPRINT — THIS SLIDE'S ROLE`,
+      `  The lesson hook is: "${lessonHook ?? ""}"`,
+      `  This slide (S${blueprintSlot.slideNo}) must fulfill:`,
+      `  - Concept: ${blueprintSlot.conceptLabel}`,
+      `  - Pedagogical purpose: ${blueprintSlot.pedagogicalPurpose}`,
+      `  - Key question this slide answers: ${blueprintSlot.keyQuestion}`,
+      `  - Bloom level: ${blueprintSlot.bloomLevel}`,
+      `  CRITICAL: Do NOT introduce concepts from other slides. Teach ONLY this concept cluster.`,
+      `  Do NOT repeat facts from earlier slides. If the hook mentions a problem, this slide teaches the concept that SOLVES it.`,
+    );
+  }
+
+  // Concept Card context: pre-understood teaching content for this concept
+  const conceptCardLines: string[] = [];
+  if (conceptCard) {
+    conceptCardLines.push(
+      ``,
+      `## CONCEPT CARD — PRE-ANALYZED TEACHING CONTENT`,
+      `  Concept: ${conceptCard.concept}`,
+      `  Definition: ${conceptCard.simple_definition}`,
+      `  Why it matters: ${conceptCard.why_it_matters}`,
+      `  Intuition: ${conceptCard.intuition}`,
+      `  Explanation steps: ${conceptCard.explanation_steps?.join(" → ")}`,
+      ...(conceptCard.analogy ? [`  Analogy: ${conceptCard.analogy}`] : []),
+      ...(conceptCard.example ? [`  Example: ${conceptCard.example}`] : []),
+      ...(conceptCard.misconception ? [`  Misconception: ${conceptCard.misconception}`] : []),
+      ...(conceptCard.application ? [`  Application: ${conceptCard.application}`] : []),
+      `  Visual should show: ${conceptCard.visual_intent?.studentShouldNotice}`,
+      ``,
+      `  USE THIS PRE-ANALYZED CONTENT as the basis for your slide generation.`,
+      `  Do NOT re-analyze the source blocks. The ConceptCard already contains the teaching content.`,
+      `  Transform it into slide-ready format with proper educational structure.`,
+    );
+  }
+
   return [
     `## INPUT`,
     `- SlidePlan:`,
@@ -624,12 +820,14 @@ function userPrompt(
     ``,
     `## PEDAGOGICAL PATTERN FOR THIS SLIDE (function: ${plan.function})`,
     guidance,
+    ...blueprintLines,
+    ...conceptCardLines,
     ``,
     `- CourseProfile:`,
     `  language: ${languagePolicy}`,
     `  selectedLectureCLOs: ${JSON.stringify(clos.map(c => ({ id: c.id, number: c.number, text: c.text })))}`,
     ``,
-    `- SourceBlocks (Verified Base Content):`,
+    `- SourceBlocks (Verified Base Content — ONLY use blocks relevant to this slide's concept):`,
     ...blocks.map((b) => `  [Block ID: ${b.id}] (Locator: ${b.locator})\n  ${b.text.trim().substring(0, 800)}`),
     ``,
     `Remember: Return ONLY valid JSON matching the exact schema.`,
@@ -639,6 +837,29 @@ function userPrompt(
 // ---------------------------------------------------------------------------
 // NORMALIZE — extract structured content from LLM JSON response
 // ---------------------------------------------------------------------------
+
+/**
+ * Sanitize visual description — reject placeholders, return meaningful text.
+ */
+function sanitizeVisualDescription(desc: string, slideTitle: string): string {
+  const REJECTED = /^(none|null|undefined|n\/a|placeholder|missing image|\.\.\.?|empty)$/i;
+  const trimmed = (desc || "").trim();
+  if (!trimmed || trimmed.length < 5 || REJECTED.test(trimmed)) {
+    return `Diagram illustrating: ${slideTitle}`;
+  }
+  return trimmed;
+}
+
+/**
+ * Sanitize visual source figure reference — reject placeholders.
+ */
+function sanitizeVisualRef(ref: string | null): string | null {
+  if (!ref) return null;
+  const REJECTED = /^(none|null|undefined|n\/a|placeholder|\.\.\.?|empty)$/i;
+  const trimmed = ref.trim();
+  if (!trimmed || REJECTED.test(trimmed)) return null;
+  return trimmed;
+}
 
 function normalizeArtifact(
   json: unknown,
@@ -658,17 +879,17 @@ function normalizeArtifact(
       studentAction: raw.body?.studentAction || undefined,
     },
     visualIntent: {
-      description:
-        typeof rawVisual?.description === "string"
-          ? rawVisual.description
-          : "Diagram illustrating the slide concept.",
-      sourceFigureRef: hasSourceFigure ? rawVisual?.sourceFigureRef ?? null : null,
-      // Default to generating a diagram unless the LLM explicitly points to a
-      // real source figure — a missing flag must not trip the Tier-3 visual
-      // gate (BRD requires ≥18 visually supported slides).
+      description: sanitizeVisualDescription(
+        typeof rawVisual?.description === "string" ? rawVisual.description : "",
+        typeof raw.title === "string" ? raw.title : "this concept"
+      ),
+      sourceFigureRef: sanitizeVisualRef(
+        hasSourceFigure ? (rawVisual?.sourceFigureRef ?? null) : null
+      ),
       generateDiagram: hasSourceFigure ? Boolean(rawVisual?.generateDiagram) : true,
       diagramType:
-        typeof rawVisual?.diagramType === "string"
+        typeof rawVisual?.diagramType === "string" &&
+        ["mechanism", "comparison", "workflow", "data_chart", "concept_map"].includes(rawVisual.diagramType)
           ? (rawVisual.diagramType as "mechanism" | "comparison" | "workflow" | "data_chart" | "concept_map")
           : undefined,
     },
@@ -687,6 +908,29 @@ function normalizeArtifact(
     wordCount: 0,
     function: typeof raw.function === "string" ? raw.function : undefined,
     slideNo: typeof raw.slideNo === "number" ? raw.slideNo : undefined,
+    // Inline student experience — generated in the same LLM call as the slide
+    studentExperience: raw.studentExperience && typeof raw.studentExperience === "object"
+      ? {
+          headline: typeof raw.studentExperience.headline === "string" ? raw.studentExperience.headline : typeof raw.title === "string" ? raw.title.slice(0, 60) : "",
+          hook: typeof raw.studentExperience.hook === "string" ? raw.studentExperience.hook : typeof raw.body?.visibleCopy === "string" ? raw.body.visibleCopy : "",
+          coreContent: {
+            explanation: typeof raw.studentExperience.coreContent?.explanation === "string" ? raw.studentExperience.coreContent.explanation : typeof raw.body?.visibleCopy === "string" ? raw.body.visibleCopy : "",
+            analogy: typeof raw.studentExperience.coreContent?.analogy === "string" ? raw.studentExperience.coreContent.analogy : null,
+            steps: Array.isArray(raw.studentExperience.coreContent?.steps) ? raw.studentExperience.coreContent.steps.map(String) : (raw.body?.bullets || []).map(String),
+          },
+          interactive: raw.studentExperience.interactive && typeof raw.studentExperience.interactive === "object"
+            ? {
+                type: (typeof raw.studentExperience.interactive.type === "string" ? raw.studentExperience.interactive.type : "poll") as any,
+                prompt: typeof raw.studentExperience.interactive.prompt === "string" ? raw.studentExperience.interactive.prompt : typeof raw.body?.studentAction?.stem === "string" ? raw.body.studentAction.stem : "",
+                options: Array.isArray(raw.studentExperience.interactive.options) ? raw.studentExperience.interactive.options.map(String) : [],
+                hints: Array.isArray(raw.studentExperience.interactive.hints) ? raw.studentExperience.interactive.hints.map(String) : [],
+                reveal: raw.studentExperience.interactive.reveal || { correct: "", explanation: "", whyOthersWrong: {} },
+              }
+            : null,
+          commonPitfalls: Array.isArray(raw.studentExperience.commonPitfalls) ? raw.studentExperience.commonPitfalls : [],
+          realWorld: raw.studentExperience.realWorld || null,
+        }
+      : null,
   };
 }
 
@@ -725,9 +969,9 @@ function buildFallbackSlide(
 export async function generateSlideArtifact(
   project: LectureProjectWithRelations,
   plan: { id: string; slideNo: number; function: string; title: string; interactionType: string | null; visualIntent: string | null },
-  opts: { clos: CourseLearningOutcome[]; blocks: { id: string; locator: string; text: string }[] }
+  opts: { clos: CourseLearningOutcome[]; blocks: { id: string; locator: string; text: string }[]; blueprintSlot?: { slideNo: number; conceptClusterId: string; conceptLabel: string; pedagogicalPurpose: string; keyQuestion: string; bloomLevel: string }; lessonHook?: string; conceptCard?: { concept: string; simpleDefinition: string; whyItMatters: string; mechanismSteps: string[]; analogy?: string; workedExample?: string; commonMisconception?: string; visualIntent: { type: string; learningPurpose: string; studentShouldNotice: string } } }
 ): Promise<SlideArtifactDraft> {
-  const { clos, blocks } = opts;
+  const { clos, blocks, blueprintSlot, lessonHook, conceptCard } = opts;
   const languagePolicy = project.courseProfile.languagePolicy ?? "en";
 
   // S3 is fully deterministic — verbatim CLO text, no LLM call.
@@ -745,7 +989,7 @@ export async function generateSlideArtifact(
     result = await Promise.race([
       chatJson({
         system: systemPrompt(languagePolicy),
-        user: userPrompt(plan, selectedClos, blocks, project.nationalAlignmentMode, languagePolicy),
+        user: userPrompt(plan, selectedClos, blocks, project.nationalAlignmentMode, languagePolicy, blueprintSlot, lessonHook, conceptCard),
         temperature: 0.4,
         model: MODEL,
       }),
@@ -775,7 +1019,6 @@ export async function generateSlideArtifact(
   const content = normalizeArtifact(json, clos.map((c) => c.id), blocks);
   content.wordCount = countVisibleWords(content);
 
-  // Hard rejection: forbidden structural patterns or domain contamination.
   const courseProfile = project.courseProfile as any;
   const courseTitle = courseProfile?.title ?? "";
   const courseTopic = [
@@ -783,6 +1026,7 @@ export async function generateSlideArtifact(
     courseProfile?.discipline ?? "",
     courseProfile?.description ?? "",
   ].join(" ");
+
   if (hasForbiddenContent(content, courseTitle, courseTopic)) {
     return {
       slideNo: plan.slideNo,
@@ -791,6 +1035,17 @@ export async function generateSlideArtifact(
       errors: ["FORBIDDEN_CONTENT_DETECTED"],
       flagged: true,
       error: "FORBIDDEN_CONTENT_DETECTED — output contained a forbidden phrase or wrong-domain contamination. Slide must be regenerated.",
+    };
+  }
+
+  if (isTruncatedContent(content) || (result.json as any)?.finish_reason === "length") {
+    return {
+      slideNo: plan.slideNo,
+      slidePlanId: plan.id,
+      content: buildFallbackSlide(project, plan, blocks, clos),
+      errors: ["CONTENT_TRUNCATED"],
+      flagged: true,
+      error: "CONTENT_TRUNCATED — LLM output was cut off.",
     };
   }
 

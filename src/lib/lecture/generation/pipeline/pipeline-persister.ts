@@ -13,9 +13,9 @@ export async function persistPipelineContext(ctx: PipelineContext): Promise<void
 
   const experienceId = exp.id;
 
-  // Clear existing learning experience with this ID if exists to prevent duplicate constraint errors
+  // Clear existing learning experience with this ID or Project ID to prevent duplicate constraint errors
   await db.learningExperience.deleteMany({
-    where: { id: experienceId },
+    where: { projectId: exp.projectId },
   });
 
   // 1. Insert LearningExperience

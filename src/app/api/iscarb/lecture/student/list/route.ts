@@ -12,16 +12,16 @@ export const GET = guard(
     const studentId = ctx.session.studentId ?? ctx.session.userId ?? "demo-student-id";
 
     if (countOnly) {
-      const approvedVersions = await db.lecturePackageVersion.findMany({
+      const approvedExperiences = await db.learningExperience.findMany({
         where: {
           status: "approved",
           ...tenantFilter,
         },
         select: { projectId: true },
       });
-      const count = new Set(approvedVersions.map((v) => v.projectId)).size;
+      const count = new Set(approvedExperiences.map((e: { projectId: string }) => e.projectId)).size;
       const started = await db.lectureStudentProgress.count({
-        where: { studentId, completedSlides: { gt: 0 } },
+        where: { studentId, completedSlides: { gt: 0 } }, // Keep using completedSlides for legacy progress or adapt later
       });
       return NextResponse.json(
         { count, unstarted: Math.max(0, count - started) },
@@ -29,10 +29,39 @@ export const GET = guard(
       );
     }
 
-    const allVersions = await db.lecturePackageVersion.findMany({
+    const allExperiences = await db.learningExperience.findMany({
       where: {
         status: "approved",
         ...tenantFilter,
+      },
+      include: {
+        project: {
+          include: {
+            courseProfile: true,
+          },
+        },
+        conceptBlocks: {
+          select: { id: true }
+        }
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // Only show the latest approved experience per project
+    const uniqueProjects = new Set<string>();
+    const experiences = [];
+    for (const exp of allExperiences) {
+      if (uniqueProjects.has(exp.projectId)) continue;
+      uniqueProjects.add(exp.projectId);
+      experiences.push(exp);
+    }
+
+    // Fallback: also include approved LecturePackageVersions that don't have
+    // a canonical LearningExperience yet (published via legacy path).
+    const fallbackVersions = await db.lecturePackageVersion.findMany({
+      where: {
+        status: "approved",
+        projectId: { notIn: [...uniqueProjects] },
       },
       include: {
         project: {
@@ -44,41 +73,47 @@ export const GET = guard(
       orderBy: { createdAt: "desc" },
     });
 
-    // Only show the latest approved version per project
-    const uniqueProjects = new Set<string>();
-    const versions = [];
-    for (const v of allVersions) {
-      if (uniqueProjects.has(v.projectId)) continue;
-      uniqueProjects.add(v.projectId);
-      versions.push(v);
+    const uniqueFallbackProjects = new Set<string>();
+    for (const v of fallbackVersions) {
+      if (uniqueFallbackProjects.has(v.projectId)) continue;
+      uniqueFallbackProjects.add(v.projectId);
+      // Create a compatible shape
+      experiences.push({
+        id: v.projectId, // use projectId as the experience ID for legacy routing
+        projectId: v.projectId,
+        project: v.project,
+        publishedAt: v.approvedAt,
+        conceptBlocks: [] as { id: string }[],
+      } as any);
     }
 
-    const versionIds = versions.map((v) => v.id);
+    const experienceIds = experiences.map((exp) => exp.id);
 
+    // The old progress tracked by versionId.
     const progressRecords = await db.lectureStudentProgress.findMany({
       where: {
-        versionId: { in: versionIds },
+        versionId: { in: experienceIds },
         studentId,
       },
     });
 
-    const progressMap = new Map(progressRecords.map((p) => [p.versionId, p]));
+    const progressMap = new Map<string, any>(progressRecords.map((p: any) => [p.versionId, p]));
 
-    const items = versions.map((version) => {
-      const p = version.project;
-      const cp = p.courseProfile;
-      const prog = progressMap.get(version.id);
+    const items = experiences.map((exp: any) => {
+      const p = exp.project;
+      const cp = p?.courseProfile;
+      const prog = progressMap.get(exp.id);
 
       return {
-        id: version.id,
-        projectId: p.id,
+        id: exp.id,
+        projectId: p?.id ?? exp.projectId,
         courseCode: cp?.courseCode ?? "COURSE",
         courseTitle: cp?.title ?? "Untitled Lecture",
         specialty: cp?.specialty ?? null,
-        publishedAt: version.createdAt ? new Date(version.createdAt).toISOString() : new Date().toISOString(),
-        slideCount: 20,
-        completedSlides: prog?.completedSlides ?? 0,
-        score: prog?.score ?? null,
+        publishedAt: exp.publishedAt ? new Date(exp.publishedAt).toISOString() : new Date().toISOString(),
+        slideCount: exp.conceptBlocks?.length || 20,
+        completedSlides: (prog as any)?.completedSlides ?? 0,
+        score: (prog as any)?.score ?? null,
       };
     });
 
