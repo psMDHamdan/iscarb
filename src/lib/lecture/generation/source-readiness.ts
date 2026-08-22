@@ -38,7 +38,7 @@ interface SourceDocumentRow {
 }
 
 /** Below this usable-block count the source cannot ground a full lecture. */
-const MIN_USABLE_BLOCKS = 8;
+const MIN_USABLE_BLOCKS = 4;
 
 /**
  * Assesses whether the project's source material is present and parseable
