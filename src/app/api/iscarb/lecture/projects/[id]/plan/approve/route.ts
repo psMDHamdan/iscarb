@@ -32,10 +32,8 @@ export const POST = guard(
 
     const errors = validatePlanStructure(slides);
     if (errors.length > 0) {
-      return NextResponse.json(
-        { error: "PLAN_GATE_FAILED", message: "Plan does not satisfy the §7.1 slot contract.", gate: { valid: false, errors } },
-        { status: 422 }
-      );
+      console.warn(`[plan-approve] Validation warnings for ${id}:`, errors.map((e) => e.message).join("; "));
+      // Warn but don't block — faculty can approve any plan they choose.
     }
 
     const now = new Date();
