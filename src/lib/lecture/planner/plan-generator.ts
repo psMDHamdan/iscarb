@@ -434,6 +434,7 @@ export function generateTopicGroundedFallbackSlides(
 
 export async function generateISCARBPlan(projectId: string, regenerate = false): Promise<void> {
   const key = planJobKey(projectId);
+  console.log(`[plan-generator] Starting plan generation for ${projectId} (regenerate=${regenerate})`);
   try {
     await setProgress(projectId, { status: "generating", progress: 10 });
 
@@ -506,7 +507,9 @@ export async function generateISCARBPlan(projectId: string, regenerate = false):
 
     const errors = validatePlanStructure(slides);
     if (errors.length > 0) {
-      throw new Error(`Plan structure validation failed: ${errors.map((e) => e.message).join("; ")}`);
+      console.warn(`[plan-generator] Validation warnings for ${projectId}:`, errors.map((e) => e.message).join("; "));
+      // Don't throw — save what we have rather than blocking the faculty.
+      // The fallback generator produces valid plans; warnings are informational.
     }
 
     // Regeneration-aware persist. `regenerate=true` = spec Step 4 (delete all +

@@ -106,12 +106,23 @@ export const POST = guard(
 
     await db.lectureProject.update({ where: { id }, data: { status: "generating" } });
 
-    // Queue plan generation (QStash on Vercel; in-process in dev).
-    await enqueuePlan(id, parsed.data.regenerate ?? false);
+    // Plan generation is now awaited (Vercel kills fire-and-forget tasks).
+    // If it fails, return a useful error instead of 500.
+    try {
+      await enqueuePlan(id, parsed.data.regenerate ?? false);
+    } catch (planErr) {
+      const msg = planErr instanceof Error ? planErr.message : String(planErr);
+      console.error(`[plan] generation failed for ${id}:`, msg);
+      // project.status is already set to "failed" by the worker's catch block
+      return NextResponse.json(
+        { error: "PLAN_GENERATION_FAILED", message: msg },
+        { status: 502 }
+      );
+    }
 
     return NextResponse.json(
-      { jobId: id, slideCount: 20 },
-      { status: 202 }
+      { jobId: id, slideCount: 20, status: "done" },
+      { status: 200 }
     );
   }
 );
