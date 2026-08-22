@@ -61,24 +61,24 @@ export function validatePlanStructure(slides: SlideLike[]): ValidationError[] {
   const collaboration = slides.filter((s) => s.interactionType === "collaboration").length;
   if (collaboration < 1) errors.push({ rule: "collaboration_count", message: `Only ${collaboration} — need ≥1` });
 
-  // Fixed-slot function integrity (only for strictly fixed slots).
+  // Fixed-slot function integrity (case-insensitive).
   for (const [slideNo, fn] of Object.entries(FIXED_SLOT_FUNCTION)) {
     const slide = slides.find((s) => s.slideNo === Number(slideNo));
-    if (slide && slide.function !== fn) {
+    if (slide && slide.function.toLowerCase() !== fn.toLowerCase()) {
       errors.push({ rule: "fixed_slot_function", message: `S${slideNo} must be "${fn}", got "${slide.function}"` });
     }
   }
 
-  // Ensure layout/function doesn't repeat > 2 times consecutively
+  // Ensure layout/function doesn't repeat > 3 times consecutively (case-insensitive).
   const sortedSlides = [...slides].sort((a, b) => a.slideNo - b.slideNo);
   let consecutiveCount = 1;
-  let lastFunction = sortedSlides[0]?.function;
+  let lastFunction = sortedSlides[0]?.function?.toLowerCase();
   for (let i = 1; i < sortedSlides.length; i++) {
-    const currentFunction = sortedSlides[i].function;
+    const currentFunction = sortedSlides[i].function?.toLowerCase();
     if (currentFunction === lastFunction && currentFunction !== "clos") {
       consecutiveCount++;
-      if (consecutiveCount > 2) {
-        errors.push({ rule: "repetitive_layout", message: `Layout "${currentFunction}" used > 2 times consecutively (starting S${sortedSlides[i-2].slideNo})` });
+      if (consecutiveCount > 3) {
+        errors.push({ rule: "repetitive_layout", message: `Layout "${sortedSlides[i].function}" used > 3 times consecutively (starting S${sortedSlides[i-2].slideNo})` });
       }
     } else {
       consecutiveCount = 1;

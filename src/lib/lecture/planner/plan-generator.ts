@@ -262,7 +262,7 @@ export function sanitizeAiSlides(json: unknown): AiSlide[] {
   const result: AiSlide[] = [];
   for (let n = 1; n <= 20; n++) {
     const existing = slidesByNo.get(n);
-    let fn = existing?.function ?? "foundation";
+    let fn = (existing?.function ?? "foundation").toLowerCase();
     if (n in FIXED_SLOT_FUNCTION) fn = FIXED_SLOT_FUNCTION[n];
 
     result.push({
