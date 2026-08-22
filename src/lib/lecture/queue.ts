@@ -15,7 +15,10 @@ export const GENERATE_CHUNK_SIZE = Math.max(
 
 export async function enqueueGeneration(projectId: string, slideNos?: number[]): Promise<number> {
   const targets = slideNos && slideNos.length > 0 ? slideNos : Array.from({ length: 20 }, (_, i) => i + 1);
-  void generateAllSlides(projectId, targets);
+  // On Vercel serverless, fire-and-forget (void) tasks are killed when the
+  // HTTP response is sent. We must await the generation so it completes
+  // within the request lifecycle.
+  await generateAllSlides(projectId, targets);
   return targets.length;
 }
 

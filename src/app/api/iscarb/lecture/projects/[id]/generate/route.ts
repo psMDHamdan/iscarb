@@ -13,6 +13,9 @@
  * 202: { jobId, slidesQueued } — worker runs fire-and-forget.
  */
 import { NextResponse } from "next/server";
+
+// Vercel extended timeout — 20 slides × LLM calls can take several minutes.
+export const maxDuration = 300;
 import { guard, type GuardContext } from "@/lib/api-guard";
 import { db } from "@/lib/db";
 import { z } from "zod";
@@ -97,13 +100,23 @@ export const POST = guard(
       }
     }
 
-    // Queue the generation (fire-and-forget in-process).
-    const { enqueueGeneration } = await import("@/lib/lecture/queue");
-    enqueueGeneration(id, requested);
+    // Generation is now awaited (Vercel kills fire-and-forget tasks).
+    // If it fails, we catch the error and return a useful message instead of 500.
+    try {
+      const { enqueueGeneration } = await import("@/lib/lecture/queue");
+      await enqueueGeneration(id, requested);
+    } catch (genErr) {
+      const msg = genErr instanceof Error ? genErr.message : String(genErr);
+      console.error(`[generate] generation failed for project ${id}:`, msg);
+      return NextResponse.json(
+        { error: "GENERATION_FAILED", message: msg },
+        { status: 502 }
+      );
+    }
 
     return NextResponse.json(
-      { jobId: id, slidesQueued: requested.length },
-      { status: 202 }
+      { jobId: id, slidesQueued: requested.length, status: "done" },
+      { status: 200 }
     );
   }
 );
