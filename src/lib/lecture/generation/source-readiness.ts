@@ -38,7 +38,9 @@ interface SourceDocumentRow {
 }
 
 /** Below this usable-block count the source cannot ground a full lecture. */
-const MIN_USABLE_BLOCKS = 4;
+// Lowered from 4 to 1 because browser-side extraction creates a single
+// block with all the extracted text. The LLM can work with any amount of source.
+const MIN_USABLE_BLOCKS = 1;
 
 /**
  * Assesses whether the project's source material is present and parseable
