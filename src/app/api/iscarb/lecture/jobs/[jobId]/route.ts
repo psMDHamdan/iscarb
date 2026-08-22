@@ -91,13 +91,14 @@ export const GET = guard(
         }
 
         const genStatus = project.status ?? "draft";
+        const doneStatuses = new Set(["approved", "planning", "review"]);
         return NextResponse.json({
           jobId,
           projectId: project.id,
           progress: {
-            status: genStatus === "approved" ? "done" : genStatus === "generating" ? "running" : "queued",
-            progress: genStatus === "approved" ? 100 : 0,
-            error: null,
+            status: doneStatuses.has(genStatus) ? "done" : genStatus === "generating" ? "running" : "queued",
+            progress: doneStatuses.has(genStatus) ? 100 : 0,
+            error: genStatus === "failed" ? "Generation failed" : null,
           },
         });
       }

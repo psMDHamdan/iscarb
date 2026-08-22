@@ -24,7 +24,11 @@ export async function setJobProgress(
   documentId: string,
   data: { status?: string; progress?: number; error?: string }
 ): Promise<void> {
-  await redis.hset(jobKey(documentId), data);
+  try {
+    await redis.hset(jobKey(documentId), data);
+  } catch {
+    // Redis unavailable (e.g. Vercel) — parse still works, no live progress.
+  }
 }
 
 export async function parseSourceDocument(documentId: string): Promise<void> {

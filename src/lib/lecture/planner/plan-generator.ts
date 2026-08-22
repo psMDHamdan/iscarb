@@ -27,7 +27,12 @@ export function planJobKey(projectId: string): string {
 }
 
 async function setProgress(projectId: string, data: { status: string; progress: number; error?: string }): Promise<void> {
-  await redis.hset(planJobKey(projectId), data);
+  try {
+    await redis.hset(planJobKey(projectId), data);
+  } catch {
+    // Redis unavailable (e.g. Vercel without Redis) — plan still works,
+    // just without live progress polling.
+  }
 }
 
 export interface AiSlide {
