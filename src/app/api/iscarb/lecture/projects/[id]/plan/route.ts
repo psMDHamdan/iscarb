@@ -19,6 +19,11 @@ import { assertClosApproved } from "@/lib/lecture/planner/clo-validator";
 import { enqueuePlan } from "@/lib/lecture/queue";
 import { getScopedProject } from "@/lib/lecture/review/tenant-guard";
 
+// Plan generation calls the LLM and may take 30-60s. Extend Vercel's
+// default serverless timeout (10s hobby / 60s pro) so the request doesn't
+// get killed mid-generation.
+export const maxDuration = 120;
+
 const bodySchema = z.object({
   regenerate: z.boolean().optional(),
 });

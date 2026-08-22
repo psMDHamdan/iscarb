@@ -20,7 +20,11 @@ export async function enqueueGeneration(projectId: string, slideNos?: number[]):
 }
 
 export async function enqueuePlan(projectId: string, regenerate: boolean): Promise<void> {
-  void generateISCARBPlan(projectId, regenerate);
+  // On Vercel serverless, fire-and-forget (void) tasks are killed when the
+  // HTTP response is sent. We must await the plan generation so it completes
+  // within the request lifecycle. The frontend polls for progress and picks
+  // up the result immediately after POST returns.
+  await generateISCARBPlan(projectId, regenerate);
 }
 
 export async function enqueueParse(documentId: string): Promise<void> {

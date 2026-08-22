@@ -478,7 +478,7 @@ export async function generateISCARBPlan(projectId: string, regenerate = false):
         ),
       ]);
     } catch (err: any) {
-      console.warn(`Plan AI generation fast-fallback triggered: ${err.message}`);
+      console.error(`[plan-generator] AI generation failed: ${err.message}`);
       result = { json: null };
     }
 

@@ -92,13 +92,22 @@ export const GET = guard(
 
         const genStatus = project.status ?? "draft";
         const doneStatuses = new Set(["approved", "planning", "review"]);
+        const failedStatuses = new Set(["failed"]);
+        const progressPct = doneStatuses.has(genStatus) ? 100 : genStatus === "generating" ? 50 : 0;
+        const jobStatus = doneStatuses.has(genStatus)
+          ? "done"
+          : failedStatuses.has(genStatus)
+          ? "failed"
+          : genStatus === "generating"
+          ? "running"
+          : "queued";
         return NextResponse.json({
           jobId,
           projectId: project.id,
           progress: {
-            status: doneStatuses.has(genStatus) ? "done" : genStatus === "generating" ? "running" : "queued",
-            progress: doneStatuses.has(genStatus) ? 100 : 0,
-            error: genStatus === "failed" ? "Generation failed" : null,
+            status: jobStatus,
+            progress: progressPct,
+            error: failedStatuses.has(genStatus) ? "Generation failed — check server logs" : null,
           },
         });
       }
