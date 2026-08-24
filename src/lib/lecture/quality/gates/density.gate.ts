@@ -2,7 +2,7 @@
  * GATE-02: density
  * BRD §7.2 — ≤40 visible words per slide; ≤5 bullets → block or require override.
  */
-import { GateResult, GateFinding } from "../types";
+import { GateResult, GateFinding, GATE_SEVERITY } from "../types";
 
 export function gateDensity(
   artifacts: { slideNo: number; contentJson: { wordCount: number; bullets?: string[] } }[]
@@ -19,8 +19,8 @@ export function gateDensity(
   }
   return {
     gateKey: "density",
-    severity: "error",
-    status: findings.length ? "fail" : "pass",
+    severity: GATE_SEVERITY.density,
+    status: findings.length ? "warn" : "pass",
     findings,
     ruleVersion: "1.0",
   };

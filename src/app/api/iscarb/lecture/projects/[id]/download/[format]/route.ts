@@ -7,6 +7,7 @@ import { renderInstructorGuideDOCX } from "@/lib/lecture/renderer/instructor-gui
 import { renderEvidencePackPDF } from "@/lib/lecture/renderer/evidence-pack-renderer";
 import { renderPDF } from "@/lib/lecture/renderer/pdf-renderer";
 import { deduplicateSlideArtifacts, deduplicateReadinessItems } from "@/lib/lecture/deduplication";
+import { embedFacultyImagesForExport } from "@/lib/lecture/export-embed-images";
 
 const FORMATS = ["pptx", "pdf", "html", "instructor_guide", "evidence_pack"] as const;
 type Format = (typeof FORMATS)[number];
@@ -48,7 +49,9 @@ export const GET = guard(
     }
 
     const courseCode = project.courseProfile?.courseCode ?? "CRISPR-101";
-    const artifacts = deduplicateSlideArtifacts(project.slideArtifacts);
+    const artifacts = await embedFacultyImagesForExport(
+      deduplicateSlideArtifacts(project.slideArtifacts)
+    );
     const readinessItems = deduplicateReadinessItems(project.readinessItems);
 
     let buffer: Buffer;

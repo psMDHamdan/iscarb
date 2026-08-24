@@ -499,8 +499,18 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
                     content={content ? { ...content, fn: currentPlan.function } as any : null}
                     total={20}
                     className="shadow-2xl"
+                    projectId={id}
+                    onRegenerate={() => handleSingleRegen(selectedSlideNo)}
+                    onRemoveFacultyImage={async () => {
+                      queryClient.invalidateQueries({ queryKey: ["iscarb", "lecture", "artifacts", id] });
+                    }}
                     onSaveVisual={async (visualData) => {
                       if (!currentArtifact) return;
+                      // Faculty upload already persisted via the upload route — just refresh.
+                      if (visualData.facultyUploaded) {
+                        queryClient.invalidateQueries({ queryKey: ["iscarb", "lecture", "artifacts", id] });
+                        return;
+                      }
                       await fetch(`/api/iscarb/lecture/projects/${id}/artifacts`, {
                         method: "PATCH",
                         headers: { "Content-Type": "application/json" },

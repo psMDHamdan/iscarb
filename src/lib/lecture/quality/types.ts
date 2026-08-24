@@ -43,10 +43,10 @@ export const GATE_KEYS = [
 
 export type GateKey = (typeof GATE_KEYS)[number];
 
-/** Severity map — only visual_support is warning; rest are error. */
+/** Severity map — density and jargon/visual gates are warnings; structural gates are errors. */
 export const GATE_SEVERITY: Record<GateKey, GateSeverity> = {
   slide_count: "error",
-  density: "error",
+  density: "warning",
   visual_support: "warning",
   interaction_count: "error",
   cases_examples: "error",

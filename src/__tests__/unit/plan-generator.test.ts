@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { generateTopicGroundedFallbackSlides, buildPlanPrompt } from "@/lib/lecture/planner/plan-generator";
+import { validatePlanStructure } from "@/lib/lecture/planner/plan-validator";
 
 describe("Plan Generator Improvements (BRD v3.4)", () => {
   it("generates source-grounded concept titles in fallback mode", () => {
@@ -18,18 +19,19 @@ describe("Plan Generator Improvements (BRD v3.4)", () => {
     expect(slides[5].title).toBe("Homology-Directed Repair (HDR) Vs Non-Homologous End Joining (NHEJ)");
     expect(slides[6].title).toBe("Off-Target Cleavage Mitigation & PAM Recognition");
     expect(slides[8].title).toContain("Cleavage Rate Kinetics");
-    expect(slides[12].title).toContain("HDR) vs Non-Homologous End Joining");
+    expect(slides[12].title).toContain("HDR) Vs Non-Homologous End Joining");
+    expect(validatePlanStructure(slides)).toEqual([]);
   });
 
-  it("builds an enriched prompt adhering to BRD v3.4 Appendix A rules", () => {
+  it("builds an enriched prompt with slot contract and source fidelity rules", () => {
     const blocks = [{ id: "b1", locator: "p.1", criticality: "critical", text: "Security Architecture & Cryptography" }];
     const clos = [{ id: "c1", number: "CLO1", text: "Defend against side-channel attacks", bloomLevel: "evaluate" }];
     const course = { courseCode: "SEC401", title: "Security Engineering", specialty: "Cybersecurity" };
 
     const { system, user } = buildPlanPrompt(blocks, clos, course);
 
-    expect(system).toContain("BRD v3.4 APPENDIX A RULES");
-    expect(system).toContain("High-Stakes Hook (S1)");
+    expect(system).toContain("SOURCE FIDELITY");
+    expect(system).toContain("S1–S20");
     expect(user).toContain("MANDATORY S1–S20 SLOT CONTRACT");
     expect(user).toContain("TARGET LECTURE TOPIC: Security Engineering");
   });

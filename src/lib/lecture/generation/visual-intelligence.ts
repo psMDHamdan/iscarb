@@ -20,6 +20,44 @@ import {
   renderNumberLine,
 } from "@/lib/lecture/chemistry/physics-math-renderer";
 
+export interface VisualSpecOptions {
+  /** Normalized URLs already assigned to other slides in this generation run. */
+  usedImageUrls?: Set<string>;
+}
+
+export function normalizeImageUrl(url: string): string {
+  return url.split("?")[0].toLowerCase();
+}
+
+/** Best-effort HEAD check — rejects dead upstream assets before persisting. */
+export async function isReachableImageUrl(url: string): Promise<boolean> {
+  if (!url || !url.startsWith("http")) return false;
+  try {
+    const res = await fetch(url, {
+      method: "HEAD",
+      redirect: "follow",
+      headers: { "User-Agent": "iSCARB-Academic/1.0 (academic-research@iscarb.edu.sa)" },
+      signal: AbortSignal.timeout(8_000),
+    });
+    if (!res.ok) return false;
+    const ct = res.headers.get("content-type")?.toLowerCase() ?? "";
+    return ct.startsWith("image/") || url.includes("unsplash.com") || url.includes("wikimedia.org");
+  } catch {
+    return false;
+  }
+}
+
+function registerUsedUrl(url: string | undefined, used?: Set<string>): void {
+  if (!url || !used) return;
+  used.add(normalizeImageUrl(url));
+}
+
+function isUrlAvailable(url: string | undefined, used?: Set<string>): boolean {
+  if (!url) return false;
+  if (!used) return true;
+  return !used.has(normalizeImageUrl(url));
+}
+
 export interface ImageIntent {
   concept: string;
   learning_goal: string;
@@ -115,13 +153,18 @@ function isEducationalScientificImage(url: string, title?: string): boolean {
 
 /**
  * Searches Wikipedia and Wikimedia API for high-resolution educational images matching queries.
+ * When `collectAll` is true, returns every valid candidate (for deduplication passes).
  */
-export async function searchWikipediaImage(queries: string[]): Promise<string | undefined> {
+export async function searchWikipediaImage(
+  queries: string[],
+  collectAll = false
+): Promise<string | undefined> {
+  const candidates: string[] = [];
   for (const query of queries) {
     if (!query || query.trim().length === 0) continue;
     try {
       // 1. Search Wikimedia Commons — prefer diagrams and scientific illustrations
-      const commonsUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(query + ' diagram illustration scientific')}&gsrlimit=8&prop=imageinfo&iiprop=url|mime&iiurlwidth=1200&format=json&origin=*`;
+      const commonsUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(query + " diagram illustration scientific")}&gsrlimit=12&prop=imageinfo&iiprop=url|mime&iiurlwidth=1200&format=json&origin=*`;
       const commonsRes = await fetch(commonsUrl, {
         headers: { "User-Agent": "iSCARB-Academic/1.0 (academic-research@iscarb.edu.sa)" },
       });
@@ -136,8 +179,12 @@ export async function searchWikipediaImage(queries: string[]): Promise<string | 
             isValidImageUrl(rawUrl) &&
             isEducationalScientificImage(rawUrl, cPage?.title)
           ) {
-            // Strip tracking params for clean URL
-            return rawUrl.split("?")[0];
+            const clean = rawUrl.split("?")[0];
+            if (collectAll) {
+              if (!candidates.includes(clean)) candidates.push(clean);
+            } else {
+              return clean;
+            }
           }
         }
       }
@@ -168,12 +215,68 @@ export async function searchWikipediaImage(queries: string[]): Promise<string | 
             isValidImageUrl(url) &&
             isEducationalScientificImage(url, page?.title)
           ) {
-            return url.split("?")[0];
+            const clean = url.split("?")[0];
+            if (collectAll) {
+              if (!candidates.includes(clean)) candidates.push(clean);
+            } else {
+              return clean;
+            }
           }
         }
       }
     } catch (e) {
       console.warn(`[visual-intelligence] Wikipedia search failed for '${query}'`, e);
+    }
+  }
+  if (collectAll) return candidates[0];
+  return undefined;
+}
+
+/**
+ * Per-slide Wikimedia fetch that skips URLs already used by other slides.
+ */
+export async function searchWikipediaImageDistinct(
+  queries: string[],
+  slideNo: number,
+  usedImageUrls?: Set<string>
+): Promise<string | undefined> {
+  const slideQueries = [
+    ...queries,
+    `${queries[0] || "academic"} diagram slide ${slideNo}`,
+    `${queries[0] || "science"} illustration concept ${slideNo}`,
+  ].filter(Boolean);
+
+  const seen = new Set<string>();
+  for (const query of slideQueries) {
+    const commonsUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(query + " diagram scientific")}&gsrlimit=12&prop=imageinfo&iiprop=url|mime&iiurlwidth=1200&format=json&origin=*`;
+    try {
+      const commonsRes = await fetch(commonsUrl, {
+        headers: { "User-Agent": "iSCARB-Academic/1.0 (academic-research@iscarb.edu.sa)" },
+      });
+      const commonsData = await commonsRes.json();
+      const cPages = commonsData.query?.pages;
+      if (!cPages) continue;
+      for (const pId of Object.keys(cPages)) {
+        const cPage = cPages[pId];
+        const rawUrl = cPage?.imageinfo?.[0]?.url || cPage?.imageinfo?.[0]?.thumburl;
+        if (!rawUrl || !isValidImageUrl(rawUrl) || !isEducationalScientificImage(rawUrl, cPage?.title)) continue;
+        const clean = rawUrl.split("?")[0];
+        const norm = normalizeImageUrl(clean);
+        if (seen.has(norm)) continue;
+        seen.add(norm);
+        if (!isUrlAvailable(clean, usedImageUrls)) continue;
+        if (await isReachableImageUrl(clean)) return clean;
+      }
+    } catch (e) {
+      console.warn(`[visual-intelligence] distinct search failed for '${query}'`, e);
+    }
+  }
+
+  // Fallback to article images with dedup
+  for (const query of slideQueries.slice(0, 3)) {
+    const found = await searchWikipediaImage([query]);
+    if (found && isUrlAvailable(found, usedImageUrls) && !seen.has(normalizeImageUrl(found))) {
+      if (await isReachableImageUrl(found)) return found;
     }
   }
   return undefined;
@@ -192,7 +295,8 @@ function curatedVisualForContent(content: SlideContentJson) {
     content.title || "",
     content.purpose || "",
     content.learningObjective || "",
-    ...(content.visibleContent || content.bullets || []),
+    ...(content.body?.bullets ?? content.visibleContent ?? (content as any).bullets ?? []),
+    content.body?.visibleCopy ?? "",
   ].join(" ");
   const curated = getAcademicVisualForSlide(content.slideNo || 0, content.title, slideText);
   return curated.id.startsWith("match-") ? curated : null;
@@ -602,84 +706,171 @@ Return STRICT JSON:
 /**
  * AI-Powered Universal Visual Spec & Image Resolver for any slide
  */
-export async function generateVisualSpec(content: SlideContentJson): Promise<VisualSpecification> {
-  // Fast path: chemistry-specific content gets programmatic SVG rendering
-  const chemistryVisual = await detectAndRenderChemistryVisual(content);
+export async function generateVisualSpec(
+  content: SlideContentJson,
+  options: VisualSpecOptions = {}
+): Promise<VisualSpecification> {
+  const { usedImageUrls } = options;
+  const slideNo = content.slideNo || 0;
+  const bulletText = [
+    ...(content.body?.bullets ?? (content as any).bullets ?? []),
+    content.body?.visibleCopy ?? "",
+  ].filter(Boolean);
+
+  const contentForSearch: SlideContentJson = {
+    ...content,
+    slideNo,
+    bullets: bulletText,
+    visibleContent: bulletText,
+  };
+
+  // Chemistry / SVG visuals — also attach a reachable fallback photo for Studio preview
+  const chemistryVisual = await detectAndRenderChemistryVisual(contentForSearch);
   if (chemistryVisual) {
+    if (!(chemistryVisual as any).imageUrl && !(chemistryVisual as any).fetchedImageUrl) {
+      const photo = getAcademicVisualForSlide(slideNo, content.title, bulletText.join(" "));
+      (chemistryVisual as any).imageUrl = photo.imageUrl;
+      (chemistryVisual as any).fetchedImageUrl = photo.imageUrl;
+    }
+    const chemUrl = (chemistryVisual as any).imageUrl || (chemistryVisual as any).fetchedImageUrl;
+    registerUsedUrl(chemUrl, usedImageUrls);
     return chemistryVisual;
   }
 
-  const prompt = `Analyze this university slide and identify what exact visual/diagram is needed:
+  const baseQueries = [
+    content.title || "",
+    content.purpose || "",
+    content.learningObjective || "",
+    bulletText.slice(0, 2).join(" "),
+  ].filter(Boolean);
+
+  // Priority 1: per-slide Wikimedia fetch (distinct across the deck)
+  let finalImageUrl = await searchWikipediaImageDistinct(baseQueries, slideNo, usedImageUrls);
+
+  // Priority 2: LLM-guided Wikimedia search when direct fetch missed
+  if (!finalImageUrl) {
+    const prompt = `Analyze this university slide and identify what exact visual/diagram is needed:
 Slide Title: ${content.title || "Academic Concept"}
 Slide Purpose: ${content.purpose || "Concept Mastery"}
 Learning Objective: ${content.learningObjective || "Understanding"}
-Slide Content / Bullets: ${(content.visibleContent || content.bullets || []).join("\n- ")}
+Slide Content / Bullets: ${bulletText.join("\n- ")}
 Student Action: ${JSON.stringify(content.interaction || content.studentAction || "")}`;
 
-  // Fast path — curated concept-matched image wins over the online scrape.
-  const curated = curatedVisualForContent(content);
-  if (curated) {
-    return specFromCurated(curated);
-  }
+    try {
+      const chatRes = await import("@/lib/ai-engine").then((m) =>
+        m.chatJson({
+          system: VISUAL_LLM_PROMPT,
+          user: prompt,
+          model: m.DEFAULT_AI_MODEL,
+          temperature: 0.2,
+          guardrails: false,
+        })
+      );
 
-  try {
-    const chatRes = await import("@/lib/ai-engine").then(m => m.chatJson({
-      system: VISUAL_LLM_PROMPT,
-      user: prompt,
-      model: m.DEFAULT_AI_MODEL,
-      temperature: 0.2,
-      guardrails: false,
-    }));
+      const intent =
+        (chatRes.json as ImageIntent & { searchQueries?: string[]; suggestedSearchQuery?: string }) ||
+        ({} as ImageIntent);
+      const searchList = [
+        ...(intent.searchQueries || []),
+        intent.suggestedSearchQuery || "",
+        intent.concept || "",
+        content.title || "",
+      ].filter(Boolean);
 
-    const intent = (chatRes.json as ImageIntent & { searchQueries?: string[]; suggestedSearchQuery?: string }) || {} as any;
-    const searchList = [
-      ...(intent.searchQueries || []),
-      intent.suggestedSearchQuery || "",
-      intent.concept || "",
-      content.title || "",
-    ].filter(Boolean);
-
-    let finalImageUrl = undefined;
-    for (let attempts = 0; attempts < 2; attempts++) {
-      const foundImageUrl = await searchWikipediaImage(searchList);
-      if (!foundImageUrl) break;
-      
-      const validation = await verifyVisualRelevance(foundImageUrl, intent);
-      if (validation.valid) {
-        finalImageUrl = foundImageUrl;
-        break; // Passed validation!
-      } else {
-        console.warn(`[visual-intelligence] Image rejected: ${validation.reason}`);
-        // Modify search query for next attempt
-        searchList.push(`${intent.concept} ${intent.visual_type || 'diagram'}`);
+      for (let attempts = 0; attempts < 2 && !finalImageUrl; attempts++) {
+        finalImageUrl = await searchWikipediaImageDistinct(searchList, slideNo, usedImageUrls);
+        if (!finalImageUrl) {
+          searchList.push(`${intent.concept || content.title} ${intent.visual_type || "diagram"} ${slideNo}`);
+        }
       }
-    }
 
-    return {
-      visualType: intent.visual_type || "Diagram",
-      title: content.title || "Academic Diagram",
-      caption: intent.learning_goal || "Scientific diagram illustrating key concept mechanisms.",
-      imageUrl: finalImageUrl,
-      fetchedImageUrl: finalImageUrl,
-      suggestedSearchQuery: intent.suggestedSearchQuery || searchList[0] || "",
-    };
-  } catch (error) {
-    console.error("[visual-intelligence] LLM visual generation failed, returning fallback spec", error);
-    // Return a SPECIFIC visual plan — never "none" or placeholder
-    return {
-      visualType: "DIAGRAM",
-      title: content.title || "Academic Diagram",
-      purpose: content.purpose || "Visual Representation",
-      learningMessage: content.title || "",
-      suggestedSearchQuery: content.title || "Science",
-      // Always return a valid imageUrl — use curated fallback
-      imageUrl: getAcademicVisualForSlide(
-        content.slideNo || 0,
-        content.title,
-        [content.purpose || "", ...(content.visibleContent || content.bullets || [])].join(" ")
-      ).imageUrl,
-    };
+      if (finalImageUrl) {
+        registerUsedUrl(finalImageUrl, usedImageUrls);
+        return {
+          visualType: (intent.visual_type as VisualSpecification["visualType"]) || "PROCESS",
+          purpose: intent.learning_goal || content.title || "",
+          learningMessage: intent.learning_goal || "",
+          layout: "center",
+          elements: [],
+          connections: [],
+          labels: [],
+          annotations: [],
+          emphasis: [],
+          studentQuestion: "",
+          title: content.title || "Academic Diagram",
+          caption: intent.learning_goal || "Scientific diagram illustrating key concept mechanisms.",
+          imageUrl: finalImageUrl,
+          fetchedImageUrl: finalImageUrl,
+          suggestedSearchQuery: intent.suggestedSearchQuery || searchList[0] || "",
+        };
+      }
+    } catch (error) {
+      console.warn("[visual-intelligence] LLM visual search failed:", error);
+    }
   }
+
+  // Priority 3: curated keyword match (only if URL is unused and reachable)
+  const curated = curatedVisualForContent(contentForSearch);
+  if (curated && isUrlAvailable(curated.imageUrl, usedImageUrls)) {
+    const ok = await isReachableImageUrl(curated.imageUrl);
+    if (ok) {
+      registerUsedUrl(curated.imageUrl, usedImageUrls);
+      return specFromCurated(curated);
+    }
+  }
+
+  // Priority 4: discipline fallback — slide number breaks ties for variety
+  for (let offset = 0; offset < 20; offset++) {
+    const candidate = getAcademicVisualForSlide(
+      slideNo + offset,
+      content.title,
+      bulletText.join(" ")
+    );
+    if (!isUrlAvailable(candidate.imageUrl, usedImageUrls)) continue;
+    const ok = await isReachableImageUrl(candidate.imageUrl);
+    if (ok) {
+      registerUsedUrl(candidate.imageUrl, usedImageUrls);
+      return {
+        visualType: "PROCESS",
+        purpose: content.purpose || "Visual Representation",
+        learningMessage: content.title || "",
+        layout: "center",
+        elements: [],
+        connections: [],
+        labels: [],
+        annotations: [],
+        emphasis: [],
+        studentQuestion: "",
+        title: candidate.title || content.title || "Academic Diagram",
+        caption: candidate.caption || "Scientific diagram illustrating key concept mechanisms.",
+        imageUrl: candidate.imageUrl,
+        fetchedImageUrl: candidate.imageUrl,
+        suggestedSearchQuery: content.title || "Science",
+      };
+    }
+  }
+
+  // Absolute last resort — always persist a URL (prefer unused reachable Unsplash)
+  const fallback = getAcademicVisualForSlide(slideNo, content.title, bulletText.join(" "));
+  registerUsedUrl(fallback.imageUrl, usedImageUrls);
+
+  return {
+    visualType: "PROCESS",
+    purpose: content.purpose || "Visual Representation",
+    learningMessage: content.title || "",
+    layout: "center",
+    elements: [],
+    connections: [],
+    labels: [],
+    annotations: [],
+    emphasis: [],
+    studentQuestion: "",
+    title: fallback.title || content.title || "Academic Diagram",
+    caption: fallback.caption || "Scientific diagram illustrating key concept mechanisms.",
+    imageUrl: fallback.imageUrl,
+    fetchedImageUrl: fallback.imageUrl,
+    suggestedSearchQuery: content.title || "Science",
+  };
 }
 
 /**

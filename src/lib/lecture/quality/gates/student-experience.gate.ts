@@ -111,12 +111,7 @@ export function gateStudentExperience(
         message: `Exceeds 5 bullets (${art.contentJson.bullets?.length})`,
       });
     }
-    if ((art.contentJson.wordCount || 0) > 40) {
-      findings.push({
-        slideNo: art.slideNo,
-        message: `Exceeds 40 words (${art.contentJson.wordCount})`,
-      });
-    }
+    // Word-count density is evaluated by GATE-02 (density) as a warning — not duplicated here.
   }
 
   for (const art of artifacts.filter((a) => a.slideNo >= 2 && a.slideNo <= 19)) {

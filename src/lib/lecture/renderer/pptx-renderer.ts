@@ -14,6 +14,8 @@ import { slideTitle, slideBullets, slideAction } from "./content";
 import { ZTM_THEME, type ZtmThemeName } from "./ztm-theme";
 import { getAcademicVisualForSlide } from "../academic-visuals";
 import { stripLatexToReadable } from "./math-utils";
+import { getLectureFile } from "../storage";
+import { resolveSlideImageUrl } from "../visual-image";
 
 // ZTM Accent Colors (Updated to match Studio Design)
 const ACCENT_CYAN = "0F7B8A";
@@ -21,6 +23,38 @@ const ACCENT_GOLD = "0E6C3C";
 const FUTURE_GRAY = "E2E8F0";
 
 const TOTAL_SLIDES = 20;
+
+async function resolveImageDataForPptx(content: SlideContentJson, slideNo: number): Promise<string | null> {
+  const fallback = getAcademicVisualForSlide(
+    slideNo,
+    content.title,
+    (content.body?.bullets || []).join(" ")
+  );
+  const url = resolveSlideImageUrl(content.visualSpec as any, fallback.imageUrl);
+  if (!url) return null;
+
+  const storageKey = (content.visualSpec as any)?.facultyUploadedStorageKey as string | undefined;
+  if (storageKey) {
+    try {
+      const buf = await getLectureFile(storageKey);
+      const lower = storageKey.toLowerCase();
+      const mime = lower.endsWith(".png")
+        ? "image/png"
+        : lower.endsWith(".webp")
+          ? "image/webp"
+          : "image/jpeg";
+      return `data:${mime};base64,${buf.toString("base64")}`;
+    } catch {
+      /* fall through */
+    }
+  }
+
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url; // pptxgenjs can fetch remote paths
+  }
+
+  return null;
+}
 
 export interface RenderableSlide {
   slideNo: number;
@@ -91,10 +125,6 @@ export async function renderPPTX(
     });
 
     // 3. Right Visual Card
-    const spec = content.visualSpec;
-    // ── Visual: SVG > Wikipedia image > text description ──────────────────
-    const svgCode = (content as any).visual?.svgCode || (content as any).vectorSvgCode;
-    const wikipediaUrl = (content as any).visualIntent?.fetchedImageUrl || (content as any).visualIntent?.imageUrl;
     const viDesc = typeof content.visualIntent === "object" && content.visualIntent?.description
       ? content.visualIntent.description
       : typeof content.visualIntent === "string" ? content.visualIntent : "";
@@ -106,7 +136,26 @@ export async function renderPPTX(
 
     let visualAdded = false;
 
-    // 1. Try local SVG (chemistry/physics/math diagrams)
+    // Faculty upload / auto image (priority: facultyUploadedUrl → fetched → image → fallback)
+    if (!visualAdded) {
+      const imageData = await resolveImageDataForPptx(content, artifact.slideNo);
+      if (imageData) {
+        try {
+          if (imageData.startsWith("data:")) {
+            slide.addImage({ data: imageData, x: 5.5, y: 1.6, w: 3.9, h: 2.7 });
+          } else {
+            slide.addImage({ path: imageData, x: 5.5, y: 1.6, w: 3.9, h: 2.7 });
+          }
+          visualAdded = true;
+        } catch { /* fall through */ }
+      }
+    }
+
+    // SVG diagram fallback
+    const svgCode =
+      (content as any).visualSpec?.svgCode ||
+      (content as any).visual?.svgCode ||
+      (content as any).vectorSvgCode;
     if (!visualAdded && svgCode && typeof svgCode === "string" && svgCode.includes("<svg")) {
       try {
         const svgBase64 = Buffer.from(svgCode).toString("base64");
@@ -118,18 +167,7 @@ export async function renderPPTX(
       } catch { /* fall through */ }
     }
 
-    // 2. Try Wikipedia/Wikimedia image (real scientific diagrams)
-    if (!visualAdded && wikipediaUrl && typeof wikipediaUrl === "string" && wikipediaUrl.startsWith("http")) {
-      try {
-        slide.addImage({
-          path: wikipediaUrl,
-          x: 5.5, y: 1.6, w: 3.9, h: 2.7
-        });
-        visualAdded = true;
-      } catch { /* fall through */ }
-    }
-
-    // 3. Fallback: text description of what the visual should show
+    // Text description of what the visual should show
     if (!visualAdded && viDesc) {
       slide.addText(viDesc, {
         x: 5.55, y: 2.2, w: 3.8, h: 2.0, fontSize: 11, color: "0F7B8A", bold: true, align: "center", fontFace: t.fontEnglish,
@@ -138,7 +176,11 @@ export async function renderPPTX(
     }
 
     // Visual caption
-    const visualTitle = viDesc || "Visual";
+    const hasFaculty = Boolean((content.visualSpec as any)?.facultyUploadedUrl);
+    const visualTitle =
+      (content.visualSpec as any)?.title ||
+      viDesc ||
+      (hasFaculty ? "Faculty image" : "Visual");
     slide.addText(visualTitle.slice(0, 80), {
       x: 5.55, y: 4.4, w: 3.8, h: 0.3, fontSize: 10, color: "065F46", bold: true, fontFace: t.fontEnglish
     });

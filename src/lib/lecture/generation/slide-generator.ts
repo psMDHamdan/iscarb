@@ -21,11 +21,15 @@ import {
   readinessGatePromptAddendum,
 } from "./special-slides";
 import type { LectureProjectWithRelations, SlideArtifactDraft, SlideContentJson } from "./types";
+import { FALLBACK_ERROR_VISIBLE_COPY } from "./constants";
 import { globalSentenceRegistry } from "./content-registry";
 
 // NVIDIA Integrate catalog IDs are `meta/llama-…` or `openai/gpt-oss-…`.
 // HuggingFace-style `meta-llama/…` returns HTTP 404 from Integrate.
 const MODEL = DEFAULT_AI_MODEL;
+
+const SLIDE_LLM_TIMEOUT_MS = 25_000;
+const SLIDE_LLM_MAX_RETRIES = 1;
 
 // ---------------------------------------------------------------------------
 // FORBIDDEN_PHRASES — hard rejection filter applied to every generated slide.
@@ -939,26 +943,40 @@ function normalizeArtifact(
 // ---------------------------------------------------------------------------
 
 function buildFallbackSlide(
-  project: any,
-  plan: any,
-  blocks: any[],
-  clos: any[]
+  _project: any,
+  plan: { slideNo: number; title?: string; function?: string },
+  blocks: { text: string }[],
+  _clos: any[]
 ): SlideContentJson {
   const title = plan.title || "Untitled Slide";
-  const bullets = blocks.slice(0, 3).map((b) => b.text.slice(0, 80) + "...");
+  const fromBlocks = blocks
+    .map((b) => b.text.replace(/\s+/g, " ").trim().slice(0, 120))
+    .filter((t) => t.length > 20);
+  let bullets = fromBlocks.slice(0, 3);
+  if (bullets.length === 0) {
+    const fnLabel = (plan.function || "concept").replace(/_/g, " ");
+    bullets = [`${fnLabel}: ${title.slice(0, 100)}`];
+    if (fromBlocks.length === 0 && title.length > 10) {
+      bullets.push(`Review source material for ${title.slice(0, 80)}.`);
+    }
+  }
+  const visibleCopy = FALLBACK_ERROR_VISIBLE_COPY;
   return {
     slideNo: plan.slideNo,
     title,
     body: {
-      visibleCopy: "Error loading generated content.",
-      bullets
+      visibleCopy,
+      bullets,
     },
     visualIntent: {
       description: "Fallback diagram",
       sourceFigureRef: null,
       generateDiagram: false,
     },
-    wordCount: title.split(/\s+/).length + bullets.reduce((n: number, b: string) => n + b.split(/\s+/).length, 0),
+    generationFailed: true,
+    wordCount:
+      title.split(/\s+/).filter(Boolean).length +
+      bullets.reduce((n: number, b: string) => n + b.split(/\s+/).filter(Boolean).length, 0),
   };
 }
 
@@ -979,28 +997,46 @@ export async function generateSlideArtifact(
     const content = buildCLOSlide(clos);
     content.wordCount = countVisibleWords(content);
     const { valid, errors } = artifactGate(content, { allowSynthesis: true });
-    return { slideNo: plan.slideNo, slidePlanId: plan.id, content, errors, flagged: !valid };
+    return { slideNo: plan.slideNo, slidePlanId: plan.id, content, errors, flagged: !valid, llmRetryCount: 0 };
   }
 
   const selectedClos = clos;
 
   let result: { json: unknown; model?: string; content?: string } = { json: null };
-  try {
-    result = await Promise.race([
-      chatJson({
-        system: systemPrompt(languagePolicy),
-        user: userPrompt(plan, selectedClos, blocks, project.nationalAlignmentMode, languagePolicy, blueprintSlot, lessonHook, conceptCard),
-        temperature: 0.4,
-        model: MODEL,
-      }),
-      new Promise<{ json: null }>((_, reject) =>
-        setTimeout(() => reject(new Error("Slide LLM timeout (25s max)")), 25_000)
-      ),
-    ]);
-    await recordModelRun({ projectId: project.id, kind: "slide", result: result as ChatResult });
-  } catch (err: any) {
-    console.warn(`[SlideGenerator] Slide S${plan.slideNo} fast fallback triggered: ${err.message}`);
-    result = { json: null };
+  let llmRetryCount = 0;
+
+  for (let attempt = 0; attempt <= SLIDE_LLM_MAX_RETRIES; attempt++) {
+    try {
+      result = await Promise.race([
+        chatJson({
+          system: systemPrompt(languagePolicy),
+          user: userPrompt(plan, selectedClos, blocks, project.nationalAlignmentMode, languagePolicy, blueprintSlot, lessonHook, conceptCard),
+          temperature: 0.4,
+          model: MODEL,
+        }),
+        new Promise<{ json: null }>((_, reject) =>
+          setTimeout(() => reject(new Error(`Slide LLM timeout (${SLIDE_LLM_TIMEOUT_MS / 1000}s max)`)), SLIDE_LLM_TIMEOUT_MS)
+        ),
+      ]);
+      await recordModelRun({ projectId: project.id, kind: "slide", result: result as ChatResult });
+      const candidate = result.json as Record<string, unknown> | null;
+      if (candidate && (candidate as any).fallback !== true) {
+        break;
+      }
+      if (attempt < SLIDE_LLM_MAX_RETRIES) {
+        llmRetryCount++;
+        console.warn(`[SlideGenerator] Slide S${plan.slideNo} empty/fallback JSON — retry ${attempt + 1}`);
+        continue;
+      }
+    } catch (err: any) {
+      if (attempt < SLIDE_LLM_MAX_RETRIES) {
+        llmRetryCount++;
+        console.warn(`[SlideGenerator] Slide S${plan.slideNo} retry ${attempt + 1}: ${err.message}`);
+        continue;
+      }
+      console.warn(`[SlideGenerator] Slide S${plan.slideNo} exhausted retries: ${err.message}`);
+      result = { json: null };
+    }
   }
 
   const json = result.json as Record<string, unknown> | null;
@@ -1013,6 +1049,7 @@ export async function generateSlideArtifact(
       errors: ["LLM_UNAVAILABLE"],
       flagged: true,
       error: "LLM_UNAVAILABLE",
+      llmRetryCount,
     };
   }
 
@@ -1035,6 +1072,7 @@ export async function generateSlideArtifact(
       errors: ["FORBIDDEN_CONTENT_DETECTED"],
       flagged: true,
       error: "FORBIDDEN_CONTENT_DETECTED — output contained a forbidden phrase or wrong-domain contamination. Slide must be regenerated.",
+      llmRetryCount,
     };
   }
 
@@ -1046,6 +1084,7 @@ export async function generateSlideArtifact(
       errors: ["CONTENT_TRUNCATED"],
       flagged: true,
       error: "CONTENT_TRUNCATED — LLM output was cut off.",
+      llmRetryCount,
     };
   }
 
@@ -1072,5 +1111,5 @@ export async function generateSlideArtifact(
   globalSentenceRegistry.recordSlide(plan.slideNo, candidateTexts);
 
   const { valid, errors } = artifactGate(content);
-  return { slideNo: plan.slideNo, slidePlanId: plan.id, content, errors, flagged: !valid };
+  return { slideNo: plan.slideNo, slidePlanId: plan.id, content, errors, flagged: !valid, llmRetryCount };
 }

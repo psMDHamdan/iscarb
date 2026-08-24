@@ -22,7 +22,10 @@ import { pathToFileURL } from "node:url";
 import path from "node:path";
 
 const BUCKET = process.env.LECTURE_STORAGE_BUCKET;
+/** Set to your in-Kingdom bucket region (e.g. me-central2 for Dammam / GCS). */
 const REGION = process.env.LECTURE_STORAGE_REGION || "me-central-1";
+const ENDPOINT = process.env.LECTURE_STORAGE_ENDPOINT?.trim();
+const FORCE_PATH_STYLE = process.env.LECTURE_STORAGE_FORCE_PATH_STYLE === "true";
 const LOCAL_ROOT = process.env.LECTURE_STORAGE_LOCAL_DIR || ".lecture-storage";
 
 let client: S3Client | null = null;
@@ -64,6 +67,10 @@ function getClient(): S3Client {
   }
   if (!client) {
     const config: S3ClientConfig = { region: REGION };
+    if (ENDPOINT) {
+      config.endpoint = ENDPOINT;
+      config.forcePathStyle = FORCE_PATH_STYLE;
+    }
     const accessKey =
       process.env.LECTURE_STORAGE_ACCESS_KEY || process.env.AWS_ACCESS_KEY_ID;
     const secretKey =
@@ -80,6 +87,17 @@ function getClient(): S3Client {
 export function buildStorageKey(projectId: string, documentId: string, filename: string): string {
   const prefix = (process.env.LECTURE_STORAGE_PREFIX || "lecture/").replace(/^\/|\/$/g, "");
   return `${prefix}/${projectId}/${documentId}/${filename}`;
+}
+
+/** Storage key for a faculty-uploaded slide image. */
+export function buildSlideImageStorageKey(
+  projectId: string,
+  slideNo: number,
+  filename: string
+): string {
+  const prefix = (process.env.LECTURE_STORAGE_PREFIX || "lecture/").replace(/^\/|\/$/g, "");
+  const safe = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
+  return `${prefix}/${projectId}/slide-images/${slideNo}/${safe}`;
 }
 
 export async function uploadLectureFile(key: string, buffer: Buffer, mimeType: string): Promise<string> {

@@ -23,6 +23,7 @@ import { renderHTML } from "@/lib/lecture/renderer/html-renderer";
 import { renderPDF } from "@/lib/lecture/renderer/pdf-renderer";
 import { renderInstructorGuideDOCX } from "@/lib/lecture/renderer/instructor-guide-renderer";
 import { renderEvidencePackPDF } from "@/lib/lecture/renderer/evidence-pack-renderer";
+import { embedFacultyImagesForExport } from "@/lib/lecture/export-embed-images";
 import { deduplicateSlideArtifacts, deduplicateReadinessItems } from "@/lib/lecture/deduplication";
 import { getScopedProject } from "@/lib/lecture/review/tenant-guard";
 
@@ -173,7 +174,7 @@ export const GET = guard(
           orderBy: { slideNo: "asc" },
         });
       }
-      const artifacts = deduplicateSlideArtifacts(rawArtifacts);
+      const artifacts = await embedFacultyImagesForExport(deduplicateSlideArtifacts(rawArtifacts));
 
       const rawReadiness = await db.lectureReadinessItem.findMany({
         where: { projectId: version.projectId },

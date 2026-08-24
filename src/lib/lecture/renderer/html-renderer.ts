@@ -11,6 +11,8 @@
 import type { SlideContentJson, ReadinessItemJson } from "../generation/types";
 import { slideTitle, slideBullets, slideAction } from "./content";
 import { generateVisualPlaceholder } from "./visual-placeholder";
+import { resolveSlideImageUrl } from "../visual-image";
+import { getAcademicVisualForSlide } from "../academic-visuals";
 
 const TOTAL_SLIDES = 20;
 
@@ -114,28 +116,44 @@ export function renderHTML(
         })
         .join("");
 
-      const visualSvg = content.visualIntent
-        ? generateVisualPlaceholder({
-            slideNo: slide.slideNo,
-            fn: (slide as any).function ?? "foundation",
-            visualIntent: content.visualIntent.description,
-            width: 560,
-            height: 280,
-          })
-        : "";
+      const fallbackVisual = getAcademicVisualForSlide(
+        slide.slideNo,
+        title,
+        (content.body?.bullets || []).join(" ")
+      );
+      const imageUrl = resolveSlideImageUrl(content.visualSpec as any, fallbackVisual.imageUrl);
+      const visualCaption =
+        (content.visualSpec as any)?.caption ||
+        (content.visualSpec as any)?.title ||
+        content.visualIntent?.description ||
+        "Slide visual";
+      const visualSvg =
+        !imageUrl && content.visualIntent
+          ? generateVisualPlaceholder({
+              slideNo: slide.slideNo,
+              fn: (slide as any).function ?? "foundation",
+              visualIntent: content.visualIntent.description,
+              width: 560,
+              height: 280,
+            })
+          : "";
+      const visualBlock = imageUrl
+        ? `<figure class="visual-intent" role="img" aria-label="Visual for slide ${slide.slideNo}">
+          <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(visualCaption)}" style="width:100%;height:auto;display:block;object-fit:cover;max-height:320px;" />
+          <figcaption class="visual-caption">${escapeHtml(visualCaption)}</figcaption>
+        </figure>`
+        : visualSvg
+          ? `<figure class="visual-intent" role="img" aria-label="Visual intent for slide ${slide.slideNo}">
+          ${visualSvg}
+          <figcaption class="visual-caption">${escapeHtml(content.visualIntent?.description || "Visual Intent")}</figcaption>
+        </figure>`
+          : "";
 
       return `
       <section class="slide" data-slide="${slide.slideNo}" dir="${rtl ? "rtl" : "ltr"}">
         <h2>${escapeHtml(title)}</h2>
         <ul class="bullets">${bulletsHtml || "<li><em>No bullets</em></li>"}</ul>
-        ${
-          visualSvg
-            ? `<figure class="visual-intent" role="img" aria-label="Visual intent for slide ${slide.slideNo}">
-          ${visualSvg}
-          <figcaption class="visual-caption">${escapeHtml(content.visualIntent?.description || "Visual Intent")}</figcaption>
-        </figure>`
-            : ""
-        }
+        ${visualBlock}
         ${action ? `<div class="action" style="border-left: 4px solid #FFB81C; padding-left: 1rem; background: rgba(255,184,28,0.1);">▶ ${escapeHtml(action)}</div>` : ""}
         ${itemsHtml}
         ${slide.slideNo === 20 ? `

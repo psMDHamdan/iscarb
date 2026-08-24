@@ -18,6 +18,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { renderPPTX } from "@/lib/lecture/renderer/pptx-renderer";
 import { renderHTML } from "@/lib/lecture/renderer/html-renderer";
+import { embedFacultyImagesForExport } from "@/lib/lecture/export-embed-images";
 import { renderPDF } from "@/lib/lecture/renderer/pdf-renderer";
 import {
   renderInstructorGuidePDF,
@@ -88,7 +89,7 @@ export const POST = guard(
       where: { id: { in: artifactIds } },
       orderBy: { slideNo: "asc" },
     });
-    const artifacts = deduplicateSlideArtifacts(rawArtifacts);
+    const artifacts = await embedFacultyImagesForExport(deduplicateSlideArtifacts(rawArtifacts));
     const rawReadiness = await db.lectureReadinessItem.findMany({
       where: { projectId: version.projectId },
     });

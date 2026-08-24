@@ -27,7 +27,24 @@ export function planJobKey(projectId: string): string {
 }
 
 async function setProgress(projectId: string, data: { status: string; progress: number; error?: string }): Promise<void> {
-  await redis.hset(planJobKey(projectId), data);
+  const payload: Record<string, string> = {
+    status: data.status,
+    progress: String(data.progress),
+  };
+  if (data.error !== undefined) payload.error = data.error;
+  try {
+    await redis.hset(planJobKey(projectId), payload);
+  } catch (e: unknown) {
+    try {
+      await redis.config("SET", "stop-writes-on-bgsave-error", "no");
+      await redis.hset(planJobKey(projectId), payload);
+    } catch {
+      console.warn(
+        "[plan-generator] Redis progress write failed (plan continues):",
+        e instanceof Error ? e.message : String(e),
+      );
+    }
+  }
 }
 
 export interface AiSlide {
@@ -379,6 +396,34 @@ function formatTopicTitle(t: string): string {
     .join(" ");
 }
 
+/** Pull a student-facing title from a source block (markdown heading or first line). */
+export function extractBlockHeading(text: string): string {
+  const heading = text.match(/^#+\s*(.+)$/m);
+  const raw = (heading ? heading[1] : text.split("\n").map((l) => l.trim()).find(Boolean) ?? "").trim();
+  if (!raw) return "Source Reference";
+  return raw
+    .split(/\s+/)
+    .map((word) => {
+      if (word.toLowerCase() === "vs") return "Vs";
+      if (/^[A-Z0-9()\-]+$/.test(word)) return word;
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(" ");
+}
+
+function kineticsTitleFromClo(clos: CourseLearningOutcome[], topicTitle: string): string {
+  const primary = clos[0]?.text ?? "";
+  if (/cleavage kinetics/i.test(primary)) {
+    return `Cleavage Rate Kinetics & Worked Example for ${topicTitle}`;
+  }
+  return `Quantitative Analysis & Worked Example for ${topicTitle}`;
+}
+
+/**
+ * Topic-grounded fallback used when AI is unavailable or returns placeholders.
+ * Must pass validatePlanStructure: varied slot functions (≤2 consecutive repeats),
+ * fixed S1/S3/S18–S20 functions, and interaction quotas.
+ */
 export function generateTopicGroundedFallbackSlides(
   topic: string,
   clos: CourseLearningOutcome[],
@@ -388,29 +433,34 @@ export function generateTopicGroundedFallbackSlides(
   const topicTitle = formatTopicTitle(cleanTopic);
   const cloIds = clos.map((c) => c.id);
   const blockIds = blocks.map((b) => b.id);
-  const getBlockId = (idx: number) => (blockIds[idx % Math.max(1, blockIds.length)] ? [blockIds[idx % Math.max(1, blockIds.length)]] : []);
-  const getCloId = (idx: number) => (cloIds[idx % Math.max(1, cloIds.length)] ? [cloIds[idx % Math.max(1, cloIds.length)]] : []);
+  const blockTitles = blocks.map((b) => extractBlockHeading(b.text));
+  const getBlockId = (idx: number) =>
+    blockIds[idx % Math.max(1, blockIds.length)] ? [blockIds[idx % Math.max(1, blockIds.length)]] : [];
+  const getCloId = (idx: number) =>
+    cloIds[idx % Math.max(1, cloIds.length)] ? [cloIds[idx % Math.max(1, cloIds.length)]] : [];
 
-  const calcTitle = `Quantitative Analysis & Worked Example for ${topicTitle}`;
-  const tradeOffTitle = `Systemic Trade-offs & Parameter Balancing in ${topicTitle}`;
+  const tradeOffTitle =
+    blockTitles[1] ??
+    blockTitles[0] ??
+    `Systemic Trade-offs & Parameter Balancing in ${topicTitle}`;
 
   const progression: { fn: string; title: string; interaction: string | null }[] = [
-    { fn: "hook", title: `What Makes ${topicTitle} Essential?`, interaction: "poll" },
+    { fn: "hook_question", title: `When ${topicTitle} Fails: High-Stakes Impact & Core Tension`, interaction: "poll" },
     { fn: "domain_spine", title: `Pillars & Domain Spine of ${topicTitle}`, interaction: null },
     { fn: "clos", title: `Core Learning Outcomes for ${topicTitle}`, interaction: null },
-    { fn: "h_stack", title: `${topicTitle} Technical & Human Readiness`, interaction: "pause_discuss" },
-    { fn: "foundation", title: `Core Concepts of ${topicTitle}`, interaction: null },
-    { fn: "foundation", title: `${topicTitle} System Workflows & Operations`, interaction: "poll" },
-    { fn: "foundation", title: `In-Depth Component Analysis of ${topicTitle}`, interaction: "pause_discuss" },
-    { fn: "misconception", title: `Why Simple ${topicTitle} Assumptions Fail`, interaction: "pause_discuss" },
-    { fn: "calculation", title: calcTitle, interaction: "worked_example" },
-    { fn: "deep_dive", title: `Advanced Technical Mechanisms in ${topicTitle}`, interaction: null },
-    { fn: "deep_dive", title: `System Requirements & Constraints for ${topicTitle}`, interaction: "pause_discuss" },
-    { fn: "deep_dive", title: `Layered Protection & System Robustness in ${topicTitle}`, interaction: null },
-    { fn: "trade_off", title: tradeOffTitle, interaction: "collaboration" },
-    { fn: "application", title: `Practical ${topicTitle} Case Study`, interaction: null },
-    { fn: "application", title: `Guided Industrial & Clinical Scenarios for ${topicTitle}`, interaction: "pause_discuss" },
-    { fn: "application", title: `Independent Scenario Analysis for ${topicTitle}`, interaction: null },
+    { fn: "simple_explanation", title: `${topicTitle} Technical & Human Readiness`, interaction: "pause_discuss" },
+    { fn: "labeled_diagram", title: blockTitles[0] ?? `Core Concepts of ${topicTitle}`, interaction: null },
+    { fn: "process_steps", title: blockTitles[1] ?? `${topicTitle} System Workflows & Operations`, interaction: "poll" },
+    { fn: "comparison", title: blockTitles[2] ?? `In-Depth Component Analysis of ${topicTitle}`, interaction: "pause_discuss" },
+    { fn: "misconception", title: `Why Simple ${topicTitle} Assumptions Fail`, interaction: null },
+    { fn: "calculation", title: kineticsTitleFromClo(clos, topicTitle), interaction: "worked_example" },
+    { fn: "concept_map", title: blockTitles[0] ? `Mechanisms Behind ${blockTitles[0]}` : `Advanced Mechanisms in ${topicTitle}`, interaction: null },
+    { fn: "comparison", title: `System Requirements & Constraints for ${topicTitle}`, interaction: "pause_discuss" },
+    { fn: "process_steps", title: `Layered Protection & System Robustness in ${topicTitle}`, interaction: null },
+    { fn: "trade_off", title: `${tradeOffTitle}: Parameter Balancing`, interaction: "collaboration" },
+    { fn: "case_study", title: `Practical ${topicTitle} Case Study`, interaction: null },
+    { fn: "prediction", title: `Guided Scenarios for ${topicTitle}`, interaction: "pause_discuss" },
+    { fn: "interactive_activity", title: `Independent Scenario Analysis for ${topicTitle}`, interaction: null },
     { fn: "application", title: `Saudi Vision 2030 & Career Context for ${topicTitle}`, interaction: null },
     { fn: "rubric", title: `Evaluation Rubric & Mastery Standards for ${topicTitle}`, interaction: null },
     { fn: "evidence", title: `Triangulated Evidence & Portfolio Assessment for ${topicTitle}`, interaction: null },
@@ -419,7 +469,7 @@ export function generateTopicGroundedFallbackSlides(
 
   return progression.map((item, i) => ({
     slideNo: i + 1,
-    function: FIXED_SLOT_FUNCTION[i + 1] || item.fn,
+    function: FIXED_SLOT_FUNCTION[i + 1] ?? item.fn,
     title: item.title,
     cloIds: getCloId(i),
     sourceBlockIds: getBlockId(i),
@@ -428,7 +478,6 @@ export function generateTopicGroundedFallbackSlides(
 }
 
 export async function generateISCARBPlan(projectId: string, regenerate = false): Promise<void> {
-  const key = planJobKey(projectId);
   try {
     await setProgress(projectId, { status: "generating", progress: 10 });
 

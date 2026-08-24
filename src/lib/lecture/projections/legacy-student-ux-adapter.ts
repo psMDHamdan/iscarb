@@ -16,6 +16,7 @@ import { db } from "@/lib/db";
 import { deduplicateSlideArtifacts, deduplicateReadinessItems } from "@/lib/lecture/deduplication";
 import { cleanJargon, cleanObjectJargon } from "@/lib/lecture/projections/utils/jargon-cleaner";
 import { getAcademicVisualForSlide } from "@/lib/lecture/academic-visuals";
+import { resolveSlideImageUrl } from "@/lib/lecture/visual-image";
 import type {
   StudentExperienceViewModel,
   StudentConceptViewModel,
@@ -499,7 +500,7 @@ export async function projectLegacyStudentExperience({
     );
     const isStrongMatch = matchedVisual.id.startsWith("match-");
 
-    const storedRaw = visualSpec?.fetchedImageUrl || visualSpec?.imageUrl || undefined;
+    const storedRaw = resolveSlideImageUrl(visualSpec, undefined) || undefined;
     const storedIsBad =
       !!storedRaw &&
       (storedRaw.endsWith(".pdf") ||
@@ -511,7 +512,7 @@ export async function projectLegacyStudentExperience({
         storedRaw.toLowerCase().includes("poster"));
     const storedIsLocalUpload =
       !!storedRaw &&
-      !/^https?:\/\//.test(storedRaw);
+      (!/^https?:\/\//.test(storedRaw) || Boolean(visualSpec?.facultyUploadedUrl));
 
     const visualTitle =
       isStrongMatch && !storedIsLocalUpload
@@ -549,7 +550,9 @@ export async function projectLegacyStudentExperience({
       </div>`;
 
     let rawImg: string | undefined;
-    if (storedIsLocalUpload) {
+    if (visualSpec?.facultyUploadedUrl) {
+      rawImg = visualSpec.facultyUploadedUrl;
+    } else if (storedIsLocalUpload) {
       rawImg = storedRaw;
     } else if (isStrongMatch) {
       rawImg = matchedVisual.imageUrl;

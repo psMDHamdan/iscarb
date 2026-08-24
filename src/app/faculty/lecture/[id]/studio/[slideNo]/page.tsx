@@ -108,7 +108,32 @@ export default function SlideStudioPage({
       {data && plan && (
         <>
           <div className="grid gap-6 lg:grid-cols-2">
-            <SlidePreviewCard slideNo={slide} content={working} />
+            <SlidePreviewCard
+              slideNo={slide}
+              content={working}
+              projectId={id}
+              onSaveVisual={async (visualData) => {
+                if (visualData.facultyUploaded && visualData.visualSpec) {
+                  setWorking((prev) =>
+                    prev
+                      ? { ...prev, visualSpec: visualData.visualSpec as any }
+                      : prev
+                  );
+                  return;
+                }
+              }}
+              onRemoveFacultyImage={async () => {
+                setWorking((prev) => {
+                  if (!prev?.visualSpec) return prev;
+                  const next = { ...prev.visualSpec } as Record<string, unknown>;
+                  delete next.facultyUploadedUrl;
+                  delete next.facultyUploadedStorageKey;
+                  delete next.facultyUploadedAt;
+                  delete next.facultyUploadedOriginalName;
+                  return { ...prev, visualSpec: next as any };
+                });
+              }}
+            />
             <SlideEditorPanel
               content={working ?? { title: "", bullets: [], visualIntent: "", studentAction: "", speakerNotes: "", citations: [], claims: [], cloIds: [], sourceBlockIds: [], wordCount: 0 }}
               onChange={(next) => setWorking(next)}

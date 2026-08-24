@@ -52,7 +52,9 @@ export const POST = guard(
       const passCount = results.filter((r) => r.status === "pass").length;
       const failCount = results.filter((r) => r.status === "fail").length;
       const blockers = results.filter((r) => r.severity === "error" && r.status === "fail");
-      const warnings = results.filter((r) => r.severity === "warning" && r.status === "fail");
+      const warnings = results.filter(
+        (r) => r.severity === "warning" && (r.status === "fail" || r.status === "warn")
+      );
       const warnCount = warnings.length;
 
       return NextResponse.json(

@@ -72,6 +72,14 @@ export interface VisualSpecification {
   title?: string;
   caption?: string;
   imageUrl?: string;
+  /**
+   * Faculty-provided override. Always wins over auto-fetched / curated images
+   * and is preserved across slide regeneration until explicitly removed.
+   */
+  facultyUploadedUrl?: string;
+  facultyUploadedStorageKey?: string;
+  facultyUploadedAt?: string;
+  facultyUploadedOriginalName?: string;
 }
 
 export interface SlideContentJson {
@@ -121,6 +129,8 @@ export interface SlideArtifactDraft {
   errors: string[];
   flagged: boolean;
   error?: string;
+  /** How many LLM retries were needed (0 = succeeded first attempt). */
+  llmRetryCount?: number;
 }
 
 export interface ReadinessItemJson {

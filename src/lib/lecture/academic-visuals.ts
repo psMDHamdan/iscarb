@@ -415,7 +415,7 @@ export const TOPIC_IMAGE_MAP: TopicImage[] = [
 
   {
     keywords: ["database", "sql", "nosql", "query", "indexing", "relational database", "schema", "transaction", "acid"],
-    imageUrl: "https://images.unsplash.com/photo-1544383835-bda2bc66a2e2?auto=format&fit=crop&w=1200&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80",
     title: "Database Systems", caption: "Relational databases ensure ACID properties; query optimization and indexing enable fast retrieval from large datasets.",
     visualType: "Data Schema", discipline: "cs_ai"
   },

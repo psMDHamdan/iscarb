@@ -48,6 +48,9 @@ import type {
 import { verifyEvidence } from "./reviewers/evidence-reviewer";
 import { runDeterministicQA } from "./reviewers/deterministic-qa";
 import { generateVisualSpec } from "./visual-intelligence";
+import { FALLBACK_ERROR_VISIBLE_COPY } from "./constants";
+import { getAcademicVisualForSlide } from "@/lib/lecture/academic-visuals";
+import { extractFacultyImageOverride } from "@/lib/lecture/visual-image";
 import { composeSlide } from "./slide-composer";
 import { verifyVisualQuality } from "./reviewers/visual-reviewer";
 import { simulateScreenshotQA } from "./reviewers/screenshot-qa";
@@ -289,6 +292,80 @@ function within(win: { start: number; end: number }, pct: number): number {
   return win.start + Math.round(((win.end - win.start) * pct) / 100);
 }
 
+/** Normalize slide content for the visual resolver (body → legacy flat fields). */
+function contentForVisualSpec(content: SlideContentJson, slideNo: number): SlideContentJson {
+  const bullets = content.body?.bullets ?? (content as { bullets?: string[] }).bullets ?? [];
+  const visibleCopy = content.body?.visibleCopy ?? "";
+  return {
+    ...content,
+    slideNo,
+    bullets,
+    visibleContent: bullets.length ? bullets : visibleCopy ? [visibleCopy] : [],
+  };
+}
+
+/** Load faculty image overrides before any persist so early writes cannot lose them. */
+async function loadFacultyImageOverrides(
+  projectId: string
+): Promise<Map<number, NonNullable<ReturnType<typeof extractFacultyImageOverride>>>> {
+  const existing = await db.lectureSlideArtifact.findMany({
+    where: { projectId, status: { not: "superseded" } },
+    orderBy: [{ slideNo: "asc" }, { version: "desc" }],
+  });
+  const facultyBySlide = new Map<
+    number,
+    NonNullable<ReturnType<typeof extractFacultyImageOverride>>
+  >();
+  const seen = new Set<number>();
+  for (const row of existing) {
+    if (seen.has(row.slideNo)) continue;
+    seen.add(row.slideNo);
+    const override = extractFacultyImageOverride(
+      ((row.contentJson as any)?.visualSpec as Record<string, unknown>) || null
+    );
+    if (override) facultyBySlide.set(row.slideNo, override);
+  }
+  return facultyBySlide;
+}
+
+function mergeFacultyOverrideIntoDraft(
+  draft: SlideArtifactDraft,
+  faculty: ReturnType<typeof extractFacultyImageOverride> | undefined
+): void {
+  if (!faculty || !draft.content) return;
+  draft.content.visualSpec = {
+    ...(draft.content.visualSpec || {}),
+    ...faculty,
+  } as any;
+}
+
+/** Assign distinct, persisted visual specs sequentially (Wikimedia + dedup registry).
+ * Preserves any faculty-uploaded override so regen never clobbers faculty choice.
+ */
+async function attachVisualSpecs(
+  projectId: string,
+  items: { plan: { slideNo: number }; draft: SlideArtifactDraft }[],
+  facultyBySlide?: Map<number, NonNullable<ReturnType<typeof extractFacultyImageOverride>>>
+): Promise<void> {
+  const facultyMap = facultyBySlide ?? (await loadFacultyImageOverrides(projectId));
+
+  const usedImageUrls = new Set<string>();
+  for (const item of items) {
+    if (!item.draft.content) continue;
+    try {
+      const spec = await generateVisualSpec(
+        contentForVisualSpec(item.draft.content, item.plan.slideNo),
+        { usedImageUrls }
+      );
+      const faculty = facultyMap.get(item.plan.slideNo);
+      item.draft.content.visualSpec = faculty ? { ...spec, ...faculty } : spec;
+    } catch (err) {
+      console.warn(`[Worker] Visual spec failed for S${item.plan.slideNo}:`, err);
+      mergeFacultyOverrideIntoDraft(item.draft, facultyMap.get(item.plan.slideNo));
+    }
+  }
+}
+
 /**
  * Source analysis with a cross-chunk cache (generationStateJson).
  * The first chunk to need analysis computes it and persists it; later chunks
@@ -472,6 +549,11 @@ export async function generateSlideChunk(
 
     let generatedArtifacts: { plan: any; draft: SlideArtifactDraft }[] = [];
     let needsFacultyReview = false;
+    const slideRetryCounts: Record<number, number> = {};
+
+    // Snapshot faculty uploads BEFORE any persist — early persist supersedes the
+    // prior artifact, so attachVisualSpecs must not re-read DB after that point.
+    const facultyImageOverrides = await loadFacultyImageOverrides(projectId);
 
     // ── Core generation: each slide gets SCOPED blocks (Gap 4) ────────────
     generatedArtifacts = await processInBatches(targets, BATCH_SIZE, async (plan: any, idx: number) => {
@@ -510,6 +592,10 @@ export async function generateSlideChunk(
         conceptCard: matchingCard ?? undefined,
       }).catch((err) => failedDraft(planRecord, String(err)));
 
+      if (draft.llmRetryCount && draft.llmRetryCount > 0) {
+        slideRetryCounts[planRecord.slideNo] = draft.llmRetryCount;
+      }
+
       // Student experience is generated INLINE with slide content (same LLM call).
       // Only fall back to separate compilation if inline generation failed.
       if (draft.content && !draft.content.studentExperience) {
@@ -521,7 +607,9 @@ export async function generateSlideChunk(
         }
       }
 
-      // Persist artifact immediately so Studio UI receives slide updates second-by-second
+      // Persist artifact immediately so Studio UI receives slide updates second-by-second.
+      // Carry faculty image override through so early persist cannot drop it.
+      mergeFacultyOverrideIntoDraft(draft, facultyImageOverrides.get(planRecord.slideNo));
       await persistArtifact(projectId, draft);
 
       await setProgress(projectId, {
@@ -563,7 +651,31 @@ export async function generateSlideChunk(
                temperature: 0.2
              }));
              if (repairRes.json) {
-               item.draft.content = { ...item.draft.content, ...(repairRes.json as any) };
+               const repaired = repairRes.json as Record<string, unknown>;
+               // Never let repair wipe a resolved visual image URL or empty the body.
+               const priorVisual = item.draft.content.visualSpec;
+               const priorBody = item.draft.content.body;
+               item.draft.content = { ...item.draft.content, ...(repaired as any) };
+               if (
+                 priorVisual?.imageUrl ||
+                 priorVisual?.fetchedImageUrl ||
+                 (priorVisual as any)?.facultyUploadedUrl
+               ) {
+                 item.draft.content.visualSpec = {
+                   ...(item.draft.content.visualSpec || {}),
+                   ...priorVisual,
+                   imageUrl: priorVisual.imageUrl || priorVisual.fetchedImageUrl,
+                   fetchedImageUrl: priorVisual.fetchedImageUrl || priorVisual.imageUrl,
+                 };
+               }
+               const nextBullets = item.draft.content.body?.bullets ?? [];
+               if ((!nextBullets.length) && (priorBody?.bullets?.length ?? 0) > 0) {
+                 item.draft.content.body = {
+                   ...item.draft.content.body,
+                   bullets: priorBody!.bullets,
+                   visibleCopy: item.draft.content.body?.visibleCopy || priorBody!.visibleCopy || "",
+                 };
+               }
                item.draft.errors = item.draft.errors?.filter(e => !e.includes("Source copy") && !e.includes("readability"));
              }
           } catch (e) {
@@ -576,11 +688,107 @@ export async function generateSlideChunk(
         }
       }
     }
-    
+
+    // Per-slide visual resolution AFTER repair so LLM repair cannot wipe image URLs.
+    await attachVisualSpecs(projectId, generatedArtifacts, facultyImageOverrides);
+
+    // Guarantee every persisted visualSpec has a non-empty image URL (SVG-only specs included).
+    // Also ensure no slide is persisted with empty bullets after repair.
+    for (const item of generatedArtifacts) {
+      const bullets = item.draft.content.body?.bullets ?? [];
+      if (!bullets.length) {
+        const title = item.draft.content.title || item.plan.title || `Slide ${item.plan.slideNo}`;
+        const fnLabel = String(item.plan.function || "concept").replace(/_/g, " ");
+        item.draft.content.body = {
+          ...(item.draft.content.body || { visibleCopy: "" }),
+          bullets: [`${fnLabel}: ${title.slice(0, 100)}`],
+          visibleCopy:
+            item.draft.content.body?.visibleCopy ||
+            FALLBACK_ERROR_VISIBLE_COPY,
+        };
+        (item.draft.content as { generationFailed?: boolean }).generationFailed = true;
+      }
+
+      const spec = item.draft.content.visualSpec as {
+        imageUrl?: string;
+        fetchedImageUrl?: string;
+        facultyUploadedUrl?: string;
+        title?: string;
+        caption?: string;
+      } | undefined;
+      // Never invent a faculty URL; only fill missing auto image fields.
+      const url = (spec?.fetchedImageUrl || spec?.imageUrl || "").trim();
+      if (!url) {
+        const filledBullets = item.draft.content.body?.bullets ?? [];
+        const fallback = getAcademicVisualForSlide(
+          item.plan.slideNo,
+          item.draft.content.title,
+          filledBullets.join(" ")
+        );
+        item.draft.content.visualSpec = {
+          ...(spec || {}),
+          visualType: (spec as any)?.visualType || "PROCESS",
+          purpose: (spec as any)?.purpose || item.draft.content.title || "",
+          learningMessage: (spec as any)?.learningMessage || "",
+          layout: (spec as any)?.layout || "center",
+          elements: (spec as any)?.elements || [],
+          connections: (spec as any)?.connections || [],
+          labels: (spec as any)?.labels || [],
+          annotations: (spec as any)?.annotations || [],
+          emphasis: (spec as any)?.emphasis || [],
+          studentQuestion: (spec as any)?.studentQuestion || "",
+          title: spec?.title || fallback.title,
+          caption: spec?.caption || fallback.caption,
+          imageUrl: fallback.imageUrl,
+          fetchedImageUrl: fallback.imageUrl,
+          // Preserve faculty override if present
+          ...(spec?.facultyUploadedUrl
+            ? {
+                facultyUploadedUrl: spec.facultyUploadedUrl,
+                facultyUploadedStorageKey: (spec as any).facultyUploadedStorageKey,
+                facultyUploadedAt: (spec as any).facultyUploadedAt,
+                facultyUploadedOriginalName: (spec as any).facultyUploadedOriginalName,
+              }
+            : {}),
+        };
+      }
+    }
+
+    // Clear stale generationFailed when repair produced real content
+    for (const item of generatedArtifacts) {
+      const copy = item.draft.content.body?.visibleCopy ?? "";
+      const bullets = item.draft.content.body?.bullets ?? [];
+      if (bullets.length > 0 && copy !== FALLBACK_ERROR_VISIBLE_COPY && !item.draft.errors?.includes("LLM_UNAVAILABLE")) {
+        delete (item.draft.content as { generationFailed?: boolean }).generationFailed;
+      }
+    }
+
     needsFacultyReview = generatedArtifacts.some(a => a.draft.flagged);
 
+    // Persist slide retry telemetry for faculty verification runs.
+    if (Object.keys(slideRetryCounts).length > 0) {
+      try {
+        const state = (project.generationStateJson as Record<string, unknown> | null) ?? {};
+        await db.lectureProject.update({
+          where: { id: projectId },
+          data: {
+            generationStateJson: {
+              ...state,
+              slideRetryCounts: {
+                ...((state.slideRetryCounts as Record<number, number>) ?? {}),
+                ...slideRetryCounts,
+              },
+            },
+          },
+        });
+      } catch {
+        // best-effort
+      }
+    }
+
     // Persist all artifacts (Gap 6: immutable persist)
-    await processInBatches(generatedArtifacts, BATCH_SIZE, async ({ draft }) => {
+    await processInBatches(generatedArtifacts, BATCH_SIZE, async ({ draft, plan }) => {
+      mergeFacultyOverrideIntoDraft(draft, facultyImageOverrides.get(plan.slideNo));
       await persistArtifact(projectId, draft);
     });
 

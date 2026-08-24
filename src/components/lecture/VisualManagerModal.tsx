@@ -36,6 +36,7 @@ interface VisualManagerModalProps {
   isOpen: boolean;
   onClose: () => void;
   slideNo: number;
+  projectId?: string;
   currentImageUrl?: string;
   currentTitle?: string;
   currentCaption?: string;
@@ -44,6 +45,8 @@ interface VisualManagerModalProps {
     title: string;
     caption: string;
     visualType?: string;
+    facultyUploaded?: boolean;
+    visualSpec?: Record<string, unknown>;
   }) => Promise<void> | void;
 }
 
@@ -51,6 +54,7 @@ export function VisualManagerModal({
   isOpen,
   onClose,
   slideNo,
+  projectId,
   currentImageUrl,
   currentTitle,
   currentCaption,
@@ -64,18 +68,46 @@ export function VisualManagerModal({
   const [selectedDiscipline, setSelectedDiscipline] = useState<AcademicDiscipline | "all">("all");
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isAiSearching, setIsAiSearching] = useState<boolean>(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [pendingFacultyUpload, setPendingFacultyUpload] = useState<{
+    imageUrl: string;
+    visualSpec?: Record<string, unknown>;
+  } | null>(null);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setUploadError(null);
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      setSelectedUrl(dataUrl);
-      if (!title) setTitle(file.name.replace(/\.[^/.]+$/, ""));
-    };
-    reader.readAsDataURL(file);
+    // Prefer object-storage upload when we have a project context.
+    if (projectId) {
+      setIsUploading(true);
+      try {
+        const form = new FormData();
+        form.append("file", file);
+        const res = await fetch(`/api/iscarb/lecture/projects/${projectId}/slides/${slideNo}/image`, {
+          method: "POST",
+          body: form,
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setUploadError(data.error || `Upload failed (${res.status})`);
+          return;
+        }
+        setSelectedUrl(data.imageUrl);
+        setPendingFacultyUpload({ imageUrl: data.imageUrl, visualSpec: data.visualSpec });
+        if (!title) setTitle(file.name.replace(/\.[^/.]+$/, ""));
+      } catch (err: any) {
+        setUploadError(err?.message || "Upload failed");
+      } finally {
+        setIsUploading(false);
+      }
+      return;
+    }
+
+    // Fallback (no projectId): local preview only — never persist base64 via Apply.
+    setUploadError("Open this slide from Studio to upload to object storage.");
   };
 
   const handleSelectCurated = (visual: AcademicVisual) => {
@@ -120,6 +152,8 @@ export function VisualManagerModal({
         title: title || `Slide ${slideNo} Visual`,
         caption: caption || "",
         visualType,
+        facultyUploaded: Boolean(pendingFacultyUpload),
+        visualSpec: pendingFacultyUpload?.visualSpec,
       });
       onClose();
     } finally {
@@ -317,19 +351,28 @@ export function VisualManagerModal({
                 <Upload className="h-10 w-10 text-[#0E6C3C] mx-auto mb-3" />
                 <p className="text-sm font-bold text-slate-900">Upload Any Lecture Diagram or Photo</p>
                 <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                  Supports PNG, JPG, SVG, and WebP for all subjects (Physics, Math, CS, Engineering, Medicine, etc.).
+                  JPG, PNG, or WebP — max 5 MB. Stored in lecture object storage (not in the database).
                 </p>
                 <label className="inline-block mt-4">
                   <span className="bg-[#0E6C3C] hover:bg-[#0E6C3C]/90 text-white text-xs font-bold px-4 py-2.5 rounded-xl cursor-pointer shadow-xs inline-flex items-center gap-1.5">
-                    <Upload className="h-3.5 w-3.5" /> Browse Computer Files
+                    {isUploading ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Upload className="h-3.5 w-3.5" />
+                    )}
+                    {isUploading ? "Uploading..." : "Browse Computer Files"}
                   </span>
                   <input
                     type="file"
-                    accept="image/*"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                     onChange={handleFileUpload}
+                    disabled={isUploading}
                     className="hidden"
                   />
                 </label>
+                {uploadError && (
+                  <p className="text-xs text-red-600 font-semibold mt-3">{uploadError}</p>
+                )}
               </div>
             </TabsContent>
 
