@@ -4,7 +4,7 @@ import "server-only";
 // iSCARB standardises on DeepSeek via the NVIDIA catalog. Override per-call
 // with the `model` option, or globally with OPENAI_CHAT_MODEL.
 export const DEFAULT_AI_MODEL =
-  process.env.OPENAI_CHAT_MODEL || "meta/llama-3.2-11b-vision-instruct";
+  process.env.OPENAI_CHAT_MODEL || "openai/gpt-oss-20b";
 
 // ─── NVIDIA Multi-Key Round-Robin Load Balancer ─────────────────────────
 let globalNvidiaKeyCounter = 0;
