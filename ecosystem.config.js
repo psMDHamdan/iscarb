@@ -24,6 +24,7 @@ module.exports = {
         NODE_ENV: "production",
         HOSTNAME: "0.0.0.0",
         PORT: "3000",
+        SKIP_ENV_VALIDATION: "true",
         // Set before start: export GIT_COMMIT_SHA=$(git rev-parse HEAD)
         GIT_COMMIT_SHA: process.env.GIT_COMMIT_SHA || "unknown",
       },
