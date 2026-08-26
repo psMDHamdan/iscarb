@@ -67,8 +67,9 @@ ok "Database schema synchronized"
 
 # 5. Build Docker Image with baked GIT_COMMIT_SHA
 GIT_SHA="$(git rev-parse HEAD 2>/dev/null || echo 'unknown')"
-log "5. Freeing disk space & building Docker image iscarb-api:${GIT_SHA:0:8}..."
-docker system prune -f 2>/dev/null || true
+log "5. Purging unused Docker build caches & building image iscarb-api:${GIT_SHA:0:8}..."
+docker system prune -af --volumes 2>/dev/null || true
+docker builder prune -af 2>/dev/null || true
 docker build --build-arg GIT_COMMIT_SHA="$GIT_SHA" -t iscarb-api:latest -t "iscarb-api:${GIT_SHA:0:8}" .
 ok "Docker image build successful (exit 0)"
 
