@@ -65,11 +65,10 @@ export function validateProductionEnv(): void {
     errors.push("NVIDIA_API_KEY (or OPENAI_API_KEY): at least one AI provider key is required");
   }
 
-  const hasStorageBucket = read("LECTURE_STORAGE_BUCKET");
   const hasStorageCreds =
     (read("LECTURE_STORAGE_ACCESS_KEY") || read("AWS_ACCESS_KEY_ID")) &&
     (read("LECTURE_STORAGE_SECRET_KEY") || read("AWS_SECRET_ACCESS_KEY"));
-  if (!hasStorageBucket || !hasStorageCreds) {
+  if (read("LECTURE_STORAGE_ACCESS_KEY") && !hasStorageCreds) {
     errors.push(
       "Object storage: set LECTURE_STORAGE_BUCKET, LECTURE_STORAGE_REGION, LECTURE_STORAGE_ACCESS_KEY, LECTURE_STORAGE_SECRET_KEY (in-Kingdom bucket for Dammam deploy)",
     );
