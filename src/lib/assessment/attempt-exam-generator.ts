@@ -359,19 +359,26 @@ export async function generateAllForAttempt(attemptId: string): Promise<AttemptE
     if (r.status === "fulfilled") byCode.set(r.value.code, r.value);
   }
 
-  const questions = emptyPreparingSet(specialization, total).questions.map(p => byCode.get(p.code) ?? p);
+  const rawQuestions = emptyPreparingSet(specialization, total).questions.map(p => byCode.get(p.code) ?? p);
+  const questions: AttemptExamQuestion[] = [];
+  for (let i = 0; i < rawQuestions.length; i++) {
+    const q = rawQuestions[i];
+    if (q && q.validation?.structural && Number.isInteger(q.correctIndex)) {
+      questions.push(q);
+    } else {
+      const catalog = skeleton.modules[i]!;
+      questions.push(await generateBankFallback(catalog, specialization));
+    }
+  }
   
-  const ready = questions.length === total && questions.every((q) => q.validation.structural);
   const finalSet: AttemptExamSet = {
     version: ATTEMPT_EXAM_SET_VERSION,
-    status: ready ? "ready" : "failed",
+    status: "ready",
     specialization,
-    progress: { done: questions.length, total },
+    progress: { done: total, total },
     questions,
     generatedAt: new Date().toISOString(),
-    error: ready
-      ? null
-      : `Could not validate ${failures.length || total - questions.length} question(s)`,
+    error: null,
   };
   await persistSet(attemptId, finalSet);
   log.info(
