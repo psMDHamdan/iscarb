@@ -4,7 +4,7 @@ import "server-only";
 // iSCARB standardises on DeepSeek via the NVIDIA catalog. Override per-call
 // with the `model` option, or globally with OPENAI_CHAT_MODEL.
 export const DEFAULT_AI_MODEL =
-  process.env.OPENAI_CHAT_MODEL || "openai/gpt-oss-20b";
+  process.env.OPENAI_CHAT_MODEL || "meta/llama-3.1-8b-instruct";
 
 // ─── NVIDIA Multi-Key Round-Robin Load Balancer ─────────────────────────
 let globalNvidiaKeyCounter = 0;
@@ -169,7 +169,8 @@ export async function getClient() {
     process.env.NVIDIA_API_KEY_3,
     process.env.NVIDIA_API_KEY_4,
     process.env.NVIDIA_API_KEY_5,
-  ].filter((k): k is string => Boolean(k && k.trim() !== ''));
+  ].filter((k): k is string => Boolean(k && k.trim() !== ''))
+   .map(k => k.replace(/^["']|["']$/g, ''));
 
   if (nvidiaKeys.length === 0) {
     throw new Error("No NVIDIA API keys configured.");
@@ -189,7 +190,8 @@ export async function getClient() {
             "gpt-4o": "meta/llama-3.1-8b-instruct",
             "gpt-4": "meta/llama-3.1-8b-instruct",
             "gpt-3.5-turbo": "meta/llama-3.1-8b-instruct",
-            "gpt-4o-mini": "openai/gpt-oss-20b",
+            "gpt-4o-mini": "meta/llama-3.1-8b-instruct",
+            "openai/gpt-oss-20b": "meta/llama-3.1-8b-instruct",
             "deepseek-r1": "deepseek-ai/deepseek-r1",
           };
 
