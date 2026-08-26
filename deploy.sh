@@ -50,6 +50,10 @@ grep -q "SKIP_ENV_VALIDATION" .env || echo 'SKIP_ENV_VALIDATION="true"' >> .env
 grep -q "PASSWORD_RESET_SECRET" .env || echo 'PASSWORD_RESET_SECRET="iscarb_prod_password_reset_secret_key_32chars_min"' >> .env
 grep -q "CERTIFICATE_ID_SECRET" .env || echo 'CERTIFICATE_ID_SECRET="iscarb_prod_certificate_secret_16chars"' >> .env
 
+# Clean quotes from DATABASE_URL and REDIS_URL in .env
+sed -i -E 's/^DATABASE_URL=["'\''\`](.*)["'\''\`]$/DATABASE_URL=\1/g' .env 2>/dev/null || true
+sed -i -E 's/^REDIS_URL=["'\''\`](.*)["'\''\`]$/REDIS_URL=\1/g' .env 2>/dev/null || true
+
 # 3. Datastores: PostgreSQL & Redis via Docker Compose
 log "3. Starting PostgreSQL & Redis datastores..."
 docker compose up -d postgres redis 2>/dev/null || docker-compose up -d postgres redis 2>/dev/null || true
@@ -84,7 +88,7 @@ docker run -d \
 ok "Docker container iscarb-api running on port 3000"
 
 # 7. Configure Nginx Reverse Proxy
-if [ -f "/etc/letsencrypt/live/demo.iscarb.org/fullchain.pem" ]; then
+if sudo test -d "/etc/letsencrypt/live/demo.iscarb.org"; then
     log "7. Configuring Nginx Reverse Proxy with SSL (ports 80 & 443)..."
     sudo tee /etc/nginx/sites-available/iscarb > /dev/null <<EOF
 server {

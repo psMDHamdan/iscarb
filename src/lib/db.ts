@@ -58,12 +58,9 @@ function injectPoolParams(url: string): string {
 
 function createPrismaClient() {
   // Patch the datasource URL at runtime so the pool is always bounded.
-  const rawUrl = process.env.DATABASE_URL ?? "";
+  const rawUrl = (process.env.DATABASE_URL ?? "").trim().replace(/^["']|["']$/g, "");
   const patchedUrl = injectPoolParams(rawUrl);
-  if (patchedUrl !== rawUrl) {
-    // Prisma reads DATABASE_URL from the environment; overwrite it for this process.
-    process.env.DATABASE_URL = patchedUrl;
-  }
+  process.env.DATABASE_URL = patchedUrl;
 
   const basePrisma = new PrismaClient({
     // Only log queries in development — never in production (reduces noise and
