@@ -4,7 +4,7 @@ import "server-only";
 // iSCARB standardises on DeepSeek via the NVIDIA catalog. Override per-call
 // with the `model` option, or globally with OPENAI_CHAT_MODEL.
 export const DEFAULT_AI_MODEL =
-  process.env.OPENAI_CHAT_MODEL || "deepseek-ai/deepseek-r1";
+  process.env.OPENAI_CHAT_MODEL || "google/gemma-2-9b-it";
 
 // ─── NVIDIA Multi-Key Round-Robin Load Balancer ─────────────────────────
 let globalNvidiaKeyCounter = 0;
@@ -187,12 +187,12 @@ export async function getClient() {
             // NOTE: meta/llama-3.3-70b-instruct hangs (never responds) on this
             // endpoint — gpt-4o-mini therefore resolves to the proven-working
             // default instead of the old generic 70B fallback.
-            "gpt-4o": "deepseek-ai/deepseek-r1",
-            "gpt-4": "deepseek-ai/deepseek-r1",
-            "gpt-3.5-turbo": "deepseek-ai/deepseek-r1",
-            "gpt-4o-mini": "deepseek-ai/deepseek-r1",
-            "openai/gpt-oss-20b": "deepseek-ai/deepseek-r1",
-            "deepseek-r1": "deepseek-ai/deepseek-r1",
+            "gpt-4o": "google/gemma-2-9b-it",
+            "gpt-4": "google/gemma-2-9b-it",
+            "gpt-3.5-turbo": "google/gemma-2-9b-it",
+            "gpt-4o-mini": "google/gemma-2-9b-it",
+            "openai/gpt-oss-20b": "google/gemma-2-9b-it",
+            "deepseek-r1": "google/gemma-2-9b-it",
           };
 
           let resolvedModel = body.model || DEFAULT_AI_MODEL;
