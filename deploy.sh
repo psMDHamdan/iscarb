@@ -80,6 +80,11 @@ npx prisma generate
 npx prisma db push --accept-data-loss || npx prisma migrate deploy || warn "Database migration warning, continuing..."
 
 log "8. Building production Next.js application (standalone)..."
+if [ -f ".env" ]; then
+    set -a
+    source .env 2>/dev/null || true
+    set +a
+fi
 export IS_DOCKER=true
 export NODE_ENV=production
 export NODE_OPTIONS="--max-old-space-size=8192"
