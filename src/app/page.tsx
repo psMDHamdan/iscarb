@@ -306,9 +306,9 @@ export default function LandingPage() {
 
       {/* Rich Arabic Calligraphy Glass Watermarks */}
       <div className="fixed inset-0 pointer-events-none flex items-center justify-center opacity-[0.04] z-0 overflow-hidden select-none">
-        <h1 className="text-[20vw] font-arabic font-black text-[#059669] whitespace-nowrap -rotate-6 filter drop-shadow-[0_10px_20px_rgba(5,150,105,0.2)]">
+        <span aria-hidden="true" className="text-[20vw] font-arabic font-black text-[#059669] whitespace-nowrap -rotate-6 filter drop-shadow-[0_10px_20px_rgba(5,150,105,0.2)]">
           وَقُل رَّبِّ زِدْنِي عِلْمًا
-        </h1>
+        </span>
       </div>
       <div className="fixed -bottom-20 -right-20 pointer-events-none opacity-[0.03] z-0 overflow-hidden select-none hidden sm:block">
         <h2 className="text-[14vw] font-arabic font-black text-[#0f766e] whitespace-nowrap rotate-12">

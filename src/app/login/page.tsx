@@ -233,7 +233,7 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <div className="flex items-center pt-0.5">
+              <div className="flex items-center justify-between pt-0.5">
                 <label className="flex items-center gap-2.5 cursor-pointer select-none text-sm font-semibold text-slate-600 min-h-11 touch-manipulation">
                   <input
                     type="checkbox"
@@ -243,6 +243,12 @@ export default function LoginPage() {
                   />
                   Remember my email
                 </label>
+                <Link
+                  href="/reset-password"
+                  className="text-xs font-bold text-[#059669] hover:underline transition-colors"
+                >
+                  Forgot password?
+                </Link>
               </div>
 
               <button
