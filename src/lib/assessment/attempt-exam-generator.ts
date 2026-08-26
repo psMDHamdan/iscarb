@@ -53,7 +53,7 @@ const MAX_GEN_ATTEMPTS = 2;
 // concurrency cut pre-exam wall time ~40% without 429 saturation.
 const GENERATION_CONCURRENCY = Math.max(
   1,
-  Number.parseInt(process.env.EXAM_PREPARE_CONCURRENCY || "5", 10) || 5,
+  Number.parseInt(process.env.EXAM_PREPARE_CONCURRENCY || "10", 10) || 10,
 );
 
 const inflight = new Map<string, Promise<AttemptExamSet>>();
