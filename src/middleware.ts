@@ -30,10 +30,7 @@ const ALLOWED_EXACT_ROUTES = [
 
 const ALLOWED_PREFIXES = [
   "/assessment",
-  "/student/results",
-  "/student/assessment",
-  "/student/profile",
-  "/student/lecture",
+  "/student",
   "/faculty",
   "/api",
 ];
@@ -145,13 +142,11 @@ export function middleware(request: NextRequest) {
   }
 
   // Assessment surfaces require a usable session.
+  // Student & Assessment surfaces require a usable session.
   if (
     (pathname === "/assessment" ||
       pathname.startsWith("/assessment/") ||
-      pathname.startsWith("/student/results") ||
-      pathname.startsWith("/student/assessment") ||
-      pathname === "/student/profile" ||
-      pathname.startsWith("/student/profile/")) &&
+      pathname.startsWith("/student")) &&
     !authenticated
   ) {
     const loginUrl = new URL("/login", request.url);
