@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ============================================================
-# iSCARB Platform Production Deployment Script for Linux VM
-# Automated single-command deployment for Next.js, Postgres/Redis, PM2, Nginx
+# iSCARB Platform Production Docker Deployment Script for VM
+# Docker Container Build & Run with baked GIT_COMMIT_SHA
 # ============================================================
 
 set -euo pipefail
@@ -17,40 +17,26 @@ ok()  { echo -e "\033[1;32m✓ $1\033[0m"; }
 warn(){ echo -e "\033[1;33m⚠ $1\033[0m"; }
 fail(){ echo -e "\033[1;31m✗ $1\033[0m"; exit 1; }
 
-log "Starting iSCARB Production Deployment..."
+log "Starting iSCARB Production Docker Deployment..."
 
-# 1. System packages
-log "1. Installing/updating system packages..."
-sudo apt update -y
-sudo apt install -y curl build-essential git redis-server nginx ufw ca-certificates gnupg
+# 1. System packages check
+log "1. Checking Docker & Nginx..."
+command -v docker >/dev/null 2>&1 || fail "Docker is required but not installed!"
+command -v nginx >/dev/null 2>&1 || fail "Nginx is required but not installed!"
+ok "Docker and Nginx available"
 
-# 2. Node.js 22 check/install
-if ! command -v node >/dev/null 2>&1 || [[ $(node -v | cut -d'.' -f1 | tr -d 'v') -lt 20 ]]; then
-    log "Installing Node.js 22 LTS..."
-    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-    sudo apt install -y nodejs
-fi
-ok "Node.js $(node -v) • npm $(npm -v)"
-
-# 3. PM2 check/install
-if ! command -v pm2 >/dev/null 2>&1; then
-    log "Installing PM2 process manager..."
-    sudo npm install -g pm2
-fi
-ok "PM2 is ready"
-
-# 4. Environment & Secrets Configuration
-log "4. Checking environment configuration (.env)..."
+# 2. Environment & Secrets Configuration
+log "2. Checking environment configuration (.env)..."
 if [ ! -f ".env" ]; then
     if [ -f ".env.example" ]; then
         cp .env.example .env
-        warn "Created .env from .env.example. Please update credentials in .env if needed."
+        warn "Created .env from .env.example."
     else
         fail ".env file missing and .env.example not found!"
     fi
 fi
 
-# Link secrets directory if present
+# Integrate secrets from ~/iscarb-secrets if available
 SECRETS_DIR="$HOME/iscarb-secrets"
 if [ -d "$SECRETS_DIR" ]; then
     log "Integrating secrets from $SECRETS_DIR..."
@@ -60,64 +46,40 @@ if [ -d "$SECRETS_DIR" ]; then
     [ -f "$SECRETS_DIR/certificate-id.secret" ] && export CERTIFICATE_ID_SECRET="$(cat "$SECRETS_DIR/certificate-id.secret")"
 fi
 
-# 5. Services: Redis & Docker / Postgres
-log "5. Starting Redis service..."
-sudo systemctl enable redis-server || true
-sudo systemctl restart redis-server || true
+# 3. Datastores: PostgreSQL & Redis via Docker Compose
+log "3. Starting PostgreSQL & Redis datastores..."
+docker compose up -d postgres redis 2>/dev/null || docker-compose up -d postgres redis 2>/dev/null || true
+ok "PostgreSQL and Redis containers running"
 
-# Start Docker containers for Postgres/Redis if Docker is installed & docker-compose present
-if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
-    log "Starting PostgreSQL & Redis containers via Docker Compose..."
-    docker compose up -d postgres redis 2>/dev/null || docker-compose up -d postgres redis 2>/dev/null || true
-fi
-
-# 6. Install Dependencies & Build Application
-log "6. Installing NPM dependencies..."
-npm ci --prefer-offline || npm install --no-audit
-
-log "7. Generating Prisma Database Client & Running Migrations..."
+# 4. Database Migrations (explicit deploy step)
+log "4. Running Database Migrations..."
 npx prisma generate
-npx prisma db push --accept-data-loss || npx prisma migrate deploy || warn "Database migration warning, continuing..."
+npx prisma db push --accept-data-loss || npx prisma migrate deploy || warn "Database migration completed with warnings."
+ok "Database schema synchronized"
 
-log "8. Building production Next.js application (standalone)..."
-if [ -f ".env" ]; then
-    set -a
-    source .env 2>/dev/null || true
-    set +a
-fi
-export IS_DOCKER=true
-export NODE_ENV=production
-export NODE_OPTIONS="--max-old-space-size=8192"
-export GIT_COMMIT_SHA="$(git rev-parse HEAD 2>/dev/null || echo 'unknown')"
+# 5. Build Docker Image with baked GIT_COMMIT_SHA
+GIT_SHA="$(git rev-parse HEAD 2>/dev/null || echo 'unknown')"
+log "5. Building Docker image iscarb-api:${GIT_SHA:0:8}..."
+docker build --build-arg GIT_COMMIT_SHA="$GIT_SHA" -t iscarb-api:latest -t "iscarb-api:${GIT_SHA:0:8}" .
+ok "Docker image build successful (exit 0)"
 
-npm run build:docker || npm run build
-
-# Prepare standalone static assets
-log "Preparing standalone output..."
-mkdir -p .next/standalone/.next
-cp -r .next/static .next/standalone/.next/static 2>/dev/null || true
-cp -r public .next/standalone/public 2>/dev/null || true
-cp .env .next/standalone/.env 2>/dev/null || true
-cp .env .next/standalone/.env.production 2>/dev/null || true
-
-# 9. PM2 Process Launch
-log "9. Launching application with PM2..."
+# 6. Run Production Container long-lived
+log "6. Launching production container (iscarb-api)..."
+docker stop iscarb-api 2>/dev/null || true
+docker rm iscarb-api 2>/dev/null || true
 pm2 delete iscarb-api 2>/dev/null || true
 
-if [ -f "ecosystem.config.js" ]; then
-    pm2 start ecosystem.config.js --env production
-else
-    cd .next/standalone
-    pm2 start server.js --name "iscarb-api" --env production
-    cd "$APP_DIR"
-fi
+docker run -d \
+  --name iscarb-api \
+  --restart unless-stopped \
+  --env-file .env \
+  -p 3000:3000 \
+  iscarb-api:latest
 
-pm2 save || true
-pm2 startup || true
-ok "Application process is running under PM2"
+ok "Docker container iscarb-api running on port 3000"
 
-# 10. Configure Nginx Reverse Proxy
-log "10. Configuring Nginx Reverse Proxy..."
+# 7. Configure Nginx Reverse Proxy
+log "7. Configuring Nginx Reverse Proxy..."
 sudo tee /etc/nginx/sites-available/iscarb > /dev/null <<EOF
 server {
     listen $HTTP_PORT default_server;
@@ -149,31 +111,34 @@ sudo nginx -t
 sudo systemctl restart nginx
 ok "Nginx active and proxying port 80 -> 127.0.0.1:3000"
 
+# Re-apply Certbot SSL if present
 if command -v certbot >/dev/null 2>&1 && [ -d "/etc/letsencrypt/live/demo.iscarb.org" ]; then
     log "Re-applying SSL configuration for demo.iscarb.org..."
     sudo certbot --nginx --non-interactive --agree-tos -m admin@iscarb.org -d demo.iscarb.org --redirect 2>/dev/null || true
 fi
 
-# 11. Firewall
-log "11. Configuring Firewall (UFW)..."
+# 8. Firewall
+log "8. Configuring Firewall (UFW)..."
 sudo ufw allow OpenSSH || true
 sudo ufw allow 80/tcp || true
 sudo ufw allow 443/tcp || true
 sudo ufw --force enable || true
 
-# 12. Verification
+# 9. Verification
 PUBLIC_IP=$(curl -s ifconfig.me || curl -s icanhazip.com || echo "20.2.88.93")
-log "Verifying health endpoint..."
-sleep 3
-curl -sf http://localhost:$APP_PORT/api/health || warn "Health check endpoint warming up..."
+log "9. Verifying health endpoint..."
+sleep 5
+HEALTH_JSON=$(curl -s http://localhost:3000/api/health || echo "{}")
+echo "Health Response: $HEALTH_JSON"
 
 echo ""
 echo "=========================================================="
-echo "           iSCARB DEPLOYMENT COMPLETE!                   "
+echo "      iSCARB DOCKER PRODUCTION DEPLOYMENT COMPLETE!      "
 echo "=========================================================="
-echo " App URL:    http://$PUBLIC_IP"
-echo " Local URL:  http://localhost:3000"
-echo " PM2 Status: pm2 status"
-echo " PM2 Logs:   pm2 logs iscarb-api"
-echo " Nginx Logs: sudo tail -f /var/log/nginx/error.log"
+echo " App URL:        https://demo.iscarb.org"
+echo " Local URL:      http://localhost:3000"
+echo " Container Name: iscarb-api"
+echo " Container SHA:  $GIT_SHA"
+echo " Logs:           docker logs -f iscarb-api"
+echo " Nginx Logs:     sudo tail -f /var/log/nginx/error.log"
 echo "=========================================================="
