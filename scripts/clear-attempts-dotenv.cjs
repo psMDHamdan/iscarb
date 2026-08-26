@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 const { PrismaClient } = require('@prisma/client');
 
 const envPath = path.join(__dirname, '../.env');
@@ -17,6 +18,16 @@ for (const line of envContent.split('\n')) {
     dbUrl = trimmed.substring('DATABASE_URL='.length).trim().replace(/^["']|["']$/g, '');
     break;
   }
+}
+
+// Check Docker fallback first if local socket fails
+try {
+  const dockerCmd = 'docker exec -i iscarb-postgres psql -U postgres -d iscarb -c \'TRUNCATE TABLE "AssessmentAttempt" CASCADE;\'';
+  execSync(dockerCmd, { stdio: 'inherit' });
+  console.log('Deleted all assessment attempts via Docker container!');
+  process.exit(0);
+} catch {
+  // Docker not available or failed — try Prisma
 }
 
 if (!dbUrl) {
