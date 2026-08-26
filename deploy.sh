@@ -92,6 +92,8 @@ log "Preparing standalone output..."
 mkdir -p .next/standalone/.next
 cp -r .next/static .next/standalone/.next/static 2>/dev/null || true
 cp -r public .next/standalone/public 2>/dev/null || true
+cp .env .next/standalone/.env 2>/dev/null || true
+cp .env .next/standalone/.env.production 2>/dev/null || true
 
 # 9. PM2 Process Launch
 log "9. Launching application with PM2..."
