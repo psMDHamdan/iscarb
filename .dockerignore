@@ -1,0 +1,41 @@
+# Dependencies & build output
+node_modules
+.next
+out
+.turbo
+
+# Local env & secrets — NEVER copy into the image
+.env
+.env.*
+!.env.example
+
+# Git & IDE
+.git
+.gitignore
+.cursor
+.vscode
+*.md
+!DEPLOYMENT.md
+
+# Tests & dev tooling
+coverage
+playwright-report
+test-results
+**/__tests__
+**/*.test.ts
+**/*.spec.ts
+
+# Local storage fallbacks
+.lecture-storage
+
+# OS junk
+.DS_Store
+Thumbs.db
+*.log
+
+# Large docs / binaries not needed at runtime
+docs/*.pdf
+docs/*.docx
+
+# Docker dev compose (production image builds from Dockerfile only)
+docker-compose*.yml

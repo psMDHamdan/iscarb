@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Only use standalone output in Docker environments; allow Vercel native serverless builds
+  // Standalone output for the long-lived Docker/VM path (`IS_DOCKER=true` / `npm run build:docker`)
   ...(process.env.IS_DOCKER === "true" ? { output: "standalone" } : {}),
   // @napi-rs/canvas ships native binaries that must not be bundled by webpack
   // (used by the PDF/PPTX parsers for rasterising image-heavy slides).

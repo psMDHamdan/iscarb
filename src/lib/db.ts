@@ -15,13 +15,13 @@ const globalForPrisma = globalThis as unknown as {
  * runtime when they are not already present. This works for both
  * direct postgres:// URLs and pooled pgbouncer:// endpoints.
  *
- * Recommended env setup (set in .env / Vercel / deployment config):
+ * Recommended env setup (set in .env / deployment config):
  *
  *   DATABASE_URL          = postgresql://user:pass@host:5432/db?connection_limit=10&pool_timeout=20
  *   DIRECT_URL            = postgresql://user:pass@host:5432/db   (migrations only)
  *
  * If DATABASE_URL already contains connection_limit, this is a no-op.
- * Values below are conservative defaults safe for serverless deployments;
+ * Values below are conservative defaults for a long-lived Node process;
  * raise connection_limit in proportion to your verified pool capacity.
  */
 const DEFAULT_CONNECTION_LIMIT = 10;

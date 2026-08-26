@@ -58,14 +58,26 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+      - SKIP_ENV_VALIDATION=true
       - REDIS_URL=redis://redis:6379
       - DATABASE_URL=postgresql://postgres:iscarb_dev_password@postgres:5432/iscarb
+      - JWT_PRIVATE_KEY=dev-private-key-replace-in-production
+      - JWT_PUBLIC_KEY=dev-public-key-replace-in-production
+      - PASSWORD_RESET_SECRET=dev-only-reset-secret-min-32-chars-xx
+      - CERTIFICATE_ID_SECRET=dev-only-cert-secret-16
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+      - NVIDIA_API_KEY=dev-placeholder
+      - LECTURE_STORAGE_BUCKET=iscarb-dev-bucket
+      - LECTURE_STORAGE_REGION=me-central-1
+      - LECTURE_STORAGE_ACCESS_KEY=dev
+      - LECTURE_STORAGE_SECRET_KEY=dev
+      - GIT_COMMIT_SHA=${GIT_COMMIT_SHA:-unknown}
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 30s
+      start_period: 60s
     depends_on:
       postgres:
         condition: service_healthy
@@ -75,8 +87,24 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-          cpus: '0.5'
+          memory: 2G
+          cpus: '2'
+    networks:
+      - iscarb
+
+  # One-shot migration job (run explicitly, not at app boot):
+  #   docker compose run --rm migrate
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migrate
+    profiles: ["migrate"]
+    environment:
+      - DATABASE_URL=postgresql://postgres:iscarb_dev_password@postgres:5432/iscarb
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - iscarb
 

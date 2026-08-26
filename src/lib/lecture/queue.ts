@@ -1,7 +1,8 @@
 /**
- * Lecture Background Jobs — local execution queue helper.
+ * Lecture Background Jobs — in-process queue for the long-lived Node/Docker VM.
  * ===========================================================================
- * Hardcoded to run in-process for local development and non-serverless deployments.
+ * Fire-and-forget on the same process is correct here: generation can run for
+ * many minutes. Do not replace with a serverless enqueue without an off-box worker.
  */
 import { generateAllSlides } from "./generation/generation-worker";
 import { generateISCARBPlan } from "./planner/plan-generator";

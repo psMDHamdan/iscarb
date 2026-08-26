@@ -13,7 +13,7 @@ const OCR_TEXT_MIN_CHARS = 50;
 export async function ocrImage(image: Buffer, lang = "en"): Promise<string | null> {
   const ocrUrl = process.env.LECTURE_OCR_URL;
   
-  // Fast path: On Vercel / Production, if no OCR sidecar URL is configured, skip immediately to prevent hanging
+  // Fast path: in production, if no OCR sidecar URL is configured, skip immediately
   if (!ocrUrl && process.env.NODE_ENV === "production") {
     return null;
   }
@@ -25,7 +25,7 @@ export async function ocrImage(image: Buffer, lang = "en"): Promise<string | nul
       method: "POST",
       headers: { "content-type": "application/octet-stream", "x-ocr-lang": lang },
       body: new Uint8Array(image),
-      // Fast timeout (2.5s max) to prevent serverless function execution delays on Vercel
+      // Short timeout so optional OCR never stalls the parse pipeline
       signal: AbortSignal.timeout(2_500),
     });
     if (!res.ok) return null;

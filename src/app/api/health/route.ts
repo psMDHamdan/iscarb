@@ -2,8 +2,8 @@
  * Health Check API — lightweight readiness probe for infrastructure dependencies.
  * ===========================================================================
  * GET /api/health — Returns status of PostgreSQL, Redis, and Fuseki.
- *   200 = PostgreSQL is healthy (other services may be degraded)
- *   503 = PostgreSQL is down
+ *   200 = PostgreSQL and Redis are healthy (Fuseki optional)
+ *   503 = PostgreSQL or Redis is down
  * ===========================================================================
  */
 import { NextResponse } from "next/server";
@@ -68,14 +68,21 @@ export async function GET() {
     checkFuseki(),
   ]);
 
-  const allHealthy = postgres.status === "ok" && redis.status === "ok" && fuseki.status === "ok";
+  const coreHealthy = postgres.status === "ok" && redis.status === "ok";
+  const commitSha = process.env.GIT_COMMIT_SHA?.trim() || "unknown";
 
   return NextResponse.json(
     {
-      status: postgres.status === "ok" ? "ok" : "degraded",
+      status: coreHealthy ? "ok" : "degraded",
       timestamp: new Date().toISOString(),
+      commitSha,
       checks: { postgres, redis, fuseki },
     },
-    { status: postgres.status === "ok" ? 200 : 503 },
+    {
+      status: coreHealthy ? 200 : 503,
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    },
   );
 }

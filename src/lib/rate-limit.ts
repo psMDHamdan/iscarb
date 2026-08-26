@@ -65,9 +65,8 @@ export async function rateLimit(
 
   try {
     // Redis sliding window: remove expired entries, count remaining, add current.
-    // Bounded by a hard 200ms race — if Redis is down/slow (e.g. Upstash not
-    // configured yet on Vercel) we fall back to the in-memory limiter instantly
-    // instead of stalling every guarded request on TCP timeouts.
+    // Bounded by a hard 200ms race — if Redis is down/slow we fall back to the
+    // in-memory limiter instantly instead of stalling every guarded request.
     const pipeline = redis.pipeline();
     pipeline.zremrangebyscore(key, 0, windowStart);
     pipeline.zadd(key, now.toString(), `${now}:${Math.random()}`);

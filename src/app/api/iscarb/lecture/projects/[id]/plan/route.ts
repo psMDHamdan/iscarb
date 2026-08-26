@@ -101,7 +101,7 @@ export const POST = guard(
 
     await db.lectureProject.update({ where: { id }, data: { status: "generating" } });
 
-    // Queue plan generation (QStash on Vercel; in-process in dev).
+    // Queue plan generation (in-process on the long-lived Node/Docker process).
     await enqueuePlan(id, parsed.data.regenerate ?? false);
 
     return NextResponse.json(

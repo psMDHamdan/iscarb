@@ -6,13 +6,13 @@
  *
  * Environment variables:
  *   REDIS_URL — Redis connection string. Supports:
- *     - redis://localhost:6379            (local dev — the running redis-server)
- *     - rediss://default:TOKEN@host:6379  (Upstash / managed TLS Redis — the
- *       connection to use on Vercel; works with ioredis as-is)
+ *     - redis://localhost:6380            (local docker-compose Redis)
+ *     - rediss://default:TOKEN@host:6379  (managed TLS Redis — Upstash etc.)
+ *       works with ioredis as-is
  *   REDIS_PASSWORD — Redis password (optional)
  *
- * On managed serverless Redis (Upstash) the CONFIG command is not available;
- * the old `CONFIG SET stop-writes-on-bgsave-error` call is now skipped for
+ * On managed Redis the CONFIG command is not available;
+ * the old `CONFIG SET stop-writes-on-bgsave-error` call is skipped for
  * rediss:// endpoints instead of erroring on every connect.
  * ===========================================================================
  */
@@ -46,11 +46,11 @@ function createRedisClient(): Redis {
     // Upstash Redis speaks TLS on its RESP endpoint — ioredis needs tls: {}
     // when the connection string uses rediss://
     ...(isTls ? { tls: {} } : {}),
-    // Serverless fast-fail: never queue commands while offline and bound every
+    // Serverless/managed fast-fail: never queue commands while offline and bound every
     // connect/command attempt. A dead or unset Redis must cost MILLISECONDS,
     // not seconds — callers (rate limiter, session service) fall back to their
-    // in-memory paths instead of stalling every request (Vercel: set REDIS_URL
-    // to an Upstash rediss:// endpoint for real distributed rate limiting).
+    // in-memory paths instead of stalling every request. For production VM deploy
+    // set REDIS_URL to the compose/VM Redis (or a managed rediss:// endpoint).
     enableOfflineQueue: false,
     maxRetriesPerRequest: 1,
     connectTimeout: 3000,

@@ -414,9 +414,9 @@ async function getOrCreateAnalysis(
 }
 
 /**
- * Generate one chunk of slides (QStash worker). Runs the full per-slide
- * pipeline (generate → reviewers → repair → persist) for ONLY the requested
- * slides, so each serverless invocation stays within its duration budget.
+ * Generate one chunk of slides. Runs the full per-slide pipeline
+ * (generate → reviewers → repair → persist) for ONLY the requested slides.
+ * On the VM path, `generateAllSlides` typically passes all 20 at once.
  * Readiness + final project status are handled by finalizeGeneration.
  */
 export async function generateSlideChunk(
@@ -922,8 +922,7 @@ export async function finalizeGeneration(projectId: string): Promise<void> {
 }
 
 /**
- * Full in-process generation — used as the dev fallback when QStash is not
- * configured (keeps local behaviour identical to the pre-queue code).
+ * Full in-process generation for the long-lived Node/Docker VM path.
  */
 export async function generateAllSlides(
   projectId: string,
