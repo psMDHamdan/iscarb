@@ -84,8 +84,45 @@ docker run -d \
 ok "Docker container iscarb-api running on port 3000"
 
 # 7. Configure Nginx Reverse Proxy
-log "7. Configuring Nginx Reverse Proxy..."
-sudo tee /etc/nginx/sites-available/iscarb > /dev/null <<EOF
+if [ -f "/etc/letsencrypt/live/demo.iscarb.org/fullchain.pem" ]; then
+    log "7. Configuring Nginx Reverse Proxy with SSL (ports 80 & 443)..."
+    sudo tee /etc/nginx/sites-available/iscarb > /dev/null <<EOF
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name demo.iscarb.org _;
+    return 301 https://\$host\$request_uri;
+}
+
+server {
+    listen 443 ssl default_server;
+    listen [::]:443 ssl default_server;
+    server_name demo.iscarb.org _;
+
+    ssl_certificate /etc/letsencrypt/live/demo.iscarb.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/demo.iscarb.org/privkey.pem;
+
+    client_max_body_size 100M;
+
+    location / {
+        proxy_pass http://127.0.0.1:$APP_PORT;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_read_timeout 300;
+        proxy_connect_timeout 300;
+        proxy_send_timeout 300;
+    }
+}
+EOF
+else
+    log "7. Configuring Nginx Reverse Proxy (HTTP port 80)..."
+    sudo tee /etc/nginx/sites-available/iscarb > /dev/null <<EOF
 server {
     listen $HTTP_PORT default_server;
     listen [::]:$HTTP_PORT default_server;
@@ -109,18 +146,13 @@ server {
     }
 }
 EOF
+fi
 
 sudo ln -sf /etc/nginx/sites-available/iscarb /etc/nginx/sites-enabled/iscarb
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t
 sudo systemctl restart nginx
-ok "Nginx active and proxying port 80 -> 127.0.0.1:3000"
-
-# Re-apply Certbot SSL if present
-if command -v certbot >/dev/null 2>&1 && [ -d "/etc/letsencrypt/live/demo.iscarb.org" ]; then
-    log "Re-applying SSL configuration for demo.iscarb.org..."
-    sudo certbot --nginx --non-interactive --agree-tos -m admin@iscarb.org -d demo.iscarb.org --redirect 2>/dev/null || true
-fi
+ok "Nginx active and proxying to 127.0.0.1:3000"
 
 # 8. Firewall
 log "8. Configuring Firewall (UFW)..."
