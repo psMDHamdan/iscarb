@@ -147,7 +147,12 @@ sudo ln -sf /etc/nginx/sites-available/iscarb /etc/nginx/sites-enabled/iscarb
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t
 sudo systemctl restart nginx
-ok "Nginx active and proxying port $HTTP_PORT -> 127.0.0.1:$APP_PORT"
+ok "Nginx active and proxying port 80 -> 127.0.0.1:3000"
+
+if command -v certbot >/dev/null 2>&1 && [ -d "/etc/letsencrypt/live/demo.iscarb.org" ]; then
+    log "Re-applying SSL configuration for demo.iscarb.org..."
+    sudo certbot --nginx --non-interactive --agree-tos -m admin@iscarb.org -d demo.iscarb.org --redirect 2>/dev/null || true
+fi
 
 # 11. Firewall
 log "11. Configuring Firewall (UFW)..."
