@@ -73,8 +73,8 @@ pm2 delete iscarb-api 2>/dev/null || true
 docker run -d \
   --name iscarb-api \
   --restart unless-stopped \
+  --network host \
   --env-file .env \
-  -p 3000:3000 \
   iscarb-api:latest
 
 ok "Docker container iscarb-api running on port 3000"
