@@ -20,14 +20,14 @@ import Redis from "ioredis";
 import { logger } from "./logger";
 
 const REDIS_URL_DEFAULT = "redis://localhost:6379";
-const REDIS_URL = process.env.REDIS_URL || REDIS_URL_DEFAULT;
-const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
+const REDIS_URL = (process.env.REDIS_URL || REDIS_URL_DEFAULT).trim().replace(/^["']|["']$/g, "");
+const REDIS_PASSWORD = process.env.REDIS_PASSWORD?.trim().replace(/^["']|["']$/g, "");
 
 // Log warning if REDIS_URL not explicitly set in environment
 if (!process.env.REDIS_URL) {
   logger.warn(
     { env: "REDIS_URL", default: REDIS_URL_DEFAULT },
-    "REDIS_URL not set, using default redis://localhost:6380",
+    "REDIS_URL not set, using default redis://localhost:6379",
   );
 }
 
@@ -36,7 +36,12 @@ const globalForRedis = globalThis as unknown as {
 };
 
 function createRedisClient(): Redis {
-  const redisUrl = new URL(REDIS_URL);
+  let redisUrl: URL;
+  try {
+    redisUrl = new URL(REDIS_URL);
+  } catch {
+    redisUrl = new URL(REDIS_URL_DEFAULT);
+  }
   const isTls = redisUrl.protocol === "rediss:";
   const client = new Redis({
     host: redisUrl.hostname,
