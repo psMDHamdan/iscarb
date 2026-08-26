@@ -16,7 +16,12 @@ import { db } from "@/lib/db";
 import { redis } from "@/config/redis";
 import { chatJson } from "@/lib/ai-engine";
 import type { CourseLearningOutcome } from "@/lib/assessment/ai-question-generation.service";
-import { validatePlanStructure, FIXED_SLOTS, FIXED_SLOT_FUNCTION } from "./plan-validator";
+import {
+  validatePlanStructure,
+  FIXED_SLOTS,
+  FIXED_SLOT_FUNCTION,
+  DEFAULT_SLOT_FUNCTION,
+} from "./plan-validator";
 import { bindUnmappedSourceBlocks } from "@/lib/lecture/generation/persist-handoffs";
 import { cleanJargon } from "@/lib/lecture/projections/utils/jargon-cleaner";
 
@@ -256,15 +261,23 @@ export function extractSlideArray(json: unknown): any[] {
 
 export function sanitizeAiSlides(json: unknown): AiSlide[] {
   const raw = extractSlideArray(json);
-  const list: AiSlide[] = raw.map((s: any, i: number) => ({
-    slideNo: typeof s?.slideNo === "number" ? s.slideNo : i + 1,
-    function: typeof s?.function === "string" ? s.function : "foundation",
-    title: cleanJargon(typeof s?.title === "string" && s.title.trim() ? s.title.trim() : `Slide ${i + 1}`),
-    cloIds: Array.isArray(s?.cloIds) ? s.cloIds.map(String) : [],
-    sourceBlockIds: Array.isArray(s?.sourceBlockIds) ? s.sourceBlockIds.map(String) : [],
-    interactionType: typeof s?.interactionType === "string" && s.interactionType !== "null" ? s.interactionType : null,
-    visualIntent: typeof s?.visualIntent === "string" ? s.visualIntent : undefined,
-  }));
+  const list: AiSlide[] = raw.map((s: any, i: number) => {
+    const slideNo = typeof s?.slideNo === "number" ? s.slideNo : i + 1;
+    const rawFn = typeof s?.function === "string" ? s.function.trim() : "";
+    // Never default missing functions to "foundation" — that fails consecutive-layout validation.
+    const fn =
+      FIXED_SLOT_FUNCTION[slideNo] ??
+      (rawFn && rawFn !== "foundation" ? rawFn : DEFAULT_SLOT_FUNCTION[slideNo] ?? "simple_explanation");
+    return {
+      slideNo,
+      function: fn,
+      title: cleanJargon(typeof s?.title === "string" && s.title.trim() ? s.title.trim() : `Slide ${i + 1}`),
+      cloIds: Array.isArray(s?.cloIds) ? s.cloIds.map(String) : [],
+      sourceBlockIds: Array.isArray(s?.sourceBlockIds) ? s.sourceBlockIds.map(String) : [],
+      interactionType: typeof s?.interactionType === "string" && s.interactionType !== "null" ? s.interactionType : null,
+      visualIntent: typeof s?.visualIntent === "string" ? s.visualIntent : undefined,
+    };
+  });
 
   const slidesByNo = new Map<number, AiSlide>();
   list.forEach((s) => {
@@ -274,7 +287,9 @@ export function sanitizeAiSlides(json: unknown): AiSlide[] {
   const result: AiSlide[] = [];
   for (let n = 1; n <= 20; n++) {
     const existing = slidesByNo.get(n);
-    let fn = existing?.function ?? "foundation";
+    let fn = existing?.function ?? DEFAULT_SLOT_FUNCTION[n] ?? "simple_explanation";
+    // Collapse repetitive "foundation" from the model onto the default slot map.
+    if (!fn || fn === "foundation") fn = DEFAULT_SLOT_FUNCTION[n] ?? "simple_explanation";
     if (n in FIXED_SLOT_FUNCTION) fn = FIXED_SLOT_FUNCTION[n];
 
     result.push({
@@ -548,9 +563,23 @@ export async function generateISCARBPlan(projectId: string, regenerate = false):
 
     await setProgress(projectId, { status: "generating", progress: 70 });
 
-    const errors = validatePlanStructure(slides);
+    let errors = validatePlanStructure(slides);
     if (errors.length > 0) {
-      throw new Error(`Plan structure validation failed: ${errors.map((e) => e.message).join("; ")}`);
+      // Recover: AI often returns titles with invalid/repetitive layouts (e.g. all "foundation").
+      // Replace with the topic-grounded fallback that is guaranteed to pass the slot contract.
+      console.warn(
+        `Plan validation failed for ${projectId} (${errors.map((e) => e.rule).join(", ")}); applying topic-grounded fallback`,
+      );
+      slides = generateTopicGroundedFallbackSlides(
+        project.title || project.courseProfile.title,
+        selected,
+        blocks,
+      );
+      slides = bindUnmappedSourceBlocks(slides, blocks);
+      errors = validatePlanStructure(slides);
+      if (errors.length > 0) {
+        throw new Error(`Plan structure validation failed: ${errors.map((e) => e.message).join("; ")}`);
+      }
     }
 
     // Regeneration-aware persist. `regenerate=true` = spec Step 4 (delete all +

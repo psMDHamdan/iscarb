@@ -76,10 +76,6 @@ export async function finalizeAttemptReport(opts: {
         answers[code] = value;
       }
     }
-    await db.assessmentAttempt.update({
-      where: { id: attempt.id },
-      data: { answersJson: JSON.stringify(answers) },
-    });
   }
 
   const set = parseAttemptExamSet(attempt.blueprintJson);
@@ -93,6 +89,34 @@ export async function finalizeAttemptReport(opts: {
   }
 
   const requiredCodes = set.questions.map((q) => q.code);
+
+  // Hydrate from AssessmentResponse rows written by POST /score when answersJson
+  // was never updated (live exam path scores durable responses but historically
+  // left answersJson as "{}"). Without this, batch-score returns NO_ANSWERS.
+  const scoredRows = await db.assessmentResponse.findMany({
+    where: {
+      ...liveCurrentResponseWhere(opts.studentId),
+      moduleCode: { in: requiredCodes },
+    },
+    select: { moduleCode: true, rawResponse: true },
+  });
+  let hydratedFromResponses = false;
+  for (const row of scoredRows) {
+    const raw = String(row.rawResponse ?? "").trim();
+    if (!raw) continue;
+    if (!String(answers[row.moduleCode] ?? "").trim()) {
+      answers[row.moduleCode] = raw;
+      hydratedFromResponses = true;
+    }
+  }
+
+  if ((opts.answers && typeof opts.answers === "object") || hydratedFromResponses) {
+    await db.assessmentAttempt.update({
+      where: { id: attempt.id },
+      data: { answersJson: JSON.stringify(answers) },
+    });
+  }
+
   const answeredCodes = requiredCodes.filter(
     (code) => String(answers[code] ?? "").trim().length > 0,
   );

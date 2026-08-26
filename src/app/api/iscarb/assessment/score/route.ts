@@ -135,6 +135,7 @@ export const POST = guard({ tier: "write", roles: ["student", "faculty", "admin"
   let moduleTitle = moduleCode;
   let framework = "";
   let explanation: ReturnType<typeof explainAssessment> | { summary: string };
+  let attempt: ScoreableAttempt | null = null;
 
   if (!isPractice) {
     // ── Resolve the scoring target ──────────────────────────────────────────
@@ -142,7 +143,7 @@ export const POST = guard({ tier: "write", roles: ["student", "faculty", "admin"
     // for this specialty → the live generation cache. A stale or synthetic id
     // (client fallback when POST /attempt fails) must never hard-404 while a
     // scoreable target exists.
-    let attempt: ScoreableAttempt | null = body.attemptId
+    attempt = body.attemptId
       ? await db.assessmentAttempt.findUnique({ where: { id: body.attemptId } })
       : null;
 
@@ -332,6 +333,30 @@ export const POST = guard({ tier: "write", roles: ["student", "faculty", "admin"
       select: { id: true },
     });
     persistedId = row.id;
+
+    // Keep attempt.answersJson in sync so batch-score / finalize can complete.
+    if (attempt?.id && !isPractice) {
+      try {
+        const latest = await db.assessmentAttempt.findUnique({
+          where: { id: attempt.id },
+          select: { answersJson: true },
+        });
+        let map: Record<string, string> = {};
+        try {
+          map = JSON.parse(latest?.answersJson || "{}") as Record<string, string>;
+          if (!map || typeof map !== "object") map = {};
+        } catch {
+          map = {};
+        }
+        map[scored.moduleCode] = rawResponse;
+        await db.assessmentAttempt.update({
+          where: { id: attempt.id },
+          data: { answersJson: JSON.stringify(map) },
+        });
+      } catch {
+        /* best-effort — finalize also hydrates from AssessmentResponse */
+      }
+    }
     if (isPractice) {
       try {
         const recompute = await recomputeLedger(studentRowId, {

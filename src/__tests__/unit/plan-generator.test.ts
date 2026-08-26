@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { generateTopicGroundedFallbackSlides, buildPlanPrompt } from "@/lib/lecture/planner/plan-generator";
+import {
+  generateTopicGroundedFallbackSlides,
+  buildPlanPrompt,
+  sanitizeAiSlides,
+} from "@/lib/lecture/planner/plan-generator";
 import { validatePlanStructure } from "@/lib/lecture/planner/plan-validator";
 
 describe("Plan Generator Improvements (BRD v3.4)", () => {
@@ -7,7 +11,7 @@ describe("Plan Generator Improvements (BRD v3.4)", () => {
     const blocks = [
       { id: "b1", locator: "p.1", criticality: "critical", text: "# CRISPR-Cas9 Gene Editing Mechanisms\nCas9 nuclease introduces double-strand breaks (DSBs) guided by sgRNA." },
       { id: "b2", locator: "p.2", criticality: "normal", text: "## Homology-Directed Repair (HDR) vs Non-Homologous End Joining (NHEJ)\nHDR enables precise sequence insertion." },
-      { id: "b3", locator: "p.3", criticality: "critical", text: "### Off-Target Cleavage Mitigation & PAM Recognition\nThe NGG protospacer adjacent motif (PAM) is required." }
+      { id: "b3", locator: "p.3", criticality: "critical", text: "### Off-Target Cleavage Mitigation & PAM Recognition\nThe NGG protospacer adjacent motif (PAM) is required." },
     ];
     const clos = [{ id: "c1", number: "CLO1", text: "Analyze CRISPR cleavage kinetics", bloomLevel: "analyze" }];
 
@@ -20,6 +24,37 @@ describe("Plan Generator Improvements (BRD v3.4)", () => {
     expect(slides[6].title).toBe("Off-Target Cleavage Mitigation & PAM Recognition");
     expect(slides[8].title).toContain("Cleavage Rate Kinetics");
     expect(slides[12].title).toContain("HDR) Vs Non-Homologous End Joining");
+    expect(validatePlanStructure(slides)).toEqual([]);
+  });
+
+  it("sanitizeAiSlides collapses repetitive foundation layouts so validation passes", () => {
+    const slides = sanitizeAiSlides({
+      slides: Array.from({ length: 20 }, (_, i) => ({
+        slideNo: i + 1,
+        function: "foundation",
+        title: `Grounded title for slide ${i + 1}`,
+        cloIds: [],
+        sourceBlockIds: [],
+        interactionType:
+          i === 0
+            ? "poll"
+            : i === 3
+              ? "poll"
+              : i === 4
+                ? "pause_discuss"
+                : i === 6
+                  ? "pause_discuss"
+                  : i === 10
+                    ? "pause_discuss"
+                    : i === 12
+                      ? "collaboration"
+                      : i === 8
+                        ? "worked_example"
+                        : null,
+      })),
+    });
+    expect(slides).toHaveLength(20);
+    expect(slides.every((s) => s.function !== "foundation")).toBe(true);
     expect(validatePlanStructure(slides)).toEqual([]);
   });
 

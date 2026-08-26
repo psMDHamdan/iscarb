@@ -169,6 +169,42 @@ describe("finalizeAttemptReport — ISC-QA-001", () => {
     if (!result.ok) expect(result.code).toBe("ATTEMPT_INCOMPLETE");
   });
 
+  it("hydrates answers from AssessmentResponse when answersJson is empty (NO_ANSWERS fix)", async () => {
+    vi.mocked(db.assessmentAttempt.findUnique).mockResolvedValue({
+      id: "att-1",
+      studentId: "stu-1",
+      status: "in_progress",
+      specialization: "Computer Science / IT",
+      answersJson: "{}",
+      blueprintJson: "{}",
+    } as any);
+    vi.mocked(parseAttemptExamSet).mockReturnValue({
+      status: "ready",
+      questions: [{ code: "M01", dimension: "core_professionalism" }],
+    } as any);
+    vi.mocked(findAttemptQuestion).mockImplementation((_set, code) => ({
+      code,
+      dimension: "core_professionalism",
+    }) as any);
+    // First findMany hydrates answers; second finds already-scored modules
+    vi.mocked(db.assessmentResponse.findMany)
+      .mockResolvedValueOnce([{ moduleCode: "M01", rawResponse: "choice-text-0" }] as any)
+      .mockResolvedValueOnce([{ moduleCode: "M01" }] as any);
+
+    const result = await finalizeAttemptReport({
+      attemptId: "att-1",
+      studentId: "stu-1",
+      requireComplete: true,
+    });
+
+    expect(result.ok).toBe(true);
+    expect(db.assessmentAttempt.update).toHaveBeenCalled();
+    if (result.ok) {
+      expect(result.completed).toBe(true);
+      expect(result.scoredCount).toBe(1);
+    }
+  });
+
   it("scores unanswered modules and marks completed when full", async () => {
     vi.mocked(db.assessmentAttempt.findUnique).mockResolvedValue({
       id: "att-1",

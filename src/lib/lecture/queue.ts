@@ -16,14 +16,20 @@ export const GENERATE_CHUNK_SIZE = Math.max(
 
 export async function enqueueGeneration(projectId: string, slideNos?: number[]): Promise<number> {
   const targets = slideNos && slideNos.length > 0 ? slideNos : Array.from({ length: 20 }, (_, i) => i + 1);
-  void generateAllSlides(projectId, targets);
+  void generateAllSlides(projectId, targets).catch((err) => {
+    console.error(`[lecture-queue] generate failed project=${projectId}:`, err);
+  });
   return targets.length;
 }
 
 export async function enqueuePlan(projectId: string, regenerate: boolean): Promise<void> {
-  void generateISCARBPlan(projectId, regenerate);
+  void generateISCARBPlan(projectId, regenerate).catch((err) => {
+    console.error(`[lecture-queue] plan failed project=${projectId}:`, err);
+  });
 }
 
 export async function enqueueParse(documentId: string): Promise<void> {
-  void parseSourceDocument(documentId);
+  void parseSourceDocument(documentId).catch((err) => {
+    console.error(`[lecture-queue] parse failed document=${documentId}:`, err);
+  });
 }

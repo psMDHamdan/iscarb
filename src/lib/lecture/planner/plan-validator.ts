@@ -27,6 +27,33 @@ export const FIXED_SLOT_FUNCTION: Record<number, string> = {
   20: "readiness",
 };
 
+/**
+ * Default pedagogical function per slide when the model omits `function`.
+ * Must vary enough to pass the ≤2 consecutive-layout rule (never all "foundation").
+ */
+export const DEFAULT_SLOT_FUNCTION: Record<number, string> = {
+  1: "hook_question",
+  2: "domain_spine",
+  3: "clos",
+  4: "simple_explanation",
+  5: "labeled_diagram",
+  6: "process_steps",
+  7: "comparison",
+  8: "misconception",
+  9: "calculation",
+  10: "concept_map",
+  11: "comparison",
+  12: "process_steps",
+  13: "trade_off",
+  14: "case_study",
+  15: "prediction",
+  16: "interactive_activity",
+  17: "application",
+  18: "rubric",
+  19: "evidence",
+  20: "readiness",
+};
+
 export interface SlideLike {
   slideNo: number;
   function: string;
