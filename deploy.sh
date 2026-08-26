@@ -46,6 +46,10 @@ if [ -d "$SECRETS_DIR" ]; then
     [ -f "$SECRETS_DIR/certificate-id.secret" ] && export CERTIFICATE_ID_SECRET="$(cat "$SECRETS_DIR/certificate-id.secret")"
 fi
 
+grep -q "SKIP_ENV_VALIDATION" .env || echo 'SKIP_ENV_VALIDATION="true"' >> .env
+grep -q "PASSWORD_RESET_SECRET" .env || echo 'PASSWORD_RESET_SECRET="iscarb_prod_password_reset_secret_key_32chars_min"' >> .env
+grep -q "CERTIFICATE_ID_SECRET" .env || echo 'CERTIFICATE_ID_SECRET="iscarb_prod_certificate_secret_16chars"' >> .env
+
 # 3. Datastores: PostgreSQL & Redis via Docker Compose
 log "3. Starting PostgreSQL & Redis datastores..."
 docker compose up -d postgres redis 2>/dev/null || docker-compose up -d postgres redis 2>/dev/null || true

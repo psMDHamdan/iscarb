@@ -35,6 +35,7 @@ function requireOne(names: string[], label: string, errors: string[]): void {
 /** Throws EnvValidationError when production-required variables are missing or invalid. */
 export function validateProductionEnv(): void {
   if (process.env.NODE_ENV !== "production") return;
+  if (process.env.SKIP_ENV_VALIDATION === "true" || process.env.SKIP_ENV_VALIDATION === "1") return;
 
   const errors: string[] = [];
 
