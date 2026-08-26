@@ -248,19 +248,23 @@ export async function finalizeAttemptReport(opts: {
   snapshot.timedOut = missing.length > 0;
   if (student.name) snapshot.studentName = student.name;
 
-  // Durable snapshot for refresh / deep-link without sessionStorage.
-  await db.assessmentSnapshot.create({
-    data: {
-      studentId: student.id,
-      dataJson: JSON.stringify({
-        attemptId: attempt.id,
-        kind: "employability-finalize",
-        attempt: snapshot,
-        completed: markCompleted,
-        createdAt: new Date().toISOString(),
-      }),
-    },
-  });
+  // Durable snapshot for refresh / deep-link without sessionStorage (best-effort).
+  try {
+    await db.assessmentSnapshot.create({
+      data: {
+        studentId: student.id,
+        dataJson: JSON.stringify({
+          attemptId: attempt.id,
+          kind: "employability-finalize",
+          attempt: snapshot,
+          completed: markCompleted,
+          createdAt: new Date().toISOString(),
+        }),
+      },
+    });
+  } catch {
+    /* snapshot persistence must not block finalize / batch-score */
+  }
 
   return {
     ok: true,

@@ -69,13 +69,18 @@ export async function computeOverallPercentile(
   composite: number,
   excludeStudentId?: string,
 ): Promise<number | null> {
+  if (!Number.isFinite(composite)) return null;
+
   const minSample = resolvePercentileMinSample();
-  const baseWhere = {
-    composite: { not: null as const },
-    ...(excludeStudentId ? { NOT: { studentId: excludeStudentId } } : {}),
-  };
+  // composite is required on EmployabilityProfile — do not use `{ not: null }`
+  // (invalid on non-nullable FloatFilter and throws at query validation time).
+  const baseWhere = excludeStudentId
+    ? { NOT: { studentId: excludeStudentId } }
+    : {};
+
   const total = await db.employabilityProfile.count({ where: baseWhere });
   if (total < minSample) return null;
+
   const below = await db.employabilityProfile.count({
     where: { ...baseWhere, composite: { lt: composite } },
   });

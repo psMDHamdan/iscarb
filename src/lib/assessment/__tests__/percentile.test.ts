@@ -13,13 +13,21 @@ vi.mock("@/lib/db", () => ({
     assessmentResponse: {
       count: vi.fn(),
     },
+    employabilityProfile: {
+      count: vi.fn(),
+    },
   },
 }));
 
 import { db } from "@/lib/db";
-import { computePercentile, resolvePercentileMinSample } from "../percentile";
+import {
+  computePercentile,
+  computeOverallPercentile,
+  resolvePercentileMinSample,
+} from "../percentile";
 
 const mockCount = db.assessmentResponse.count as ReturnType<typeof vi.fn>;
+const mockProfileCount = db.employabilityProfile.count as ReturnType<typeof vi.fn>;
 
 describe("resolvePercentileMinSample", () => {
   it("defaults to 5 when env unset or empty", () => {
@@ -151,5 +159,51 @@ describe("computePercentile", () => {
       2,
       expect.objectContaining({ where: expect.objectContaining({ moduleCode: "M19" }) }),
     );
+  });
+});
+
+describe("computeOverallPercentile", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    delete process.env.ASSESSMENT_PERCENTILE_MIN_SAMPLE;
+  });
+
+  it("returns null when cohort is below MIN_SAMPLE", async () => {
+    mockProfileCount.mockResolvedValueOnce(4);
+    expect(await computeOverallPercentile(72, "stu-1")).toBeNull();
+    expect(mockProfileCount).toHaveBeenCalledWith({
+      where: { NOT: { studentId: "stu-1" } },
+    });
+  });
+
+  it("returns null for non-finite composite", async () => {
+    expect(await computeOverallPercentile(Number.NaN, "stu-1")).toBeNull();
+    expect(mockProfileCount).not.toHaveBeenCalled();
+  });
+
+  it("counts peers with strictly lower composite scores", async () => {
+    mockProfileCount.mockResolvedValueOnce(10).mockResolvedValueOnce(6);
+    const result = await computeOverallPercentile(80, "stu-self");
+    expect(result).toBe(60);
+    expect(mockProfileCount).toHaveBeenNthCalledWith(2, {
+      where: {
+        NOT: { studentId: "stu-self" },
+        composite: { lt: 80 },
+      },
+    });
+  });
+
+  it("never applies `{ not: null }` on the required composite field", async () => {
+    mockProfileCount.mockResolvedValueOnce(5).mockResolvedValueOnce(2);
+    await computeOverallPercentile(55);
+    for (const call of mockProfileCount.mock.calls) {
+      const composite = call[0]?.where?.composite;
+      if (composite && typeof composite === "object" && "not" in composite) {
+        expect(composite.not).not.toBeNull();
+      }
+    }
+    expect(mockProfileCount).toHaveBeenNthCalledWith(2, {
+      where: { composite: { lt: 55 } },
+    });
   });
 });

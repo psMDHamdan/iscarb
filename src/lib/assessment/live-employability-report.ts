@@ -330,7 +330,7 @@ export function toAttemptSnapshotView(report: LiveEmployabilityReport) {
       feedback: r.feedback,
       strengths: r.strengths,
       improvements: r.improvements,
-      perCriterion: r.perCriterion.map((c) => ({
+      perCriterion: (r.perCriterion ?? []).map((c) => ({
         criterion: c.criterion,
         weight: c.weight ?? c.max ?? 0,
         score: c.score,
