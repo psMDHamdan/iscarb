@@ -9,6 +9,13 @@ export const ASSESSMENT_DURATION_SECONDS = ASSESSMENT_DURATION_MINUTES * 60;
 /** sessionStorage key for in-progress exam + timer start. */
 export const EXAM_SESSION_STORAGE_KEY = "iscarb:employability-exam-session:v1";
 
+/**
+ * Build version stamp — sessions created under a different commit are
+ * automatically discarded so stale / broken AI content from older
+ * deployments is never silently served after a hotfix redeploy.
+ */
+const BUILD_SHA = process.env.NEXT_PUBLIC_GIT_COMMIT_SHA ?? process.env.GIT_COMMIT_SHA ?? "dev";
+
 export type ExamTimerSessionV1 = {
   version: 1;
   startedAtMs: number;
@@ -16,6 +23,8 @@ export type ExamTimerSessionV1 = {
   specialization: string;
   studentId: string | null;
   attemptId?: string | null;
+  /** Build commit SHA — used to auto-invalidate sessions from old deployments. */
+  buildSha?: string;
   modules: unknown[];
   answers: Record<string, string>;
   flagged: Record<string, boolean>;
@@ -83,6 +92,12 @@ export function loadExamSession(
       !Array.isArray(parsed.modules) ||
       parsed.modules.length === 0
     ) {
+      clearExamSession(storage);
+      return null;
+    }
+
+    // Discard sessions from a different build (deployment hotfix invalidation).
+    if (parsed.buildSha && BUILD_SHA !== "dev" && parsed.buildSha !== BUILD_SHA) {
       clearExamSession(storage);
       return null;
     }

@@ -17,6 +17,7 @@ import type {
   StudentConceptViewModel,
   PedagogicalPhase,
 } from "@/lib/lecture/projections/types";
+import { resolveSlideImageUrl } from "@/lib/lecture/visual-image";
 
 // ---------------------------------------------------------------------------
 // Props & Metadata
@@ -61,8 +62,11 @@ export function ConceptContent({ concept, ar }: ConceptContentProps) {
   const realWorldApplication = concept.realWorld?.application || "";
   const hook = concept.hook || concept.headline || "";
 
-  // Visuals
-  const rawVisualUrl = concept.visual?.imageUrl || (concept.visual as any)?.fetchedImageUrl;
+  // Visuals — resolve using priority (facultyUploadedUrl -> fetchedImageUrl -> imageUrl)
+  const rawVisualUrl = resolveSlideImageUrl(
+    concept.visual as any,
+    concept.visual?.imageUrl || (concept.visual as any)?.fetchedImageUrl
+  );
   // If it's a real generated image (not a fallback unsplash), we prioritize it heavily.
   const isStockUrl = rawVisualUrl?.includes("unsplash") || rawVisualUrl?.includes("pollinations");
   const displayImage = rawVisualUrl; // We will show it even if stock, but style it nicely.

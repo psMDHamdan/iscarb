@@ -268,6 +268,27 @@ export function validateQuestion(
     }
   }
 
+  // CHECK 12 — ABSURD / FOOLISH DISTRACTORS: Reject options with rude, careless, or absurd actions
+  if (Array.isArray(q.options)) {
+    const foolishTelltale =
+      /\b(ignore the|do nothing|blame (others|another|the|a)|resign immediately|let it slide|refuse to|say (you|i) (cannot|can't) remember|use deep jargon|skip (the|all) (qc|quality|checks)|hide the|pass the buck|side with .* and refuse|postpone .* indefinitely)\b/i;
+    const foolish = q.options.filter((o) => foolishTelltale.test(o));
+    if (foolish.length > 0) {
+      failures.push(`CHECK_12_ABSURD_DISTRACTORS: ${foolish.length} option(s) use absurd/unrealistic behavior ("${foolish[0].slice(0, 60)}...") — distractors must be plausible professional choices`);
+    }
+  }
+
+  // CHECK 13 — LONGEST OPTION GIVEAWAY: The correct option must not be significantly longer than distractors
+  if (Array.isArray(q.options) && q.options.length === 4 && typeof q.correctIndex === "number" && q.correctIndex >= 0 && q.correctIndex < 4) {
+    const lengths = q.options.map((o) => o.split(" ").length);
+    const correctLen = lengths[q.correctIndex]!;
+    const distractorLens = lengths.filter((_, i) => i !== q.correctIndex);
+    const avgDistractorLen = distractorLens.reduce((a, b) => a + b, 0) / distractorLens.length;
+    if (correctLen > 1.35 * avgDistractorLen && correctLen - avgDistractorLen > 15) {
+      failures.push(`CHECK_13_LONGEST_CORRECT_ANSWER: Correct option is significantly longer (${correctLen} words vs avg distractor ${Math.round(avgDistractorLen)} words) — correct answer must not be identifiable by length`);
+    }
+  }
+
   // CHECK 11 — OPTION DISTINCTNESS: two options that are near-duplicates make
   // the question ambiguous — a competent candidate could defend either, so
   // there is no single clearly-superior answer (MCQ quality gate: "If two
@@ -505,22 +526,27 @@ Distractors must be WRONG FOR A REASON, not obviously wrong.
 Each distractor should represent a realistic mistake that a competent
 but less effective candidate might make.
 
-Examples of realistic distractor types:
-1. Correct principle but wrong priority.
-2. Good action but incomplete.
-3. Appropriate action but poorly sequenced.
-4. Technically correct but ignores the human/organizational context.
-5. Strong short-term response but weak long-term control.
-6. Good team-level solution but fails personal accountability.
-7. Good communication but insufficient technical judgment.
-8. Good technical response but poor stakeholder judgment.
+Distractors MUST be selected from these 8 specific error taxonomies:
+1. PARTIALLY CORRECT — The approach is reasonable but incomplete.
+2. WRONG PRIORITY — The approach focuses on something important but not the most important thing.
+3. WRONG SEQUENCE — The right actions are taken in an ineffective or risky order.
+4. MISSING KEY ELEMENT — The response omits a required part of the framework.
+5. TEAM VS INDIVIDUAL CONFUSION — Describes team effort without clarifying individual ownership.
+6. OVEREMPHASIS — Focuses heavily on one component while neglecting another critical aspect.
+7. SUPERFICIAL APPLICATION — Mentions the correct framework but applies it weakly.
+8. PLAUSIBLE MISCONCEPTION — Reflects a realistic misunderstanding of the competency.
 
-Before accepting the question, perform this test:
+NEVER generate distractors where the candidate behaves irrationally, rudely, carelessly, or unprofessionally (e.g. "Do nothing", "Blame others", "Ignore the problem", "Resign immediately", "Use deep jargon", "Let it slide").
 
-OPTION A → Why might a strong candidate choose it?
-OPTION B → Why might a strong candidate choose it?
-OPTION C → Why might a strong candidate choose it?
-OPTION D → Why might a strong candidate choose it?
+BEHAVIORAL / STAR QUESTION RULES:
+For behavioral interview or framework questions, test the QUALITY of the response:
+- Option A: Gives Situation + Action but omits measurable Result.
+- Option B: Complete STAR response with personal ownership and clear outcome (BEST ANSWER).
+- Option C: Describes team effort well but lacks candidate's individual contribution.
+- Option D: Focuses on Result but lacks context on Situation and Task.
+
+Before accepting the question, perform this internal evaluation for each option:
+{ option, approach, strengths, weakness, plausibilityScore, errorTaxonomy }
 
 Then identify:
 - What makes the correct option superior?

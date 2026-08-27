@@ -384,7 +384,7 @@ export async function generateAllForAttempt(attemptId: string): Promise<AttemptE
   log.info(
     {
       attemptId,
-      ready,
+      ready: true,
       liveAi: questions.filter((q) => q.contentSource === "live_ai").length,
       bankFallback: questions.filter((q) => q.contentSource === "bank_fallback").length,
       regenerated: questions.filter((q) => q.validation.regenerated).length,
@@ -521,7 +521,8 @@ export async function ensureAttemptExamGeneration(opts: {
   }
 
   const parsed = parseAttemptExamSet(attempt.blueprintJson);
-  if (isAttemptExamSetReady(parsed)) {
+  const liveCount = parsed?.questions.filter((q) => q.contentSource === "live_ai").length ?? 0;
+  if (isAttemptExamSetReady(parsed) && (!liveGenerationEnabled() || liveCount > 0)) {
     return { attemptId: attempt.id, set: parsed, started: false };
   }
 

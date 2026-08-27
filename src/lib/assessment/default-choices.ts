@@ -9,273 +9,376 @@ export interface ModuleBriefForChoices {
 }
 
 const SPECIFIC_MODULE_CHOICES: Record<string, string[]> = {
-  M01: [
-    "Brief the management team in plain, non-technical language: launch was successful, a subset of users on older smartphones is seeing slower load times, the cause is understood, the fix is already prepared and will deploy within 48 hours after testing, and no action is needed from them — with a commitment to a short confirmation update once it is live.",
-    "Escalate the bug as a critical incident in an urgent email listing every affected device model and technical detail, so leadership understands the full engineering severity of the slowness.",
-    "Delay any communication until the fix is fully deployed, so management is not told about a problem that may already be resolved by the time they read it.",
-    "Instruct the technical team to extend testing and only report the issue to management after two full weeks of post-fix stability data, even though the fix is ready within 48 hours.",
+  "M01": [
+    "Brief senior medical leaders in plain language: explain the minor performance issue on older mobile hardware, confirm patient data safety, state that a tested patch will deploy within 48 hours, and outline interim safeguards.",
+    "Provide an extensive technical root-cause breakdown including stack traces and memory profiles, requesting that senior medical leadership determine the technical remediation path.",
+    "Issue an immediate emergency system alert to all hospital departments advising staff of system instability, while holding executive briefings until post-patch verification.",
+    "Summarize the patch schedule and deployment timeline accurately to executive leadership, but omit specific operational workarounds and temporary user guidance.",
   ],
-  M02: [
-    "Run DMAIC: Define the delivery-time problem precisely, Measure three KPIs (average delivery time, order-to-handoff, courier wait), Analyze root causes with an Ishikawa diagram across app latency, courier routing, demand and capacity, Improve the top causes, and Control with ongoing monitoring to keep the gain.",
-    "Blame the increased order volume as the sole cause and immediately cap orders without measuring or analysing any other factor such as routing or app latency.",
-    "Switch the entire delivery fleet to a new vendor immediately, assuming the old vendor is the root cause without measuring current delivery-time baselines.",
-    "Do nothing structural and wait a few weeks to see whether the 25% increase in average delivery time corrects itself during off-peak demand.",
+  "M02": [
+    "Run DMAIC: Define problem and wait-time baselines, Measure order handoff and courier routing metrics, Analyze root causes via Ishikawa diagram, Improve top bottlenecks, and Control with KPI dashboards.",
+    "Measure current delivery times and order volumes, then immediately implement a revised courier routing protocol before completing a root-cause analysis.",
+    "Convene an operational alignment task force to improve courier communication and dispatch tools, focusing on team coordination without analyzing baseline latency metrics.",
+    "Apply DMAIC by defining the issue and analyzing historical courier performance, but focus remediation solely on third-party vendor SLAs while leaving internal app dispatch unaddressed.",
   ],
-  M03: [
-    "Facilitate a structured conflict-resolution session between the project manager and Chloe: have Chloe state the specific deployment risk and what verification is missing, agree a mitigation plan (e.g. staged rollout with rollback), and make a team decision on whether Tuesday is safe — balancing the committed date with the technical concern.",
-    "Side with the project manager and deploy on Tuesday as scheduled, since the feature is complete and the deadline is committed, and ask Chloe to log her concerns for a post-release review.",
-    "Side with Chloe and postpone the deployment indefinitely until she is fully comfortable, accepting an uncommitted new date without assessing the cost of the slip.",
-    "Escalate immediately to senior management for a top-down decision, skipping any attempt to reconcile the technical objection with the schedule at team level.",
+  "M03": [
+    "Facilitate a collaborating session: surface both technical deployment risks and grant deadline constraints, negotiate a staged rollout with rollback safeguards, and commit to a joint timeline.",
+    "Apply a compromising approach by agreeing to release on schedule while reducing the firmware feature set, without resolving the underlying power budget verification.",
+    "Apply an accommodating approach by agreeing to the hardware engineer's complete redesign request, accepting the grant deadline slip without evaluating interim mitigations.",
+    "Escalate the dispute to project leadership to arbitrate between the schedule and technical requirements, providing individual assessments rather than leading joint team resolution.",
   ],
-  M04: [
-    "Assess which features depend on the changed platform/API, find the fastest compatible path (wrapper, alternate endpoint, or negotiated grace period with the platform), reprioritise the remaining scope for the 7-day window, and brief stakeholders on the revised plan and residual risk before proceeding.",
-    "Ignore the breaking change and keep the original launch plan, assuming the platform will delay enforcement or that the current integration will keep working on launch day.",
-    "Halt the launch entirely until a full rewrite on the new API is complete, accepting that the 7-day deadline will be missed with no interim mitigation.",
-    "Promise stakeholders the launch is fully on track with no changes, without verifying the technical impact of the breaking change on the current integration.",
+  "M04": [
+    "Assess feature dependencies against the mandated directive, identify compatible integration paths, reprioritize remaining scope for the 14-day window, and brief stakeholders on revised milestones and residual risk.",
+    "Conduct an immediate technical impact analysis and update stakeholders on required changes, but attempt to implement the full original scope alongside the mandatory directive without reprioritizing.",
+    "Pause current platform expansion and focus team efforts entirely on building the mandated integration, postponing stakeholder communication until migration feasibility is proven.",
+    "Implement the mandated integration for high-priority user flows while leaving secondary flows on the existing architecture, without establishing formal stakeholder approval for the dual-run strategy.",
   ],
-  M05: [
-    "In a private 1:1, open with the specific observed cues (unusually quiet, missing meetings, missed deadlines), ask open questions about workload and wellbeing without judgement, listen, and agree concrete support plus a follow-up check-in so both performance and care are addressed.",
-    "Address the missed deadlines in the 1:1 as a performance issue first, and set a formal warning about attendance and delivery before exploring any personal reasons.",
-    "Ignore the behavioural change and only mention the missed deadlines in the next written performance review, giving Sara more time to self-correct.",
-    "Send a brief email listing the missed deliverables and asking for a written plan, without meeting in person or acknowledging the change in behaviour.",
+  "M05": [
+    "In a private 1:1, open with specific observed cues, ask open-ended questions regarding workload and wellbeing without judgment, listen actively, and agree on tailored support plus a follow-up check-in.",
+    "Focus the 1:1 on reviewing recent missed deliverables and establishing a structured performance improvement plan, offering support if workload issues are raised by the employee.",
+    "Express personal concern for the employee's wellbeing and adjust immediate task assignments, but avoid discussing the specific performance gaps to prevent added stress.",
+    "Discuss observed stress cues and offer workload adjustments during the meeting, but defer setting specific follow-up milestones or documented support commitments.",
   ],
-  M06: [
-    "Before the client presentation, verify the current regulatory version, raise the outdated model privately with the senior analyst, document the discrepancy, and agree whether the slide must be corrected now or flagged — escalating only if the colleague refuses to address a material error.",
-    "Quietly correct the outdated numbers on the slide yourself and present them as the senior analyst’s work, avoiding any conversation so the client is not alarmed.",
-    "Present the slide as it is, assuming the senior analyst must have a reason for the older version and that the client will not notice the discrepancy.",
-    "Publicly call out the senior analyst in the client meeting that the numbers are wrong, to make the correction transparent to everyone present.",
+  "M06": [
+    "Verify current regulatory guidelines, discuss the outdated model privately with the senior analyst before the briefing, document required adjustments, and flag material discrepancies for immediate correction.",
+    "Prepare updated regulatory figures independently and present the revised data during the briefing, explaining the recalculation after the client Q&A session.",
+    "Present the slide using the senior analyst's figures as drafted, while preparing an addendum document with updated regulatory figures for post-meeting distribution.",
+    "Highlight the regulatory model update during the presentation as an evolving industry trend, without clarifying whether the slide data reflects the latest guidelines.",
   ],
-  M07: [
-    "Meet each department head privately to understand their interests, then facilitate a joint session where Khalid (Operations) and Layla (Product) restate each other's constraints, agree a resource-allocation decision matrix, and set a communication cadence to rebuild direct working.",
-    "Decide the resource split yourself based on the business case and instruct both heads to comply, ending the dispute by authority without a joint conversation.",
-    "Escalate the conflict to the CEO immediately for a top-down allocation decision, bypassing the two heads entirely so they no longer have to negotiate.",
-    "Formally warn both department heads about their public disagreement and require all future resource discussions to go through you in writing.",
+  "M07": [
+    "Hold individual meetings to understand constraints, then lead a joint session to align on shared objectives, establish a clear resource-allocation matrix, and agree on governance rules.",
+    "Propose an equal split of contested resources between both departments based on historical allocations, bypassing a detailed analysis of current project priorities.",
+    "Analyze each department's resource requirements and draft a comprehensive allocation proposal, then submit it to executive leadership for final sign-off before consulting department heads.",
+    "Facilitate a joint alignment meeting to discuss competing demands, but allow department heads to negotiate bilateral trade-offs without establishing a formal decision matrix.",
   ],
-  M08: [
-    "Refuse to skip the quality-control step: explain the risk of delivering unverified work to the client, propose alternatives such as delivering a verified subset now and the remainder after full checks, or negotiate a short deadline extension, and document your position if the manager insists on cutting corners.",
-    "Follow the manager's instruction and skip the QC step to hit the deadline, noting that bugs can be fixed later as the manager suggested.",
-    "Resign immediately over the request, treating the quality-control compromise as unforgivable and offering no alternative path to meet the client deadline.",
-    "Quietly skip the QC checks but do not record that the step was omitted, so the client remains confident the process was followed.",
+  "M08": [
+    "Maintain essential quality control: explain delivery risks to stakeholders, propose a phased delivery of verified components, or negotiate a short window extension with documented risk mitigation.",
+    "Perform a condensed quality check on high-risk features to meet the deadline, documenting skipped test cases for post-launch verification.",
+    "Request an immediate deadline extension from the client to complete full quality assurance, without presenting a phased release option or interim risk assessment.",
+    "Complete all required quality assurance steps by reallocating team members from secondary tasks, while accepting unmitigated delays on the secondary deliverables.",
   ],
-  M09: [
-    "Build an 8-week plan mixing pull applications (HRSD, Jadarat, LinkedIn) with push networking: alumni, sector conferences, and polite referral asks in utilities/renewables — measuring weekly outreach and applications while respecting Saudi professional etiquette.",
-    "Only submit online applications every few days and wait for portals to respond, without networking.",
-    "Message senior utility executives daily asking directly for a job in the first sentence.",
-    "Attend one conference in week 8 only, with no earlier outreach or application cadence.",
+  "M09": [
+    "Execute a balanced strategy: combine targeted applications on official portals (HRSD, Jadarat, LinkedIn) with professional networking, informational interviews, and tracking weekly outreach metrics.",
+    "Focus entirely on submitting a high volume of tailored applications through official job portals, deferring direct networking until initial interviews are scheduled.",
+    "Prioritize networking with industry professionals and requesting informational interviews, while submitting standard resumes on job portals without tailoring application materials.",
+    "Build an extensive list of target companies and connect with recruitment leads on professional platforms, but delay applying until personal referrals are secured for each role.",
   ],
-  M10: [
-    "Write an AIDA opening paragraph: hook with the 40% event-attendance increase from the university campaign, show interest with the Google Analytics certification and bilingual skills, create desire by connecting data-driven decision-making to the Digital Campaigns role, and close with a clear call to action for an interview.",
-    "Paste a generic cover letter about being hardworking and eager to learn, with no mention of analytics, campaign results, or the role's stated requirements.",
-    "List only the role title, salary expectation, and availability date, skipping any evidence of data skills or campaign outcomes.",
-    "Criticize the company's current digital campaigns to show you know more than the hiring team, without presenting your own relevant credentials.",
+  "M10": [
+    "Structure the application using AIDA: hook with measurable accomplishments, demonstrate alignment with role requirements, highlight specialized skills, and close with a professional call to action.",
+    "Detail relevant past technical projects and academic certifications, but omit explicit connections to the target company's specific job requirements and strategic goals.",
+    "Focus on explaining your career aspirations and passion for the organization, supported by a general summary of qualifications without quantifying past achievements.",
+    "Provide a comprehensive chronological summary of all previous roles and responsibilities, but omit a concise closing statement and explicit alignment to the target position.",
   ],
-  M11: [
-    "Answer with STAR: Situation — checkout outage at Saudi e-commerce launch; Task — lead restoration and cross-functional coordination; Action — triage, communicate, restore path, reduce further loss; Result — service restored with a measurable recovery time / revenue protected figure.",
-    "Say you were present during the outage but cannot recall specific actions or results.",
-    "Blame another team for the outage and refuse to describe your own contribution.",
-    "Describe only the technical root cause in deep jargon with no task, actions, or measurable result.",
+  "M11": [
+    "Apply STAR method: outline the specific Situation (checkout outage during launch), Task (lead restoration effort), individual Actions taken (triage, cross-team coordination), and measurable Result (system restored in 25 mins, revenue impact minimized).",
+    "Describe the high-pressure situation and the immediate technical actions taken to resolve the incident, but omit specific metrics regarding the final outcome and business impact.",
+    "Explain the technical architecture and root cause of the incident in detail, describing how the overall engineering group collaborated to restore service.",
+    "Focus on the successful recovery results and key lessons learned, providing only a high-level summary of the initial problem and individual intervention steps.",
   ],
-  M12: [
-    "Upgrade LinkedIn (headline, summary, skills, project evidence from the internship) then send a short personalized note to the Saudi Binladin infrastructure manager asking for career advice — not an immediate job ask.",
-    "Leave the profile unchanged and send a mass InMail to dozens of managers asking who is hiring.",
-    "Open the message by demanding a job referral and salary range before introducing yourself.",
-    "Invent senior project leadership experience on the profile to impress Binladin Group.",
+  "M12": [
+    "Optimize profile headline, summary, and skills to highlight domain expertise, showcase verified project outcomes, and send personalized, context-rich connection requests to industry peers.",
+    "Update profile experience and skills with detailed technical descriptions, but send generic connection requests without personalizing the outreach message.",
+    "Focus outreach on sending direct messages to senior hiring managers asking about job openings, before fully updating project portfolio and recommendations.",
+    "Publish frequent industry commentary and share relevant technical articles, while keeping the background experience and project summary brief.",
   ],
-  M13: [
-    "Negotiate using BATNA and market data (SAR 9.5–10.5k): request a salary closer to market and one growth benefit (training budget or flexible work), stay within a win-win tone, and be ready to walk to the freelance/other offer if needed.",
-    "Accept SAR 8,500 immediately without raising market evidence or benefits.",
-    "Demand SAR 15,000 and fully remote work with no BATNA reference, threatening to sue if refused.",
-    "Ignore the offer and ghost the employer while waiting on the other interview.",
+  "M13": [
+    "Research benchmark compensation data (SAR 9.5k–10.5k), articulate your value proposition against role requirements, present a fair salary counter-offer alongside professional growth benefits, and leverage your BATNA professionally.",
+    "Request a salary at the upper end of the benchmark range based on market research, but focus negotiation exclusively on base pay without discussing performance bonuses or professional development.",
+    "Accept the initial offer as presented and request a formal performance and compensation review after six months based on agreed deliverables.",
+    "Present market benchmark data and request an increased compensation package, but defer articulating specific additional value or accomplishments that justify the higher tier.",
   ],
-  M14: [
-    "I appreciate the points raised. I will dedicate a set 20‑minute block each morning to finalize the data subset and update code comments before moving on, and I will post a brief progress note in the shared Slack channel every Friday.",
-    "I think the feedback is harsh; I work well under pressure and will just try to finish faster next time.",
-    "I understand the concerns. I will aim to be more organized by using a to‑do list, though I haven't identified exact steps yet.",
-    "I will ask my supervisor to reassign the data preparation tasks to another teammate, so my workload is lighter.",
+  "M14": [
+    "Listen actively without defensiveness, acknowledge specific valid points, ask clarifying questions to understand expectations, and commit to a concrete action plan with follow-up milestones.",
+    "Accept the feedback politely and agree to implement suggested changes, but refrain from asking clarifying questions or establishing explicit follow-up review dates.",
+    "Provide context and rationale for the choices made during the task before accepting the feedback, ensuring the supervisor understands background constraints.",
+    "Commit to improving performance immediately and request additional training resources, without establishing specific measurable metrics for the required adjustments.",
   ],
-  M15: [
-    "Clarify the situation with the people involved first: gather the facts, identify what is known versus assumed, and agree the next step with clear owners so the response is grounded in evidence rather than assumption.",
-    "Act immediately on the first plausible explanation to show decisiveness, without verifying the facts or checking with the team members closest to the situation.",
-    "Escalate the situation to senior management right away for them to decide, without first gathering the context the team already has.",
-    "Do nothing until the situation resolves itself or someone raises it again, avoiding any action that might be wrong.",
+  "M15": [
+    "Gather objective facts from frontline team members, distinguish verified data from assumptions, analyze root causes using structured techniques, and execute a documented decision with clear ownership.",
+    "Implement a proven operational fix based on past experience with similar incidents, then monitor system performance to confirm if the issue is resolved.",
+    "Conduct a detailed investigation into all potential contributing factors, deferring corrective action until a comprehensive report is completed and reviewed.",
+    "Consult key stakeholders to reach consensus on the most likely cause, executing an agreed mitigation plan without conducting independent data verification.",
   ],
-  M16: [
-    "Choose Scrum/Agile: short sprints to ship a usable pilot in four months, then iterate using driver and customer feedback as contracts and regulations keep changing.",
-    "Choose classic Waterfall: freeze all routing requirements on day one and deliver a single release after four months with no interim feedback loops.",
-    "Cancel stakeholder feedback channels and optimize only for internal documentation completeness before any pilot.",
-    "Adopt a multi-year big-bang deployment with no pilot, locking scope until every regional regulation variant is fully specified.",
+  "M16": [
+    "Adopt Scrum/Agile: plan 2-week iterations to ship an MVP in four months, validating user experience and routing features with early feedback while adapting to evolving commercial requirements.",
+    "Select a phased Waterfall approach: define comprehensive functional specifications up front, executing sequential design and development phases before conducting end-to-end user acceptance testing.",
+    "Implement a Hybrid framework: freeze core architectural requirements while utilizing iterative sprints for user interface components, deferring deployment until all features are complete.",
+    "Utilize Kanban: maintain a continuous workflow queue without fixed iteration boundaries, prioritizing user feedback cards as operational capacity allows.",
   ],
-  M17: [
-    "Mobile abandonment rose by 8 points and desktop fell by 6 points; we should redesign the mobile checkout to lower abandonment as a performance improvement.",
-    "Desktop abandonment increased while mobile decreased, suggesting we need to double‑down on desktop advertising.",
-    "Both mobile and desktop abandonment are stable; no action is required.",
-    "The chart shows a 15‑point gap between channels; we should halt mobile sales entirely.",
+  "M17": [
+    "Analyze channel data: identify that mobile checkout abandonment rose by 8% while desktop fell by 6%, isolate mobile UX friction points, and recommend targeted mobile checkout optimization.",
+    "Highlight the total increase in mobile traffic volume and recommend reallocating marketing spend to mobile acquisition campaigns, while deferring checkout optimization.",
+    "Focus analysis on the desktop conversion stability and recommend expanding desktop promotional offers, treating mobile abandonment as an industry-standard trend.",
+    "Report the conversion gap between mobile and desktop channels, proposing an immediate overhaul of both desktop and mobile landing pages without isolating checkout drop-offs.",
   ],
-  M18: [
-    "Use the approved internal AI platform to draft the memo, verify all numerical data by cross-checking with the confidential internal report, retain proprietary cost information within the secure system, and prompt the AI for a professional, hierarchy-aware tone suitable for senior executives.",
-    "Copy the confidential cost estimates into a public AI chatbot to generate polished client presentation slides.",
-    "Rely on the AI's output for market trends without verifying the figures, assuming its confidence indicates accuracy.",
-    "Ask the AI to write the briefing memo in an informal, casual tone that disregards the audience's senior leadership status.",
+  "M18": [
+    "Use approved internal AI tools with sanitized data: draft content, independently verify numerical figures against primary sources, ensure proprietary data is protected, and review tone for professional alignment.",
+    "Utilize enterprise AI tools to draft the executive briefing, but rely on automated output validation without cross-checking financial calculations against source documents.",
+    "Draft the briefing manually using internal data sources, then run the text through AI tools solely for grammar and formatting refinement without verifying contextual accuracy.",
+    "Use AI tools to summarize background industry trends and generate structural outlines, while authoring all specific client recommendations independently.",
   ],
-  M19: [
-    "Report the email to the IT security team and confirm the request through the official finance phone number.",
-    "Reply with the requested financial details and complete the transfer.",
-    "Click the link in the email to verify the new account and submit the payment.",
-    "Transfer the funds first to avoid service disruption, then mention it in the next weekly standup.",
+  "M19": [
+    "Verify the request through official out-of-band communication: report suspicious email headers to IT Security and confirm authorization with the executive assistant via verified internal channels.",
+    "Forward the email to IT Security for analysis while replying to the sender requesting secondary confirmation before proceeding with the purchase.",
+    "Check the internal corporate directory to verify executive contact details, then pause processing until the manager reviews the request during business hours.",
+    "Contact your direct supervisor to report the unusual executive request, while holding off on security escalation pending internal clarification.",
   ],
-  M20: [
-    "Recommend doubling the budget in a controlled way: note the current campaign returned SAR 45,000 on SAR 10,000 (4.5×), build a SWOT of the expansion (e.g. proven channel, capacity to fulfil added demand, ad-fatigue and platform-cost threats), and propose a phased ramp to SAR 20,000 with ROI tracked monthly.",
-    "Reject the increase outright because spending more on advertising always eats into profit, without calculating the current ROI or considering the attributable SAR 45,000.",
-    "Approve doubling the budget immediately with no measurement plan, assuming that because the first month was profitable the second will be equally or more profitable.",
-    "Advise the owner to keep the budget at SAR 10,000 indefinitely and spend the potential extra SAR 10,000 on hiring instead, without analysing the campaign's actual return.",
+  "M20": [
+    "Recommend a phased budget increase: evaluate current 4.5x ROI data, conduct a SWOT analysis of scaling capacity, and test a SAR 15,000 intermediate stage while monitoring acquisition CAC and conversion rates.",
+    "Approve doubling the advertising budget immediately based on strong initial returns, establishing weekly performance reporting to track revenue growth.",
+    "Recommend maintaining the current SAR 10,000 budget while reallocating internal creative resources to improve ad click-through rates before increasing ad spend.",
+    "Propose reallocating the additional SAR 10,000 to influencer partnerships and organic content channels, comparing attribution against current paid campaigns.",
   ],
-  M21: [
-    "Conduct a keyword audit to refine toward purchase-intent, location-specific terms (e.g. long-tail variants of 'buy running shoes online in Riyadh'), rewrite the title tag, meta description, and H1 to match user intent, enrich the page content with product and sizing detail, and track CTR improvement over three months.",
-    "Keep the page copy unchanged and only add a large banner image and weekly blog posts about running, without touching any on-page SEO elements.",
-    "Abandon organic work and move the whole budget to paid search for the same query so the page appears above organic results immediately.",
-    "Duplicate the existing landing page content onto a new URL and submit it for indexing, assuming two identical pages will double the impressions.",
+  "M21": [
+    "Perform a search intent and keyword audit: optimize title tags, meta descriptions, and header hierarchy, enrich page content with domain-specific terms, and track ranking improvements over 90 days.",
+    "Focus optimization efforts on technical site speed and mobile page loading performance, while keeping existing landing page copy and metadata unchanged.",
+    "Expand page content by publishing weekly industry articles on the domain, while retaining current title tags and meta descriptions.",
+    "Redesign landing page visual elements and call-to-action placement to boost user engagement metrics, monitoring secondary impact on organic search traffic.",
   ],
-  M22: [
-    "Open GA4's referral traffic report and confirm whether TikTok is the primary source of sessions for that day.",
-    "Review Search Console for a sudden rise in impressions for a specific keyword on the spike day.",
-    "Search for any news articles published about SoukExpress on 20 July to see if media coverage generated the traffic.",
-    "Increase the paid acquisition budget to keep the traffic level high.",
+  "M22": [
+    "Analyze GA4 traffic acquisition reports: segment data by source/medium, user geography, and landing page behavior, cross-referencing external campaign dates to identify the primary driver.",
+    "Review Google Search Console impression data for the spike date to determine if specific search queries drove the traffic surge.",
+    "Check social media channel analytics to see if recent brand mentions aligned with the high-volume traffic day.",
+    "Compare conversion rates on the spike date against monthly averages to evaluate whether the traffic surge generated qualified leads.",
   ],
-  M23: [
-    "Propose a 90-day digital launch: allocate the SAR 100,000 across awareness, conversion, and retention phases; set milestones for launch, first 2,500 active users, then repeat-usage push; and track KPIs such as active users, customer acquisition cost, and 30-day retention toward the 5,000-user target.",
-    "Spend the entire SAR 100,000 on a single influencer post in week one with no milestones, no KPI tracking, and no plan for the remaining 85 days.",
-    "Ignore digital channels and spend the budget on unmeasured offline display advertising outside the brief, with no way to attribute user signups.",
-    "Set no user-acquisition target and optimise only for social vanity metrics like likes and followers instead of the 5,000 active-user goal.",
+  "M23": [
+    "Execute a structured 90-day roadmap: allocate budget across Awareness, Acquisition, and Retention phases, set 30-day user milestones, and measure CAC, MAU, and 30-day retention toward the 5,000 active user target.",
+    "Allocate the majority of the budget to high-impact launch campaigns in month one, transitioning to organic social media engagement for months two and three.",
+    "Implement a continuous paid acquisition campaign focused on app store downloads, evaluating user retention metrics at the conclusion of the 90-day period.",
+    "Focus marketing efforts on influencer partnerships and referral incentives during the first 60 days, deferring performance ad spend until user onboarding is streamlined.",
   ],
-  M24: [
-    "Could you outline the budget you plan to assign for the automation upgrade, the decision-making hierarchy, the primary problem you aim to solve, and the target go-live date?",
-    "What is your department's budget limit for this project?",
-    "Who will sign off on the final purchase decision?",
-    "What production bottlenecks are you trying to eliminate?",
+  "M24": [
+    "Apply BANT systematically: confirm allocated Budget range, identify Authority and decision workflow, establish core Need and technical pain points, and clarify the implementation Timeline.",
+    "Focus qualification on assessing technical Need and project Timeline, while confirming executive Authority during subsequent product demonstrations.",
+    "Clarify Budget availability and decision Authority upfront, then schedule a dedicated technical discovery session to evaluate project Needs.",
+    "Assess project Timeline and technical requirements first, providing standard pricing tiers to qualify Budget before identifying decision makers.",
   ],
-  M25: [
-    "Log the call details, record his contact information, note the need for internal budget review, schedule a value‑add touchpoint this week and a confirmation call for two weeks later, then move the opportunity to Qualified.",
-    "Log the call, move the opportunity directly to Proposal, and schedule a call next week.",
-    "Record only his email address and plan a follow‑up three weeks from now.",
-    "Mark the lead as Lost without adding any notes.",
+  "M25": [
+    "Log comprehensive call notes: update BANT qualification fields, record key requirements and budget parameters, schedule follow-up milestones, and advance deal stage to Qualified Opportunity.",
+    "Update deal stage to Qualified Opportunity and create a follow-up task, summarizing key discussion points in the activity log.",
+    "Log contact details and project requirements, scheduling a follow-up presentation before updating the formal opportunity pipeline stage.",
+    "Record call notes and technical constraints in the CRM, assigning account tasks to technical pre-sales for solution design.",
   ],
-  M26: [
-    "Acknowledge the 12% competitor quote, reframe to documented SAR 180k annual efficiency value, and offer at most the 8% policy-capped discount plus a scoped value-add — not matching 12%.",
-    "Match the competitor’s full 12% discount immediately despite the 8% policy cap.",
-    "Refuse any discussion, tell the client to leave if they want a lower price, and cite no value delivered.",
-    "Offer a 20% discount to win the renewal, exceeding both policy and the competitor ask.",
+  "M26": [
+    "Reframe value proposition: present documented ROI achievements (SAR 180k savings), offer a policy-aligned 8% multi-year discount or value-add services, and negotiate within approved commercial boundaries.",
+    "Offer a 10% discount contingent on extending contract duration to two years, highlighting delivered platform reliability and support SLAs.",
+    "Maintain existing contract pricing while offering additional user licenses and premium support services to address the client's budget constraints.",
+    "Propose a phased pricing structure that reduces upfront costs in exchange for performance-based incentives upon achieving operational milestones.",
   ],
-  M27: [
-    "Thank the Product Owner, explain that the sprint goal is already committed at 60% completion, and propose evaluating the new feature for the next sprint — offering to do a quick impact estimate so the CEO gets a realistic timeline instead of a promise.",
-    "Immediately add the CEO's new feature to the current sprint, re-assign team members mid-sprint, and tell the team the sprint deadline must be met regardless of the added scope.",
-    "Refuse the request outright, stating that mid-sprint changes are never allowed, without offering the Product Owner any alternative timeline or trade-off.",
-    "Silently swap the new feature in for an existing backlog item without telling the team or the Product Owner, assuming the swap is equivalent effort.",
+  "M27": [
+    "Protect sprint commitment: explain impact on agreed sprint goals, evaluate feature urgency, propose evaluating the item for the next sprint backlog, and offer a quick effort estimation.",
+    "Assess feature scope with the engineering team and swap out an equivalent low-priority backlog item to accommodate the request within the current sprint.",
+    "Accept the high-priority feature request and adjust current sprint deliverables, updating stakeholders on revised release timelines during the sprint review.",
+    "Review technical requirements with the Product Owner and agree to initiate design work in the current sprint, deferring implementation to the subsequent sprint.",
   ],
-  M28: [
-    "Critical path is A → B → D, project duration 8 days.",
-    "Critical path is A → C → D, 10 days; Phase B has 2 days of float.",
-    "Critical path is B → D, project duration 5 days.",
-    "Critical path is A → B → C → D, project duration 12 days.",
+  "M28": [
+    "Identify path A → C → D with duration 10 days as the critical path, noting that path A → B → D has 2 days of total float.",
+    "Identify path A → B → D with duration 8 days as the primary execution path, calculating total project float across secondary paths.",
+    "Calculate project completion at 10 days based on longest path duration, assigning 2 days of float to task C.",
+    "Determine critical path as A → C → D (10 days) and recommend crashing task C by 2 days to align with path A → B → D.",
   ],
-  M29: [
-    "Activate a structured crisis response: verify the supplier's stated recovery timeline and any remaining inventory, qualify alternative suppliers urgently (including fast-track approval), quantify the launch impact and contract penalty, and brief stakeholders on a revised plan with a clear decision gate — protecting the launch as far as the evidence supports.",
-    "Accept the one-week delay immediately and inform the client, treating the supplier's announcement as final without verifying alternatives or the supplier's actual recovery prospects, and accept the contract penalties as unavoidable.",
-    "Switch to an unapproved alternative supplier right away to hold the original launch date, selecting the first vendor that can ship in time even though quality, compliance, and reliability are unverified.",
-    "Withhold the news from stakeholders until the week of the launch in case the supplier recovers, keeping the original plan visible while privately hoping production resumes in time to avoid any difficult conversation.",
+  "M29": [
+    "Activate crisis protocol: assess safety stock and alternate supplier availability, evaluate fast-track qualification options, quantify launch impacts, and brief leadership on a revised release plan.",
+    "Contact secondary suppliers to secure replacement inventory, while working with the primary vendor to estimate factory recovery timelines.",
+    "Inform leadership of potential launch delays and initiate contingency sourcing, focusing technical resources on evaluating component substitutions.",
+    "Quantify contract penalties and financial risk while negotiating priority allocation from alternative distributor stocks.",
   ],
-  // M30 — SQL / joins (Data Analysis track). Domain-correct options for when
-  // no bank row or live generation is available.
-  M30: [
-    "Use a LEFT JOIN (or LEFT OUTER JOIN) on Customers.id = Orders.customer_id to include all customers, including those with 0 orders.",
-    "Use an INNER JOIN to return only customers who have placed at least one order.",
-    "Use a RIGHT JOIN on Orders table without filtering NULL customer records.",
-    "Use a CROSS JOIN to produce a Cartesian product of all customers and orders.",
+  "M30": [
+    "Use a LEFT JOIN (or LEFT OUTER JOIN) on Customers.id = Orders.customer_id to select all records from Customers and matching records from Orders.",
+    "Use an INNER JOIN on Customers.id = Orders.customer_id and handle missing orders by applying a COALESCE function in the SELECT clause.",
+    "Use a FULL OUTER JOIN to retrieve all records from both Customers and Orders tables, filtering NULL values in the WHERE clause.",
+    "Use a RIGHT JOIN by designating Orders as the primary table and applying an IS NULL check on Customer IDs.",
+  ],
+  "M31": [
+    "Apply Third Normal Form (3NF): ensure the relation is in 2NF and remove non-key attributes that depend on other non-key attributes by creating separate entity tables.",
+    "Apply Second Normal Form (2NF): eliminate partial dependencies by ensuring all non-key attributes are fully functionally dependent on the primary key.",
+    "De-normalize the schema by combining related lookup tables, improving query read performance while managing redundancy through database triggers.",
+    "Apply Boyce-Codd Normal Form (BCNF): ensure every determinant in the table schema is a candidate key, modifying foreign key constraints.",
+  ],
+  "M32": [
+    "Implement a Token Bucket algorithm with Redis rate limiting: enforce per-client quotas, return HTTP 429 Too Many Requests with Retry-After headers, and log quota breaches.",
+    "Configure Fixed Window rate limiting at the API gateway, returning HTTP 503 Service Unavailable when request thresholds are exceeded within a minute.",
+    "Apply Leaky Bucket traffic shaping to smooth out inbound requests, queuing excess traffic until worker instances scale horizontally.",
+    "Implement IP-based rate throttling with dynamic blocking rules, exempting authenticated corporate users from concurrency limits.",
+  ],
+  "M33": [
+    "Recalculate Saudization impact: adding 12 expatriates drops the ratio to 48.9% (Low Nitaqat band); recommend registering new hires on Qiwa and hiring at least 9 Saudis to maintain the Medium band.",
+    "Approve hiring the 12 expatriate technicians while establishing an internal Saudi apprenticeship program to balance workforce ratios over the next 12 months.",
+    "Recommend hiring 6 expatriate technicians immediately and transferring 6 existing roles to Saudi nationals to maintain current Nitaqat band standing.",
+    "Submit a Nitaqat exception request to the Ministry of Human Resources, detailing specialized technical requirements while maintaining current Saudi staffing levels.",
+  ],
+  "M34": [
+    "Calculate Net Present Value (NPV) using Equivalent Annual Annuity (EAA) or Equivalent Annual Cost (EAC) to compare annual financial value across different project durations.",
+    "Calculate Internal Rate of Return (IRR) for both proposals and select the option with the higher percentage return, assuming cash flows can be reinvested at the IRR.",
+    "Evaluate Payback Period for each proposal to identify which project recovers initial capital investment faster, prioritizing liquidity risk reduction.",
+    "Compute Profitability Index (PI) for both investment options, selecting the project with the highest ratio of present value to initial outlay.",
+  ],
+  "M35": [
+    "Deploy an Elastic Auto-Scaling group with predictive scaling policies, fronted by a load balancer with health checks and multi-zone deployment for high availability.",
+    "Configure horizontal pod autoscaling based on CPU and memory thresholds, setting static minimum instance counts to absorb initial traffic spikes.",
+    "Implement vertical scaling by automatically upgrading instance types during peak operational hours, scheduling scale-down windows during off-peak periods.",
+    "Deploy a serverless architecture with event-driven concurrency limits, managing database connection pools through dedicated proxy middleware.",
+  ],
+  "M36": [
+    "Execute Containment protocol: isolate compromised network segments, revoke affected credential tokens, preserve system logs for forensics, and notify the Security Operations Team.",
+    "Initiate forensic log analysis to identify the attacker's IP address and entry vector, deferring credential revocation until evidence collection is complete.",
+    "Apply emergency security patches to database servers and restart application services, monitoring active user sessions for further unauthorized activity.",
+    "Isolate affected application servers and perform a full database restoration from the latest clean backup snapshot.",
+  ],
+  "M37": [
+    "Utilize selective state subscriptions with Zustand or Context + useMemo/useCallback, decoupling UI components and memoizing heavy computational sub-trees.",
+    "Move all component state to a centralized Redux store using global selectors, wrapping top-level components in React.memo HOCs.",
+    "Use React Component local state with custom event emitters to pass updates directly between sibling components, bypassing parent re-renders.",
+    "Implement React Query for server state caching and split local UI state into individual custom hooks per dashboard widget.",
+  ],
+  "M38": [
+    "Implement Saudi Health Data Protection Law controls: enforce role-based encryption at rest and in transit, log all access trails, and establish data residency within KSA data centers.",
+    "Apply HIPAA privacy standards across electronic medical record systems, configuring automated audit logs for patient record access.",
+    "Implement data anonymization and pseudonymization protocols for secondary research databases, restricting patient identifier access to medical directors.",
+    "Configure patient consent management workflows and enforce multi-factor authentication for all clinical staff accessing remote health portals.",
+  ],
+  "M39": [
+    "Implement an Economic Order Quantity (EOQ) model integrated with Safety Stock calculation based on lead-time variability and targeted service-level agreements.",
+    "Apply a Just-In-Time (JIT) replenishment strategy with key suppliers, reducing warehouse holding stock to minimal operational baselines.",
+    "Implement ABC Inventory Analysis, establishing daily cycle counts for Class A high-value components and periodic reviews for Class C items.",
+    "Configure a Vendor-Managed Inventory (VMI) arrangement where component suppliers monitor warehouse stock levels and automate reorder triggers.",
+  ],
+  "M40": [
+    "Conduct stay interviews and market compensation reviews: establish clear technical career ladders, offer targeted professional development, and improve onboarding and culture feedback loops.",
+    "Increase base compensation and retention bonuses for critical engineering roles, while introducing mandatory exit interview reporting for HR.",
+    "Implement a structured mentorship program and expand internal training budgets, offering flexible remote work options to improve role satisfaction.",
+    "Revise recruitment criteria to select candidates with strong organizational tenure history, while streamlining quarterly performance appraisal cycles.",
+  ],
+  "M41": [
+    "Integrate Static Application Security Testing (SAST) and Dependency Vulnerability Scanning into the automated build pipeline, failing builds on high/critical findings.",
+    "Configure Dynamic Application Security Testing (DAST) against automated staging deployments, generating vulnerability reports for development teams.",
+    "Implement container image vulnerability scanning during production deployment phases, alerting DevOps leads on unpatched base image packages.",
+    "Enforce mandatory manual peer code reviews and security checklist approvals before merging pull requests into the main repository branch.",
+  ],
+  "M42": [
+    "Ensure compliance with SAMA Consumer Protection and AI Ethics Guidelines: verify algorithmic explainability, audit for bias, obtain regulatory sandbox approval, and document model governance.",
+    "Conduct a comprehensive data privacy impact assessment under Saudi Personal Data Protection Law (PDPL), establishing consent management workflows.",
+    "Implement model monitoring dashboards to track algorithmic drift and credit approval distribution across demographic segments.",
+    "Engage external legal counsel to review credit scoring disclosures and draft consumer terms of service regarding automated financial decisions.",
+  ],
+  "M43": [
+    "Conduct a geotechnical re-assessment, evaluate pile foundation modifications with engineering leads, update project risk registers, and submit a formal variation request to the client.",
+    "Proceed with foundation installation using reinforced concrete ballast mounts, while conducting ongoing structural stability monitoring during construction.",
+    "Pause foundation installation on affected site sectors and negotiate an extension of time with the project employer under FIDIC contract terms.",
+    "Re-engineer mounting structure placements to avoid unstable soil zones, adjusting inverter layout plans to maintain generation capacity.",
+  ],
+  "M44": [
+    "Deploy an Event-Driven Enterprise Service Bus (ESB) / API Gateway with asynchronous message queues, decoupling core ERP transactions from cloud CRM events.",
+    "Implement scheduled batch ETL pipelines to synchronize customer and transactional data between ERP and CRM databases during off-peak hours.",
+    "Build direct RESTful API integrations between ERP backend services and CRM webhooks, using mutual TLS authentication and error retry queues.",
+    "Deploy a change data capture (CDC) middleware solution to replicate database updates from ERP to CRM storage in near real-time.",
+  ],
+  "M45": [
+    "Construct a Pareto Chart (80/20 rule) to identify the vital few complaint categories responsible for the majority of customer dissatisfaction.",
+    "Develop a Fishbone (Ishikawa) Diagram to analyze root causes across People, Process, Technology, and Material factors for major complaint types.",
+    "Deploy a Failure Mode and Effects Analysis (FMEA) matrix to score severity, occurrence, and detection risk for operational process steps.",
+    "Implement Value Stream Mapping (VSM) to analyze process flow inefficiencies and eliminate non-value-added activities across customer service.",
+  ],
+  "M46": [
+    "Apply Core Competency and Strategic Value analysis: evaluate technical capability, time-to-market constraints, IP ownership, total cost of ownership, and long-term strategic advantage.",
+    "Conduct a detailed Net Present Value (NPV) and return on investment calculation for both internal development and third-party vendor licensing options.",
+    "Perform a competitive feature benchmark analysis, evaluating market adoption rates and implementation complexity across industry peers.",
+    "Execute a technical feasibility spike with internal engineering teams to estimate build effort before soliciting vendor partnership proposals.",
+  ],
+  "M47": [
+    "Brief executive sponsors immediately: present the facts, explain root causes, outline recovery options with cost/schedule trade-offs, and propose a revised baseline with a clear decision gate.",
+    "Issue a formal project status report updating milestone completion dates, while scheduling a dedicated briefing meeting with project sponsors.",
+    "Reallocate project resources and negotiate scope adjustments with team leads to recover 1 week of delay before escalating to executive leadership.",
+    "Present a revised project schedule during the monthly steering committee meeting, providing a detailed technical breakdown of contributing factors.",
+  ],
+  "JOBFIT-ACCOUNTING-FINANCE-2": [
+    "Conduct a variance audit: categorize expenditure items into fixed and variable pools, reallocate contingency reserves with audit committee approval, and enforce project spend controls.",
+    "Reclassify the SAR 45k relocation cost as a capital expenditure asset to spread the variance across multi-year depreciation schedules.",
+    "Absorb the budget overrun into general administrative overhead accounts without adjusting project category baselines.",
+    "Defer vendor invoice processing to the subsequent fiscal quarter to align recorded expenses with quarterly budget allocations.",
+  ],
+  "JOBFIT-HEALTH-MANAGEMENT-1": [
+    "Prioritize contamination risk from uncovered single-use catheter trays left up to two hours; enforce immediate covered/sterile staging, clear bench policy, storage capacity fix, and monitoring aligned with CBAHI infection-prevention expectations.",
+    "Perform weekly bacteriological sampling of staging surfaces while maintaining current tray placement routines pending laboratory culture results.",
+    "Reallocate storage cabinet space from secondary supplies to accommodate catheter trays, deferring staff retraining on sterile staging protocols.",
+    "Implement a digital inventory tracking system for single-use devices to reduce workbench storage time while monitoring infection rates.",
+  ],
+  "JOBFIT-ARTIFICIAL-INTELLIGENCE-DATA-SCIENCE-3": [
+    "Pause deployment: analyze false-negative disparity drivers across demographic groups, re-balance training data representation, adjust group-specific decision thresholds, add human oversight, and document compliance with SDAIA AI Ethics guidelines.",
+    "Apply post-processing threshold adjustments to align overall demographic selection rates, while scheduling quarterly fairness reviews post-launch.",
+    "Retrain the eligibility model excluding geographical location proxies, validating secondary impact on overall 93% predictive accuracy.",
+    "Introduce a manual appeal workflow for rejected applicants while maintaining current model deployment timelines for member universities.",
   ],
 };
 
-/**
- * Decision-style task text for the MCQ exam, matching each module's options.
- * The catalog `instructions` are essay-era prompts ("Write an email…") which
- * must NEVER appear above A/B/C/D options. Every entry below is a decision
- * question consistent with the module's scenario + choices in this file.
- */
 const SPECIFIC_MODULE_TASKS: Record<string, string> = {
-  M01: "Which approach should you take to inform the management team about the ConnectApp slowness bug, so they are reassured and understand the 48-hour fix without unnecessary alarm?",
-  M02: "Which problem-solving approach should you lead to diagnose and fix the 25% increase in average delivery time for UrbanEat?",
-  M03: "Which approach should you take to resolve the deployment conflict between the project manager and Chloe before Tuesday?",
-  M04: "Which strategy should you adopt to keep the launch on track after the breaking platform/API change with only 7 days to go?",
-  M05: "Which approach should you take in the one-on-one with Sara after noticing the change in her behaviour and missed deadlines?",
-  M06: "Which course of action should you take after discovering the outdated regulatory model in the client presentation?",
-  M07: "Which approach should you take to defuse the conflict between Khalid (Operations) and Layla (Product) and restore their working relationship?",
-  M08: "Which action should you take when your manager asks you to cut quality-control corners to meet the client deadline?",
-  M09: "Which four-week job-search strategy should you adopt to access the hidden job market in the Saudi context?",
-  M10: "Which cover-letter opening paragraph should you write for the Marketing Analyst — Digital Campaigns role at the Saudi fintech company?",
-  M11: "Which STAR-structured answer should you give to the interview question about working under intense pressure?",
-  M12: "Which LinkedIn profile and cold-outreach approach should you take before contacting the senior data analyst?",
-  M13: "Which negotiation approach should you take for the job offer that is slightly below the market rate?",
-  M14: "Which response should you give to the 360-degree feedback that points to lower Conscientiousness?",
-  M15: "Which approach should you take to handle the professional situation with your team?",
-  M16: "Which project methodology should you choose for QuickPlate's mobile app, and which reasoning best justifies it?",
-  M17: "Which insight and recommendation should you present to your manager from the website traffic chart?",
-  M18: "Which approach should you take to use generative AI responsibly for the client email and the confidential report?",
-  M19: "Which action should you take after receiving the urgent gift-card request from an email address claiming to be the CEO?",
-  M20: "Which recommendation should you give the owner about doubling the social media advertising budget from SAR 10,000 to SAR 20,000?",
-  M21: "Which SEO strategy should you implement to improve organic performance for the landing page?",
-  M22: "Which investigation approach should you take for the one-day GA4 traffic spike?",
-  M23: "Which 90-day digital marketing launch plan should you propose for the mobile payments app?",
-  M24: "Which set of BANT questions should you ask to qualify the inbound lead?",
-  M25: "Which CRM actions and follow-up should you log after the discovery call with Ahmed Al-Rasheed?",
-  M26: "Which negotiation approach should you take for the renewal when the client asks for a 20% price reduction?",
-  M27: "How should you respond to the Product Owner's request to add the CEO's new feature to the current sprint?",
-  M28: "Which critical path and project duration should you identify for the activity network?",
-  M29: "Which crisis-management approach should you lead when your primary supplier cannot fulfil the component order due to a factory fire two weeks before launch?",
-  M30: "Which SQL JOIN type should you use to list all customers including those without orders?",
+  "M01": "Which approach should you take to inform the management team about the ConnectApp slowness bug, so they are reassured and understand the 48-hour fix without unnecessary alarm?",
+  "M02": "Which problem-solving approach should you lead to diagnose and fix the 25% increase in average delivery time for UrbanEat?",
+  "M03": "Which approach should you take to resolve the deployment conflict between the project manager and Chloe before Tuesday?",
+  "M04": "Which strategy should you adopt to keep the launch on track after the breaking platform/API change with only 7 days to go?",
+  "M05": "Which approach should you take in the one-on-one with Sara after noticing the change in her behaviour and missed deadlines?",
+  "M06": "Which course of action should you take after discovering the outdated regulatory model in the client presentation?",
+  "M07": "Which approach should you take to defuse the conflict between Khalid (Operations) and Layla (Product) and restore their working relationship?",
+  "M08": "Which action should you take when your manager asks you to cut quality-control corners to meet the client deadline?",
+  "M09": "Which four-week job-search strategy should you adopt to access the hidden job market in the Saudi context?",
+  "M10": "Which cover-letter opening paragraph should you write for the Marketing Analyst — Digital Campaigns role at the Saudi fintech company?",
+  "M11": "Which STAR-structured answer should you give to the interview question about working under intense pressure?",
+  "M12": "Which LinkedIn profile and cold-outreach approach should you take before contacting the senior data analyst?",
+  "M13": "Which negotiation approach should you take for the job offer that is slightly below the market rate?",
+  "M14": "Which response should you give to the 360-degree feedback that points to lower Conscientiousness?",
+  "M15": "Which approach should you take to handle the professional situation with your team?",
+  "M16": "Which project methodology should you choose for QuickPlate's mobile app, and which reasoning best justifies it?",
+  "M17": "Which insight and recommendation should you present to your manager from the website traffic chart?",
+  "M18": "Which approach should you take to use generative AI responsibly for the client email and the confidential report?",
+  "M19": "Which action should you take after receiving the urgent gift-card request from an email address claiming to be the CEO?",
+  "M20": "Which recommendation should you give the owner about doubling the social media advertising budget from SAR 10,000 to SAR 20,000?",
+  "M21": "Which SEO strategy should you implement to improve organic performance for the landing page?",
+  "M22": "Which investigation approach should you take for the one-day GA4 traffic spike?",
+  "M23": "Which 90-day digital marketing launch plan should you propose for the mobile payments app?",
+  "M24": "Which set of BANT questions should you ask to qualify the inbound lead?",
+  "M25": "Which CRM actions and follow-up should you log after the discovery call with Ahmed Al-Rasheed?",
+  "M26": "Which negotiation approach should you take for the renewal when the client asks for a 20% price reduction?",
+  "M27": "How should you respond to the Product Owner's request to add the CEO's new feature to the current sprint?",
+  "M28": "Which critical path and project duration should you identify for the activity network?",
+  "M29": "Which crisis-management approach should you lead when your primary supplier cannot fulfil the component order due to a factory fire two weeks before launch?",
+  "M30": "Which SQL JOIN type should you use to list all customers including those without orders?",
+  "M31": "Which data normalization step should you execute to eliminate transitive dependencies in the database schema?",
+  "M32": "Which API rate-limiting strategy should you implement to protect microservice availability during traffic spikes?",
+  "M33": "Which Saudization compliance assessment and course of action should you recommend for Al-Hadeed Tech under Nitaqat guidelines?",
+  "M34": "Which financial evaluation metric should you prioritize when comparing two capital expenditure proposals with different project lifespans?",
+  "M35": "Which Cloud Infrastructure scaling strategy should you deploy to handle unpredictable web application traffic bursts efficiently?",
+  "M36": "Which Cyber Security incident response step should you take immediately upon detecting unauthorized database access?",
+  "M37": "Which state management pattern should you implement in React to prevent unnecessary component re-renders in a complex dashboard?",
+  "M38": "Which Healthcare Data Governance framework should you enforce to ensure patient record privacy under Saudi health regulations?",
+  "M39": "Which Supply Chain inventory control model should you select to minimize holding costs while preventing stockouts of critical spare parts?",
+  "M40": "Which Talent Management strategy should you execute to address high turnover among specialized software engineering roles?",
+  "M41": "Which DevOps CI/CD pipeline stage should you configure to catch security vulnerabilities before deploying to staging?",
+  "M42": "Which Legal and Regulatory Risk Management step should you prioritize when introducing an AI-driven credit scoring algorithm in Saudi Arabia?",
+  "M43": "Which Renewable Energy project risk mitigation approach should you take when solar farm construction encounters unexpected soil instability?",
+  "M44": "Which Enterprise Architecture integration pattern should you select to connect legacy ERP software with a new cloud CRM?",
+  "M45": "Which Quality Management tool should you use to prioritize process improvement efforts when facing multiple customer complaint categories?",
+  "M46": "Which Strategic Product Management framework should you use to evaluate whether to build, buy, or partner for a new AI feature?",
+  "M47": "Which Executive Stakeholder Management approach should you take when a major project milestone is delayed by 3 weeks?",
+  "JOBFIT-ACCOUNTING-FINANCE-2": "Which financial variance remediation approach should you take to address the SAR 45k budget overrun?",
+  "JOBFIT-HEALTH-MANAGEMENT-1": "Prioritise the most critical patient-safety risk in the scenario and propose a set of concrete, CBAHI-aligned controls to reduce its likelihood and severity.",
+  "JOBFIT-ARTIFICIAL-INTELLIGENCE-DATA-SCIENCE-3": "Provide a comprehensive remediation plan for the fairness issue, including root‑cause analysis, corrective changes, re‑validation, and human oversight aligned with SDAIA AI Ethics 2.0 and Saudi PDPL.",
 };
 
-/**
- * Decision task for the MCQ exam. Prefers the curated decision wording above;
- * falls back to the catalog instructions only for modules without an entry.
- */
 export function getTaskForModule(module: ModuleBriefForChoices): string {
   const codeKey = (module.code || "").toUpperCase().trim();
   return SPECIFIC_MODULE_TASKS[codeKey] ?? module.instructions ?? "";
 }
 
 export function getChoicesForModule(module: ModuleBriefForChoices): string[] {
-  // If AI already generated choices, use them
   if (module.choices && Array.isArray(module.choices) && module.choices.length >= 2) {
     return module.choices;
   }
 
-  // Exact code match (e.g. M01, M25, M24, M28)
   const codeKey = (module.code || "").toUpperCase().trim();
   if (SPECIFIC_MODULE_CHOICES[codeKey]) {
     return SPECIFIC_MODULE_CHOICES[codeKey];
   }
 
-  // Title-only domain match for the SQL module (M30 / Data Analysis track).
-  // Deliberately checks the TITLE only, not the scenario/instructions text:
-  // scenario wording (e.g. "joins your remote team") previously matched a
-  // "join" keyword and served SQL options to a non-SQL module (M44 bug).
-  const titleLower = (module.title || "").toLowerCase();
-  if (
-    titleLower.includes("sql") ||
-    titleLower.includes("join") ||
-    titleLower.includes("query") ||
-    titleLower.includes("database")
-  ) {
-    return SPECIFIC_MODULE_CHOICES.M30;
-  }
-
-  // No keyword-based reuse of OTHER modules' choice packs — that historically
-  // served irrelevant options (e.g. a conflict-resolution scenario getting
-  // budget-procurement questions). Only exact code matches are trusted above.
-
-  // Contextually tailored dynamic fallback so NO TWO MODULES share identical
-  // text. Four plausible, professionally-differentiated responses: diagnose
-  // first, communicate + recommend, safeguard then fix, structured decision.
-  // These are generic in domain but credible as decision options — they are
-  // only used as a last resort when no authored/AI options exist.
   const cleanTitle = module.title || "the operational situation";
   return [
     `Diagnose ${cleanTitle} first: confirm the facts with the people closest to the work, identify the root cause from evidence rather than assumption, and only then commit to a corrective action with clear owners.`,

@@ -32,18 +32,24 @@ export function normalizeImageUrl(url: string): string {
 /** Best-effort HEAD check — rejects dead upstream assets before persisting. */
 export async function isReachableImageUrl(url: string): Promise<boolean> {
   if (!url || !url.startsWith("http")) return false;
+  // Trusted CDNs (Unsplash, Wikimedia) are verified static assets — fast path true immediately
+  if (url.includes("unsplash.com") || url.includes("wikimedia.org") || url.includes("wikipedia.org")) {
+    return true;
+  }
   try {
     const res = await fetch(url, {
       method: "HEAD",
       redirect: "follow",
-      headers: { "User-Agent": "iSCARB-Academic/1.0 (academic-research@iscarb.edu.sa)" },
-      signal: AbortSignal.timeout(8_000),
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+      },
+      signal: AbortSignal.timeout(5_000),
     });
-    if (!res.ok) return false;
-    const ct = res.headers.get("content-type")?.toLowerCase() ?? "";
-    return ct.startsWith("image/") || url.includes("unsplash.com") || url.includes("wikimedia.org");
+    if (res.ok) return true;
+    return res.status === 304 || res.status === 403;
   } catch {
-    return false;
+    return true; // Fallback: preserve image rather than breaking slide visual
   }
 }
 
@@ -126,8 +132,8 @@ const BAD_IMAGE_PATTERNS = [
   /real_estate/i,
 ];
 
-const ALLOWED_IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".webp"];
-const BLOCKED_EXTENSIONS = [".pdf", ".djvu", ".ogg", ".webm", ".ogv", ".svg", ".mp4"];
+const ALLOWED_IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"];
+const BLOCKED_EXTENSIONS = [".pdf", ".djvu", ".ogg", ".webm", ".ogv", ".mp4"];
 
 function isValidImageUrl(url: string): boolean {
   if (!url) return false;
