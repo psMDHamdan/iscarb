@@ -4,7 +4,7 @@ import "server-only";
 // iSCARB standardises on DeepSeek via the NVIDIA catalog. Override per-call
 // with the `model` option, or globally with OPENAI_CHAT_MODEL.
 export const DEFAULT_AI_MODEL =
-  process.env.OPENAI_CHAT_MODEL || "google/gemma-2-9b-it";
+  process.env.OPENAI_CHAT_MODEL || "openai/gpt-oss-20b";
 
 // ─── NVIDIA Multi-Key Round-Robin Load Balancer ─────────────────────────
 let globalNvidiaKeyCounter = 0;
@@ -181,18 +181,16 @@ export async function getClient() {
       completions: {
         create: async (body: any) => {
           const NVIDIA_MODEL_MAP: Record<string, string> = {
-            // Legacy OpenAI-style slugs → working NVIDIA NIM models. The iSCARB
-            // default (openai/gpt-oss-20b, via DEFAULT_AI_MODEL) is NOT remapped
-            // — it is served to NVIDIA as-is (the 404 fix in the handover).
-            // NOTE: meta/llama-3.3-70b-instruct hangs (never responds) on this
-            // endpoint — gpt-4o-mini therefore resolves to the proven-working
-            // default instead of the old generic 70B fallback.
-            "gpt-4o": "google/gemma-2-9b-it",
-            "gpt-4": "google/gemma-2-9b-it",
-            "gpt-3.5-turbo": "google/gemma-2-9b-it",
-            "gpt-4o-mini": "google/gemma-2-9b-it",
-            "openai/gpt-oss-20b": "google/gemma-2-9b-it",
-            "deepseek-r1": "google/gemma-2-9b-it",
+            // Legacy OpenAI-style slugs → working NVIDIA NIM models.
+            // openai/gpt-oss-20b IS the primary model and must NOT be remapped.
+            "gpt-4o": "openai/gpt-oss-20b",
+            "gpt-4": "openai/gpt-oss-20b",
+            "gpt-3.5-turbo": "openai/gpt-oss-20b",
+            "gpt-4o-mini": "openai/gpt-oss-20b",
+            "deepseek-r1": "openai/gpt-oss-20b",
+            "google/gemma-2-9b-it": "openai/gpt-oss-20b",
+            "meta/llama-3.1-8b-instruct": "openai/gpt-oss-20b",
+            "deepseek-ai/deepseek-r1": "openai/gpt-oss-20b",
           };
 
           let resolvedModel = body.model || DEFAULT_AI_MODEL;
@@ -395,7 +393,9 @@ export async function chatJson(opts: {
       max_tokens: 4096,
       response_format: { type: "json_object" },
     } as never);
-    const content = res?.choices?.[0]?.message?.content ?? "";
+    const content = res?.choices?.[0]?.message?.content
+      ?? res?.choices?.[0]?.message?.reasoning_content
+      ?? "";
     const finishReason = res?.choices?.[0]?.finish_reason ?? undefined;
     const json = extractJson(content);
     if (json && typeof json === "object" && !Array.isArray(json)) {
@@ -443,7 +443,9 @@ export async function chatText(opts: {
       temperature: opts.temperature ?? 0.4,
       model,
     } as never);
-    const content = res?.choices?.[0]?.message?.content ?? "";
+    const content = res?.choices?.[0]?.message?.content
+      ?? res?.choices?.[0]?.message?.reasoning_content
+      ?? "";
     return { content, json: null, usage: res?.usage as never, latencyMs: Date.now() - t0, model, guarded: true };
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : "Unknown error";
@@ -487,7 +489,9 @@ export async function chatVisionJson(opts: {
       response_format: { type: "json_object" },
     } as never);
     
-    const content = res?.choices?.[0]?.message?.content ?? "";
+    const content = res?.choices?.[0]?.message?.content
+      ?? res?.choices?.[0]?.message?.reasoning_content
+      ?? "";
     const finishReason = res?.choices?.[0]?.finish_reason ?? undefined;
     const json = extractJson(content);
     if (json && typeof json === "object" && !Array.isArray(json)) {
@@ -535,7 +539,9 @@ export async function chatJsonRaw(opts: {
       model: resolvedModel,
       max_tokens: 4096,
     } as never);
-    const content = res?.choices?.[0]?.message?.content ?? "";
+    const content = res?.choices?.[0]?.message?.content
+      ?? res?.choices?.[0]?.message?.reasoning_content
+      ?? "";
     const json = extractJson(content);
     return {
       content,
