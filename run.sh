@@ -37,7 +37,7 @@ ok ".env loaded"
 header "Phase 2: Database & Microservice Schemas"
 
 step "Generating Prisma Clients..."
-npx prisma generate
+./node_modules/.bin/prisma generate 2>/dev/null || npx prisma generate
 ok "Prisma schema validated and client generated."
 
 # ── Phase 3: Apache Jena Fuseki & Ontop RDF Triple Store Check ──

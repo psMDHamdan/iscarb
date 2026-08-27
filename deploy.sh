@@ -66,8 +66,8 @@ ok "PostgreSQL and Redis containers running"
 
 # 4. Database Migrations (explicit deploy step)
 log "4. Running Database Migrations..."
-npx prisma generate
-npx prisma db push --accept-data-loss || npx prisma migrate deploy || warn "Database migration completed with warnings."
+./node_modules/.bin/prisma generate 2>/dev/null || npx prisma generate
+./node_modules/.bin/prisma db push --accept-data-loss 2>/dev/null || npx prisma db push --accept-data-loss || warn "Database migration completed with warnings."
 ok "Database schema synchronized"
 
 # 5. Build Docker Image with baked GIT_COMMIT_SHA
