@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
   // @napi-rs/canvas ships native binaries that must not be bundled by webpack
   // (used by the PDF/PPTX parsers for rasterising image-heavy slides).
   serverExternalPackages: ["@napi-rs/canvas"],
+  env: {
+    NEXT_PUBLIC_GIT_COMMIT_SHA: process.env.GIT_COMMIT_SHA || "dev",
+  },
 
   typescript: {
     ignoreBuildErrors: true,
