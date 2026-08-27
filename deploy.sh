@@ -180,6 +180,13 @@ sleep 5
 HEALTH_JSON=$(curl -s http://localhost:3000/api/health || echo "{}")
 echo "Health Response: $HEALTH_JSON"
 
+# 9.5 Clear stale assessment attempts so fresh AI generation triggers
+log "9.5. Clearing stale assessment attempts for fresh AI generation..."
+PGPASSWORD=iscarb_dev_password psql -h localhost -p 5433 -U postgres -d iscarb \
+  -c "DELETE FROM \"AssessmentAttempt\" WHERE status = 'in_progress';" 2>/dev/null \
+  && ok "Stale assessment attempts cleared — fresh AI questions will generate on next visit" \
+  || warn "Could not clear stale attempts (psql not available or DB unreachable — clear manually via the reset-attempt API)"
+
 echo ""
 echo "=========================================================="
 echo "      iSCARB DOCKER PRODUCTION DEPLOYMENT COMPLETE!      "
