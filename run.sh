@@ -36,8 +36,13 @@ ok ".env loaded"
 # ── Phase 2: Microservices Stack & Database Verification ──
 header "Phase 2: Database & Microservice Schemas"
 
+if [ ! -d "node_modules" ]; then
+  step "Installing npm dependencies..."
+  npm ci --no-fund --no-audit 2>/dev/null || npm install --no-fund --no-audit
+fi
+
 step "Generating Prisma Clients..."
-./node_modules/.bin/prisma generate 2>/dev/null || npx prisma generate
+./node_modules/.bin/prisma generate 2>/dev/null || npx prisma@6.19.2 generate
 ok "Prisma schema validated and client generated."
 
 # ── Phase 3: Apache Jena Fuseki & Ontop RDF Triple Store Check ──
