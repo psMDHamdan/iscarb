@@ -253,12 +253,13 @@ export async function generateAllForAttempt(attemptId: string): Promise<AttemptE
   }
 
   let set: AttemptExamSet = existing ?? emptyPreparingSet(specialization, total);
+  const realDone = set.questions.filter((q) => q.validation?.structural && Number.isInteger(q.correctIndex) && q.correctIndex >= 0).length;
   set = {
     ...set,
     version: ATTEMPT_EXAM_SET_VERSION,
     status: "preparing",
     specialization,
-    progress: { done: set.questions.length, total },
+    progress: { done: realDone, total },
     error: null,
   };
   await persistSet(attemptId, set);
