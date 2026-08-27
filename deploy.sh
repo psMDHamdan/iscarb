@@ -54,6 +54,11 @@ grep -q "CERTIFICATE_ID_SECRET" .env || echo 'CERTIFICATE_ID_SECRET="iscarb_prod
 sed -i -E 's/^DATABASE_URL=["'\''\`](.*)["'\''\`]$/DATABASE_URL=\1/g' .env 2>/dev/null || true
 sed -i -E 's/^REDIS_URL=["'\''\`](.*)["'\''\`]$/REDIS_URL=\1/g' .env 2>/dev/null || true
 
+if grep -q "var/run/postgresql" .env 2>/dev/null; then
+    sed -i 's|DATABASE_URL=.*|DATABASE_URL=postgresql://postgres:iscarb_dev_password@localhost:5433/iscarb|g' .env
+    sed -i 's|DIRECT_URL=.*|DIRECT_URL=postgresql://postgres:iscarb_dev_password@localhost:5433/iscarb|g' .env
+fi
+
 # 3. Datastores: PostgreSQL & Redis via Docker Compose
 log "3. Starting PostgreSQL & Redis datastores..."
 docker compose up -d postgres redis 2>/dev/null || docker-compose up -d postgres redis 2>/dev/null || true
