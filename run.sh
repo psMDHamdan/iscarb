@@ -30,6 +30,16 @@ ok "Node $(node --version) • npm $(npm --version)"
 if [ ! -f ".env" ]; then
   [ -f ".env.example" ] && cp .env.example .env && warn "Created .env from .env.example"
 fi
+
+# Auto-detect local unix-socket PostgreSQL vs Docker PostgreSQL port 5433
+if psql -U hamdan -d iscarb -c "SELECT 1;" >/dev/null 2>&1; then
+  sed -i 's|DATABASE_URL=.*|DATABASE_URL="postgresql://hamdan@localhost/iscarb?host=/var/run/postgresql"|g' .env
+  sed -i 's|DIRECT_URL=.*|DIRECT_URL="postgresql://hamdan@localhost/iscarb?host=/var/run/postgresql"|g' .env
+elif ! pg_isready -h localhost -p 5433 >/dev/null 2>&1 && pg_isready -h localhost -p 5432 >/dev/null 2>&1; then
+  sed -i 's|DATABASE_URL=.*|DATABASE_URL="postgresql://postgres:iscarb_dev_password@localhost:5432/iscarb"|g' .env
+  sed -i 's|DIRECT_URL=.*|DIRECT_URL="postgresql://postgres:iscarb_dev_password@localhost:5432/iscarb"|g' .env
+fi
+
 set -a; source .env 2>/dev/null; set +a
 ok ".env loaded"
 
