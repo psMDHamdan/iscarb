@@ -14,7 +14,7 @@ import { db } from "@/lib/db";
 import { getScopedProject } from "@/lib/lecture/review/tenant-guard";
 import { chatJson } from "@/lib/ai-engine";
 
-const MODEL = "openai/gpt-oss-20b";
+const MODEL = "nvidia/nemotron-3-nano-30b-a3b";
 
 const bodySchema = z.object({
   requirementIds: z.array(z.string().min(1)).min(1, "At least one requirement is required"),

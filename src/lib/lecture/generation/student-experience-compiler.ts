@@ -139,6 +139,8 @@ you MUST say so explicitly by setting insufficientSource to true and reducing th
    were found in a patient's genome."
 
 10. QUESTION QUALITY: The interactive prompt must test MECHANISM understanding, not recall.
+11. CONTENT DEPTH VALIDATION: Ensure explanations contain specific, detailed evidence, avoiding shallow generalizations.
+12. FULL SOURCE UTILIZATION: Integrate and synthesize information from ALL provided source blocks where relevant.
     BAD: "What is recombinant cloning?"
     GOOD: "If you cut a plasmid with EcoRI but the insert was cut with BamHI, the sticky ends 
     are incompatible. Which strategy would allow these fragments to still be ligated?"
@@ -176,6 +178,7 @@ you MUST say so explicitly by setting insufficientSource to true and reducing th
     system: systemPrompt + "\n\nReturn ONLY valid JSON matching the exact schema.",
     user: `Generate the student experience JSON for this slide artifact:\n\n${inputPayload}`,
     temperature: 0.2,
+    task: "generation",
   });
 
   const parsed = StudentExperienceSchema.parse(result.json);

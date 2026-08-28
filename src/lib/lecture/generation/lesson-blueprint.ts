@@ -331,7 +331,7 @@ export async function generateLessonBlueprint(
         system: BLUEPRINT_SYSTEM + "\n\nReturn STRICT JSON matching this schema:\n" + BLUEPRINT_SCHEMA,
         user: userPrompt + context,
         temperature: 0.2,
-        model: DEFAULT_AI_MODEL,
+        task: "generation",
       });
 
       const json = (res.json ?? {}) as Record<string, unknown>;

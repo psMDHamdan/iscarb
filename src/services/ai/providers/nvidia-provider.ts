@@ -31,10 +31,10 @@ export class NvidiaProvider implements AIProvider {
 
   // Model alias mapping: legacy OpenAI-style slugs → NVIDIA NIM models
   private static MODEL_MAP: Record<string, string> = {
-    "gpt-4o": "meta/llama-3.1-8b-instruct",
-    "gpt-4": "meta/llama-3.1-8b-instruct",
-    "gpt-3.5-turbo": "meta/llama-3.1-8b-instruct",
-    "gpt-4o-mini": "openai/gpt-oss-20b",
+    "gpt-4o": "nvidia/nemotron-3-nano-30b-a3b",
+    "gpt-4": "nvidia/nemotron-3-nano-30b-a3b",
+    "gpt-3.5-turbo": "nvidia/nemotron-3-nano-30b-a3b",
+    "gpt-4o-mini": "nvidia/nemotron-3-nano-30b-a3b",
     "deepseek-r1": "deepseek-ai/deepseek-r1",
   };
 

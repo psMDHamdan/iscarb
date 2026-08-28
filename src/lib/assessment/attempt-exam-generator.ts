@@ -53,7 +53,7 @@ const MAX_GEN_ATTEMPTS = 2;
 // concurrency cut pre-exam wall time ~40% without 429 saturation.
 const GENERATION_CONCURRENCY = Math.max(
   1,
-  Number.parseInt(process.env.EXAM_PREPARE_CONCURRENCY || "10", 10) || 10,
+  Number.parseInt(process.env.EXAM_PREPARE_CONCURRENCY || "50", 10) || 50,
 );
 
 const inflight = new Map<string, Promise<AttemptExamSet>>();
@@ -229,6 +229,8 @@ async function persistSet(attemptId: string, set: AttemptExamSet): Promise<void>
   await db.assessmentAttempt.update({
     where: { id: attemptId },
     data: { blueprintJson: serializeAttemptExamSet(set) },
+  }).catch((err) => {
+    log.warn({ attemptId, err: err instanceof Error ? err.message : String(err) }, "persistSet ignored update failure (attempt deleted or modified)");
   });
 }
 
@@ -265,95 +267,49 @@ export async function generateAllForAttempt(attemptId: string): Promise<AttemptE
   await persistSet(attemptId, set);
 
   const already = new Map(set.questions.map((q) => [q.code, q]));
+  const isValidQuestion = (q?: AttemptExamQuestion | null): boolean => {
+    if (!q || !q.validation?.structural || !Number.isInteger(q.correctIndex)) return false;
+    if (!q.scenario || q.scenario.includes("...") || q.scenario.length < 15) return false;
+    if (!q.instructions || q.instructions.includes("...") || q.instructions.length < 10) return false;
+    if (!Array.isArray(q.choices) || q.choices.length !== 4) return false;
+    if (q.choices.some(c => !c || c.includes("...") || /^Option\s+[A-D](\s+text)?$/i.test(c))) return false;
+    return true;
+  };
+
   const pending = skeleton.modules.filter((m) => {
     const q = already.get(m.code);
-    return !(q && q.validation?.structural && Number.isInteger(q.correctIndex));
+    return !isValidQuestion(q);
   });
 
   const completed: AttemptExamQuestion[] = skeleton.modules
     .map((m) => already.get(m.code))
-    .filter((q): q is AttemptExamQuestion => Boolean(q && q.validation?.structural));
+    .filter((q): q is AttemptExamQuestion => isValidQuestion(q));
 
-  // ── Batch generation: 4 modules per LLM call instead of 1 ──────────────
-  // This reduces47 individual AI calls to ~12 batched calls, cutting
-  // generation wall time by ~75%. Each batch result is structurally
-  // validated; any failures fall back to single-question retry.
-  const BATCH_GEN_TIMEOUT_MS = 120_000;
-  const batches: AssessmentModuleSpec[][] = [];
-  for (let i = 0; i < pending.length; i += BATCH_SIZE) {
-    batches.push(pending.slice(i, i + BATCH_SIZE));
-  }
-
-  const batchSettled = await mapWithConcurrency(batches, GENERATION_CONCURRENCY, async (batch) => {
-    const batchResults: AttemptExamQuestion[] = [];
+  const settled = await mapWithConcurrency(pending, GENERATION_CONCURRENCY, async (catalog) => {
+    let q: AttemptExamQuestion;
     try {
-      const llmResults = await Promise.race([
-        generateSpecializationQuestionBatch(
-          specialization,
-          batch.map((m) => ({
-            competency: m.focus || m.title,
-            moduleCode: m.code,
-            moduleTitle: m.title,
-            moduleFramework: m.framework,
-          })),
-          [],
-        ),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("batch_timeout")), BATCH_GEN_TIMEOUT_MS),
-        ),
-      ]);
-
-      for (let i = 0; i < batch.length; i++) {
-        const catalog = batch[i]!;
-        const r = llmResults[i];
-        if (r?.ok) {
-          const draft = asDraft(r.mcq);
-          const structural = validateStructuralKey(draft);
-          if (structural.ok) {
-            batchResults.push(questionFromDraft(catalog, draft, "live_ai", {
-              structural: true,
-              independentVerify: false,
-              generateAttempts: 1,
-              verifyAttempts: 0,
-              regenerated: false,
-            }));
-            continue;
-          }
-        }
-        // Batch item failed — fall back to single-question retry
-        try {
-          const q = await generateValidatedSlot(catalog, specialization);
-          batchResults.push(q);
-        } catch {
-          log.warn({ code: catalog.code }, "batch + single retry both failed — bank fallback");
-          batchResults.push(await generateBankFallback(catalog, specialization));
-        }
-      }
+      q = await generateValidatedSlot(catalog, specialization);
     } catch (err) {
-      // Entire batch failed — fall back to single-question for each
-      log.warn({ error: err instanceof Error ? err.message : String(err) }, "batch generation failed — falling back to single");
-      for (const catalog of batch) {
-        try {
-          const q = await generateValidatedSlot(catalog, specialization);
-          batchResults.push(q);
-        } catch {
-          batchResults.push(await generateBankFallback(catalog, specialization));
-        }
-      }
+      log.warn({ code: catalog.code, err: err instanceof Error ? err.message : String(err) }, "slot generation failed after retries — bank fallback");
+      q = await generateBankFallback(catalog, specialization);
     }
-    return batchResults;
+    already.set(q.code, q);
+
+    // Live progress persist: update DB immediately so student polling UI sees progress count update live
+    const currentQuestions = skeleton.modules.map(m => already.get(m.code) ?? emptyPreparingSet(specialization, total).questions.find(p => p.code === m.code)!);
+    const readyDone = currentQuestions.filter(q => q.validation?.structural && Number.isInteger(q.correctIndex) && q.correctIndex >= 0).length;
+    await persistSet(attemptId, {
+      version: ATTEMPT_EXAM_SET_VERSION,
+      status: "preparing",
+      specialization,
+      progress: { done: readyDone, total },
+      questions: currentQuestions,
+      error: null,
+    }).catch(() => { });
+
+    return q;
   });
 
-  const settled: { status: "fulfilled"; value: AttemptExamQuestion }[] = [];
-  for (const batchResult of batchSettled) {
-    if (batchResult.status === "fulfilled") {
-      for (const q of batchResult.value) {
-        settled.push({ status: "fulfilled", value: q });
-      }
-    }
-  }
-
-  const failures = settled.filter((r) => r.status === "rejected");
   const byCode = new Map<string, AttemptExamQuestion>();
   for (const q of completed) byCode.set(q.code, q);
   for (const r of settled) {
@@ -371,7 +327,7 @@ export async function generateAllForAttempt(attemptId: string): Promise<AttemptE
       questions.push(await generateBankFallback(catalog, specialization));
     }
   }
-  
+
   const finalSet: AttemptExamSet = {
     version: ATTEMPT_EXAM_SET_VERSION,
     status: "ready",
@@ -623,10 +579,14 @@ export async function finalizeExamAttempt(attemptId: string): Promise<void> {
   for (const q of existing?.questions ?? []) byCode.set(q.code, q);
 
   const questions = emptyPreparingSet(specialization, total).questions.map(p => byCode.get(p.code) ?? p);
-  
-  const ready =
-    questions.length === total &&
-    questions.every((q) => q.validation.structural && Number.isInteger(q.correctIndex));
+
+  const ready = isAttemptExamSetReady({
+    version: ATTEMPT_EXAM_SET_VERSION,
+    status: "ready",
+    specialization,
+    progress: { done: questions.length, total },
+    questions,
+  });
 
   const finalSet: AttemptExamSet = {
     version: ATTEMPT_EXAM_SET_VERSION,

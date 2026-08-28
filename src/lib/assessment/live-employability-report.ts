@@ -6,7 +6,7 @@ import {
   type DimensionScore,
 } from "@/lib/assessment/framework";
 import { excludesSeedSource, liveCurrentResponseWhere } from "@/lib/assessment/live-response-where";
-import { computePercentile } from "@/lib/assessment/percentile";
+import { computePercentilesBatch } from "@/lib/assessment/percentile";
 import {
   canonicalSpecializationLabel,
   resolveAssessmentModuleSet,
@@ -165,56 +165,60 @@ export async function buildLiveEmployabilityReport(
 
   const catalogSet = resolveAssessmentModuleSet(specialization || "General Studies").modules;
 
-  const results: LiveReportModuleDetail[] = await Promise.all(
-    catalogSet.map(async (modSpec) => {
-      const r = latestByModule.get(modSpec.code);
-      if (r) {
-        const percentile = await computePercentile(r.moduleCode, r.score);
-        const sourceNorm = (r.source || "").toLowerCase();
-        return {
-          moduleCode: r.moduleCode,
-          moduleTitle: modSpec.title || r.moduleCode,
-          dimension: r.dimension,
-          score: r.score,
-          band: r.band,
-          passed: r.passed,
-          source: r.source,
-          feedback: r.feedback,
-          strengths: parseJsonArray(r.strengthsJson),
-          improvements: parseJsonArray(r.improvementsJson),
-          perCriterion: parsePerCriterion(r.perCriterionJson),
-          percentile,
-          rawResponse: r.rawResponse,
-          isFallback: sourceNorm === "fallback" || sourceNorm === "heuristic",
-        };
-      }
+  // Batch-compute all percentiles in 2 queries instead of 2N (N=47 modules).
+  const percentileModules = catalogSet.map((modSpec) => {
+    const r = latestByModule.get(modSpec.code);
+    return { code: modSpec.code, score: r?.score ?? 0 };
+  });
+  const percentileMap = await computePercentilesBatch(percentileModules);
 
-      const score = 0;
-      const band = "weak";
-      const percentile = await computePercentile(modSpec.code, score);
+  const results: LiveReportModuleDetail[] = catalogSet.map((modSpec) => {
+    const r = latestByModule.get(modSpec.code);
+    const percentile = percentileMap.get(modSpec.code) ?? null;
+    if (r) {
+      const sourceNorm = (r.source || "").toLowerCase();
       return {
-        moduleCode: modSpec.code,
-        moduleTitle: modSpec.title,
-        dimension: modSpec.dimension,
-        score,
-        band,
-        passed: false,
-        source: "evaluator",
-        feedback: `Evaluation pending for ${modSpec.title}. Complete scenario questions to receive detailed feedback.`,
-        strengths: ["Domain Awareness"],
-        improvements: ["Complete full assessment module"],
-        perCriterion: modSpec.rubric.map((rub) => ({
-          criterion: rub.criterion,
-          score: 0,
-          max: rub.weight,
-          weight: rub.weight,
-        })),
+        moduleCode: r.moduleCode,
+        moduleTitle: modSpec.title || r.moduleCode,
+        dimension: r.dimension,
+        score: r.score,
+        band: r.band,
+        passed: r.passed,
+        source: r.source,
+        feedback: r.feedback,
+        strengths: parseJsonArray(r.strengthsJson),
+        improvements: parseJsonArray(r.improvementsJson),
+        perCriterion: parsePerCriterion(r.perCriterionJson),
         percentile,
-        rawResponse: null,
-        isFallback: false,
+        rawResponse: r.rawResponse,
+        isFallback: sourceNorm === "fallback" || sourceNorm === "heuristic",
       };
-    })
-  );
+    }
+
+    const score = 0;
+    const band = "weak";
+    return {
+      moduleCode: modSpec.code,
+      moduleTitle: modSpec.title,
+      dimension: modSpec.dimension,
+      score,
+      band,
+      passed: false,
+      source: "evaluator",
+      feedback: `Evaluation pending for ${modSpec.title}. Complete scenario questions to receive detailed feedback.`,
+      strengths: ["Domain Awareness"],
+      improvements: ["Complete full assessment module"],
+      perCriterion: modSpec.rubric.map((rub) => ({
+        criterion: rub.criterion,
+        score: 0,
+        max: rub.weight,
+        weight: rub.weight,
+      })),
+      percentile,
+      rawResponse: null,
+      isFallback: false,
+    };
+  });
 
   // ISC-QA-006: only count scored responses for modules in the current catalog
   // set. Prior attempts may leave orphaned rows for modules no longer in the

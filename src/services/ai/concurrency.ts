@@ -19,7 +19,7 @@ const MAX_CONCURRENT = Math.min(
   40,
   Math.max(
     1,
-    Number.parseInt(process.env.AI_CONCURRENCY_MAX || "20", 10) || 20
+    Number.parseInt(process.env.AI_CONCURRENCY_MAX || "40", 10) || 40
   )
 );
 

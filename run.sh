@@ -62,8 +62,27 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
   step "Starting Fuseki RDF Triple Store via Docker..."
   docker compose -f docker-compose.fuseki.yml up -d fuseki 2>/dev/null || true
   ok "Fuseki RDF Triple Store active on http://localhost:3030"
+  
+  step "Starting Redis & Mock OCR via Docker..."
+  docker compose up -d redis ocr 2>/dev/null || docker-compose up -d redis ocr 2>/dev/null || true
+  ok "Redis and Mock OCR active"
 else
   warn "Docker not available; proceeding with HTTP fallback for RDF triple store."
+  
+  step "Starting Python Tesseract OCR locally..."
+  if command -v python3 >/dev/null 2>&1; then
+    # Kill any existing OCR server
+    if command -v fuser >/dev/null 2>&1; then
+      fuser -k "8765/tcp" 2>/dev/null || true
+    fi
+    if [ -f "requirements.txt" ]; then
+      pip3 install -r requirements.txt >/dev/null 2>&1 || true
+    fi
+    python3 ocr_server.py >/dev/null 2>&1 &
+    ok "Python OCR active on http://localhost:8765"
+  else
+    warn "Python3 not available; skipping OCR."
+  fi
 fi
 
 # ── Phase 4: Launch Web Application ──

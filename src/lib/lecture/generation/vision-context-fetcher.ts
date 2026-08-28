@@ -11,7 +11,7 @@ import { chatJson } from "@/lib/ai-engine";
 import { recordModelRun } from "./model-run";
 import type { LectureVisionContext } from "@prisma/client";
 
-const MODEL = "openai/gpt-oss-20b";
+const MODEL = "nvidia/nemotron-3-nano-30b-a3b";
 const VISION_SOURCE_KEY = "vision2030";
 const TOP_N = 3;
 

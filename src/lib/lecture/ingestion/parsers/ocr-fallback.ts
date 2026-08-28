@@ -19,19 +19,28 @@ export async function ocrImage(image: Buffer, lang = "en"): Promise<string | nul
   }
 
   const targetUrl = ocrUrl || "http://localhost:8765/ocr";
+  const timeoutMs = process.env.LECTURE_OCR_TIMEOUT ? parseInt(process.env.LECTURE_OCR_TIMEOUT, 10) : 8000;
 
   try {
     const res = await fetch(targetUrl, {
       method: "POST",
       headers: { "content-type": "application/octet-stream", "x-ocr-lang": lang },
       body: new Uint8Array(image),
-      // Short timeout so optional OCR never stalls the parse pipeline
-      signal: AbortSignal.timeout(2_500),
+      // Increased timeout to allow PaddleOCR time to process complex slides
+      signal: AbortSignal.timeout(timeoutMs),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.warn(`[OCR] HTTP error ${res.status} from ${targetUrl}`);
+      return null;
+    }
     const data = (await res.json()) as { text?: string };
     return data.text?.trim() || null;
-  } catch {
+  } catch (err: any) {
+    if (err.name === 'TimeoutError') {
+      console.warn(`[OCR] Timeout (${timeoutMs}ms) calling ${targetUrl}`);
+    } else {
+      console.warn(`[OCR] Connection failed: ${err.message}`);
+    }
     return null;
   }
 }

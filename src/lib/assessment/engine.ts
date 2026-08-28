@@ -433,7 +433,7 @@ function buildModuleFromAi(
     fewShot,
     passThreshold: 60,
     validationEnabled: true,
-    modelTag: process.env.OPENAI_CHAT_MODEL || "openai/gpt-oss-20b",
+    modelTag: process.env.OPENAI_CHAT_MODEL || "nvidia/nemotron-3-nano-30b-a3b",
     temperature: 0.3,
     specialization,
     generated: true,

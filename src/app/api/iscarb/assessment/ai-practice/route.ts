@@ -20,7 +20,7 @@ export const POST = guard({ tier: "ai", roles: ["student", "faculty", "admin"] }
   const user = `Generate a scenario-based assessment for: "${topic}"\nDifficulty: ${difficulty}\n\nReturn ONLY this JSON:\n{\n  "code": "PRACTICE-${Date.now()}",\n  "title": "<short title>",\n  "framework": "<named framework or methodology>",\n  "scenario": "<realistic Saudi workplace scenario, 3-4 sentences>",\n  "instructions": "<what the student must write>",\n  "rubric": [\n    { "criterion": "<name>", "weight": <int>, "descriptor": "<what a strong answer shows>" },\n    { "criterion": "<name>", "weight": <int>, "descriptor": "<what a strong answer shows>" },\n    { "criterion": "<name>", "weight": <int>, "descriptor": "<what a strong answer shows>" }\n  ],\n  "fewShot": [\n    { "response": "<weak example>", "score": 30, "feedback": "<why low>" },\n    { "response": "<strong example>", "score": 85, "feedback": "<why high>" }\n  ]\n}`;
 
   try {
-    const MODEL = process.env.OPENAI_CHAT_MODEL || "openai/gpt-oss-20b";
+    const MODEL = process.env.OPENAI_CHAT_MODEL || "nvidia/nemotron-3-nano-30b-a3b";
     const result = await chatJsonRaw({ system, user, model: MODEL });
     const json = result.json as Record<string, unknown> | null;
     if (!json || !json.scenario || !Array.isArray(json.rubric)) {
@@ -63,7 +63,7 @@ export const POST = guard({ tier: "ai", roles: ["student", "faculty", "admin"] }
       fewShot,
       passThreshold: 60,
       validationEnabled: false,
-      modelTag: process.env.OPENAI_CHAT_MODEL || "openai/gpt-oss-20b",
+      modelTag: process.env.OPENAI_CHAT_MODEL || "nvidia/nemotron-3-nano-30b-a3b",
       temperature: 0.2,
       specialization: topic,
       generated: true,

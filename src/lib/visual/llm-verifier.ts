@@ -33,7 +33,7 @@ try {
 
 export const DEFAULT_NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1";
 export const DEFAULT_CHAT_MODEL =
-  process.env.OPENAI_CHAT_MODEL || "openai/gpt-oss-20b";
+  process.env.OPENAI_CHAT_MODEL || "nvidia/nemotron-3-nano-30b-a3b";
 export const MIN_COMPOSITE_THRESHOLD = 70;
 
 /**

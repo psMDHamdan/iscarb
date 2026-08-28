@@ -138,7 +138,13 @@ export function isAttemptExamSetReady(set: AttemptExamSet | null): boolean {
           q.correctIndex >= 0 &&
           q.correctIndex <= 3 &&
           Array.isArray(q.choices) &&
-          q.choices.length === 4,
+          q.choices.length === 4 &&
+          typeof q.scenario === "string" &&
+          q.scenario.length >= 15 &&
+          !q.scenario.includes("...") &&
+          typeof q.instructions === "string" &&
+          q.instructions.length >= 10 &&
+          !q.instructions.includes("..."),
       ),
   );
 }

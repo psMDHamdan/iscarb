@@ -365,7 +365,7 @@ export class TopicSynthesizer {
     this.model =
       options?.aiModel ||
       process.env.OPENAI_CHAT_MODEL ||
-      "openai/gpt-oss-20b";
+      "nvidia/nemotron-3-nano-30b-a3b";
     this.timeoutMs = options?.timeoutMs || 25000;
   }
 

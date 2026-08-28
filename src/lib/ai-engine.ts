@@ -1,10 +1,17 @@
 import "server-only";
 
-// ─── Default model (DeepSeek served through the NVIDIA API) ───────────────
-// iSCARB standardises on DeepSeek via the NVIDIA catalog. Override per-call
-// with the `model` option, or globally with OPENAI_CHAT_MODEL.
-export const DEFAULT_AI_MODEL =
-  process.env.OPENAI_CHAT_MODEL || "meta/llama-3.2-11b-vision-instruct";
+// ─── Default model — TIERED SYSTEM ───────────────
+// We use different models depending on the task:
+// - generation: Llama 3.1 70B (Best JSON adherence, high quality)
+// - validation/scoring: Nemotron 8B (Fastest)
+export const DEFAULT_AI_MODEL = process.env.OPENAI_CHAT_MODEL || "deepseek-ai/deepseek-v4-pro-0813";
+export const FAST_AI_MODEL = "deepseek-ai/deepseek-v4-pro-0813";
+
+export function getModelForTask(task?: "generation" | "validation" | "scoring" | "vision"): string {
+  if (task === "validation" || task === "scoring") return FAST_AI_MODEL;
+  if (task === "vision") return "meta/llama-3.2-11b-vision-instruct";
+  return DEFAULT_AI_MODEL;
+}
 
 // ─── NVIDIA Multi-Key Round-Robin Load Balancer ─────────────────────────
 let globalNvidiaKeyCounter = 0;
@@ -16,151 +23,75 @@ function getNextNvidiaKeyIndex(totalKeys: number): number {
 }
 
 
-// ─── AI API Concurrency Limiter ─────────────────────────────────────────
-// Prevents the "thundering herd" problem: when N parallel requests all fire
-// simultaneously, they all get 429'd. Cap in-flight NVIDIA calls.
-// We round-robin across 5 NVIDIA keys, so a higher global cap lets each key
-// run several concurrent requests (5 keys × 8 = 40 in-flight max).
-const AI_CONCURRENCY_MAX = Math.min(
-  10,
-  Math.max(
-    1,
-    Number.parseInt(process.env.AI_CONCURRENCY_MAX || "5", 10) || 5,
-  ),
+// ─── AI API Concurrency & Multi-Key Manager ───────────────────────────
+// Controls concurrency per API key (2 in-flight requests per key) to avoid 429s
+// while achieving maximum parallel throughput across all 5 keys (10 concurrent).
+const MAX_CONCURRENT_PER_KEY = Math.max(
+  1,
+  Number.parseInt(process.env.NVIDIA_CONCURRENT_PER_KEY || "2", 10) || 2,
 );
-let activeAICalls = 0;
-const pendingQueue: Array<{
-  ticket: symbol;
-  resolve: () => void;
-  reject: (err: Error) => void;
-}> = [];
+const keyInFlight = new Map<string, number>();
+const keyCooldown = new Map<string, number>();
+const keyWaitQueue: Array<{ resolve: (key: string) => void }> = [];
 
-async function acquireAISlot(timeoutMs = 60_000): Promise<void> {
-  if (activeAICalls < AI_CONCURRENCY_MAX) {
-    activeAICalls++;
-    return;
+async function acquireNvidiaKey(keys: string[]): Promise<string> {
+  const now = Date.now();
+  const available = keys.filter(
+    (k) => (keyInFlight.get(k) || 0) < MAX_CONCURRENT_PER_KEY && (keyCooldown.get(k) || 0) <= now
+  );
+  if (available.length > 0) {
+    available.sort((a, b) => (keyInFlight.get(a) || 0) - (keyInFlight.get(b) || 0));
+    const selected = available[0]!;
+    keyInFlight.set(selected, (keyInFlight.get(selected) || 0) + 1);
+    return selected;
   }
-  const ticket = Symbol("ai-slot");
-  return new Promise<void>((resolve, reject) => {
-    const timer = setTimeout(() => {
-      const idx = pendingQueue.findIndex((e) => e.ticket === ticket);
-      if (idx !== -1) {
-        pendingQueue.splice(idx, 1);
-        reject(
-          new Error(`AI concurrency slot wait timed out after ${timeoutMs}ms`)
-        );
-      }
-    }, timeoutMs);
-    pendingQueue.push({
-      ticket,
-      resolve: () => {
-        clearTimeout(timer);
-        resolve();
-      },
-      reject: (err: Error) => {
-        clearTimeout(timer);
-        reject(err);
-      },
-    });
+
+  // Schedule auto-wake when cooldowns expire or in 1s
+  const cooldowns = keys.map((k) => keyCooldown.get(k) || 0).filter((t) => t > now);
+  const nextExpiry = cooldowns.length > 0 ? Math.min(...cooldowns) : now + 1000;
+  const delay = Math.max(50, nextExpiry - now);
+  setTimeout(() => releaseNvidiaKey("", keys), delay);
+
+  return new Promise<string>((resolve) => {
+    keyWaitQueue.push({ resolve });
   });
 }
 
-export function clearAIQueue() {
-  while (pendingQueue.length > 0) {
-    const next = pendingQueue.shift();
-    if (next) next.reject(new Error("Queue cleared manually"));
+function releaseNvidiaKey(key: string, keys: string[]) {
+  if (key && key.trim() !== "") {
+    const cur = keyInFlight.get(key) || 1;
+    keyInFlight.set(key, Math.max(0, cur - 1));
   }
-}
 
-function releaseAISlot(): void {
-  const next = pendingQueue.shift();
-  if (next) {
-    next.resolve();
-  } else {
-    activeAICalls--;
-  }
-}
-
-const RETRY_BASE_DELAYS_MS = [500, 1000, 2000];
-const MAX_RETRIES = RETRY_BASE_DELAYS_MS.length;
-// Serverless-friendly: a single model call must never burn the whole function
-// budget on a stall. 20s bounds the worst case while still allowing long
-// generation calls to complete on capable models without spurious timeouts
-// that trigger expensive cross-key failover.
-const FETCH_TIMEOUT_MS = 60_000;
-
-function getRetryDelay(attempt: number, retryAfter?: number): number {
-  if (retryAfter && retryAfter > 0) {
-    // Respect Retry-After header from the API, capped at 30s
-    return Math.min(retryAfter * 1000, 30_000);
-  }
-  const base = RETRY_BASE_DELAYS_MS[Math.min(attempt, RETRY_BASE_DELAYS_MS.length - 1)];
-  // Jitter: ±25% to spread retries across instances/callers
-  const jitter = 1 + (Math.random() - 0.5) * 0.5;
-  return Math.round(base * jitter);
-}
-
-async function fetchWithRetry(
-  url: string,
-  options: RequestInit,
-  retries: number = MAX_RETRIES,
-): Promise<Response> {
-  // Acquire concurrency slot — if the API is already saturated, wait
-  await acquireAISlot();
-  try {
-    let lastErr: Error | null = null;
-    for (let attempt = 0; attempt <= retries; attempt++) {
-      try {
-        const controller = new AbortController();
-        const fetchTimer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-        try {
-          const response = await fetch(url, {
-            ...options,
-            signal: controller.signal,
-          });
-          if (response.ok) return response;
-
-          const status = response.status;
-          if (status === 429 || status >= 500) {
-            lastErr = new Error(`HTTP error! status: ${status}`);
-            if (attempt < retries) {
-              const retryAfter = status === 429
-                ? parseInt(response.headers.get("Retry-After") || "0", 10)
-                : 0;
-              const delay = getRetryDelay(attempt, retryAfter);
-              console.warn(
-                `fetchWithRetry: ${status} on attempt ${attempt + 1}, retrying in ${delay}ms`
-              );
-              await new Promise((r) => setTimeout(r, delay));
-            }
-          } else {
-            throw new Error(`HTTP error! status: ${status}`);
-          }
-        } finally {
-          clearTimeout(fetchTimer);
-        }
-      } catch (err: unknown) {
-        const isAbort = err instanceof DOMException && err.name === "AbortError";
-        if (isAbort) {
-          throw new Error(`fetchWithRetry: request timed out after ${FETCH_TIMEOUT_MS}ms`);
-        }
-        if (err instanceof TypeError && attempt < retries) {
-          lastErr = err;
-          const delay = getRetryDelay(attempt);
-          console.warn(
-            `fetchWithRetry: network error on attempt ${attempt + 1}, retrying in ${delay}ms`
-          );
-          await new Promise((r) => setTimeout(r, delay));
-          continue;
-        }
-        throw err;
+  while (keyWaitQueue.length > 0) {
+    const now = Date.now();
+    const available = keys.filter(
+      (k) => (keyInFlight.get(k) || 0) < MAX_CONCURRENT_PER_KEY && (keyCooldown.get(k) || 0) <= now
+    );
+    if (available.length === 0) {
+      const cooldowns = keys.map((k) => keyCooldown.get(k) || 0).filter((t) => t > now);
+      if (cooldowns.length > 0) {
+        const nextExpiry = Math.min(...cooldowns);
+        const delay = Math.max(50, nextExpiry - now);
+        setTimeout(() => releaseNvidiaKey("", keys), delay);
       }
+      break;
     }
-    throw lastErr || new Error("fetchWithRetry: exhausted retries");
-  } finally {
-    releaseAISlot();
+    available.sort((a, b) => (keyInFlight.get(a) || 0) - (keyInFlight.get(b) || 0));
+    const selected = available[0]!;
+    keyInFlight.set(selected, (keyInFlight.get(selected) || 0) + 1);
+    const waiter = keyWaitQueue.shift();
+    if (waiter) waiter.resolve(selected);
   }
 }
+
+export function clearAIQueue() {
+  keyWaitQueue.length = 0;
+  keyInFlight.clear();
+  keyCooldown.clear();
+}
+
+const FETCH_TIMEOUT_MS = 25_000;
 
 export async function getClient() {
   const nvidiaKeys = [
@@ -181,16 +112,21 @@ export async function getClient() {
       completions: {
         create: async (body: any) => {
           const NVIDIA_MODEL_MAP: Record<string, string> = {
-            // Legacy/retired OpenAI and Meta slugs → fast non-reasoning NVIDIA NIM model
-            "gpt-4o": "meta/llama-3.2-11b-vision-instruct",
-            "gpt-4": "meta/llama-3.2-11b-vision-instruct",
-            "gpt-3.5-turbo": "meta/llama-3.2-11b-vision-instruct",
-            "gpt-4o-mini": "meta/llama-3.2-11b-vision-instruct",
-            "deepseek-r1": "meta/llama-3.2-11b-vision-instruct",
-            "google/gemma-2-9b-it": "meta/llama-3.2-11b-vision-instruct",
-            "meta/llama-3.1-8b-instruct": "meta/llama-3.2-11b-vision-instruct",
-            "deepseek-ai/deepseek-r1": "meta/llama-3.2-11b-vision-instruct",
-            "openai/gpt-oss-20b": "meta/llama-3.2-11b-vision-instruct",
+            "gpt-4o": "deepseek-ai/deepseek-v4-pro-0813",
+            "gpt-4": "deepseek-ai/deepseek-v4-pro-0813",
+            "gpt-3.5-turbo": "deepseek-ai/deepseek-v4-pro-0813",
+            "gpt-4o-mini": "deepseek-ai/deepseek-v4-pro-0813",
+            "deepseek-r1": "deepseek-ai/deepseek-v4-pro-0813",
+            "google/gemma-2-9b-it": "deepseek-ai/deepseek-v4-pro-0813",
+            "meta/llama-3.1-8b-instruct": "deepseek-ai/deepseek-v4-pro-0813",
+            "meta/llama-3.1-70b-instruct": "deepseek-ai/deepseek-v4-pro-0813",
+            "meta/llama-3.3-70b-instruct": "deepseek-ai/deepseek-v4-pro-0813",
+            "meta/llama-3.2-3b-instruct": "deepseek-ai/deepseek-v4-pro-0813",
+            "meta/llama-3.2-1b-instruct": "deepseek-ai/deepseek-v4-pro-0813",
+            "deepseek-ai/deepseek-r1": "deepseek-ai/deepseek-v4-pro-0813",
+            "openai/gpt-oss-20b": "openai/gpt-oss-20b",
+            "nvidia/nemotron-3-nano-30b-a3b": "deepseek-ai/deepseek-v4-pro-0813",
+            "meta/llama-3.2-11b-vision-instruct": "deepseek-ai/deepseek-v4-pro-0813",
           };
 
           let resolvedModel = body.model || DEFAULT_AI_MODEL;
@@ -201,27 +137,40 @@ export async function getClient() {
           }
           body.model = resolvedModel;
 
-          const startIndex = getNextNvidiaKeyIndex(nvidiaKeys.length);
           let lastError: any = new Error("No NVIDIA keys succeeded");
 
-          for (let offset = 0; offset < nvidiaKeys.length; offset++) {
-            const keyIdx = (startIndex + offset) % nvidiaKeys.length;
-            const key = nvidiaKeys[keyIdx];
-
+          for (let attempt = 0; attempt < nvidiaKeys.length * 2; attempt++) {
+            const key = await acquireNvidiaKey(nvidiaKeys);
             try {
-              const response = await fetchWithRetry("https://integrate.api.nvidia.com/v1/chat/completions", {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${key}`,
-                },
-                body: JSON.stringify(body),
-              }, 1);
+              const controller = new AbortController();
+              const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+              try {
+                const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${key}`,
+                  },
+                  body: JSON.stringify(body),
+                  signal: controller.signal,
+                });
 
-              return await response.json();
+                if (response.ok) {
+                  return await response.json();
+                }
+
+                const status = response.status;
+                if (status === 429 || status >= 500) {
+                  keyCooldown.set(key, Date.now() + 1500);
+                }
+                lastError = new Error(`HTTP error! status: ${status}`);
+              } finally {
+                clearTimeout(timer);
+              }
             } catch (err: any) {
-              console.warn(`NVIDIA Key #${keyIdx + 1} failed: ${err.message}. Failing over...`);
               lastError = err;
+            } finally {
+              releaseNvidiaKey(key, nvidiaKeys);
             }
           }
 
@@ -376,11 +325,13 @@ export async function chatJson(opts: {
   user: string;
   temperature?: number;
   model?: string;
+  task?: "generation" | "validation" | "scoring";
   guardrails?: boolean;
+  maxTokens?: number;
 }): Promise<ChatResult> {
   const t0 = Date.now();
   const client = await getClient();
-  const model = opts.model || DEFAULT_AI_MODEL;
+  const model = opts.model || getModelForTask(opts.task);
   const system = opts.guardrails === false ? opts.system : withGuardrails(opts.system);
   try {
     const res = await client.chat.completions.create({
@@ -390,14 +341,34 @@ export async function chatJson(opts: {
       ],
       temperature: opts.temperature ?? 0.4,
       model,
-      max_tokens: 4096,
+      max_tokens: opts.maxTokens ?? 1500,
       response_format: { type: "json_object" },
     } as never);
-    const content = res?.choices?.[0]?.message?.content
-      ?? res?.choices?.[0]?.message?.reasoning_content
-      ?? "";
+    const message = res?.choices?.[0]?.message;
+    let content = message?.content ?? "";
+    const reasoning = message?.reasoning_content ?? "";
     const finishReason = res?.choices?.[0]?.finish_reason ?? undefined;
-    const json = extractJson(content);
+    
+    let json: unknown = null;
+    if (content && content.trim()) {
+      try {
+        json = extractJson(content);
+      } catch (err) {
+        // If content failed to parse, try reasoning_content
+        if (reasoning && reasoning.trim()) {
+          try {
+            json = extractJson(reasoning);
+            content = reasoning;
+          } catch {}
+        }
+      }
+    } else if (reasoning && reasoning.trim()) {
+      try {
+        json = extractJson(reasoning);
+        content = reasoning;
+      } catch {}
+    }
+
     if (json && typeof json === "object" && !Array.isArray(json)) {
       (json as any).finish_reason = finishReason;
     }
@@ -412,14 +383,7 @@ export async function chatJson(opts: {
     };
   } catch (err) {
     console.error("AI Engine chatJson failed:", err);
-    const errorMsg = err instanceof Error ? err.message : "Unknown error";
-    return {
-      content: `{"error": "AI service temporarily unavailable: ${errorMsg}", "fallback": true}`,
-      json: { error: "AI service temporarily unavailable", fallback: true },
-      latencyMs: Date.now() - t0,
-      model: "fallback",
-      guarded: true,
-    };
+    throw err;
   }
 }
 
@@ -428,11 +392,12 @@ export async function chatText(opts: {
   user: string;
   temperature?: number;
   model?: string;
+  task?: "generation" | "validation" | "scoring";
   guardrails?: boolean;
 }): Promise<ChatResult> {
   const t0 = Date.now();
   const client = await getClient();
-  const model = opts.model || DEFAULT_AI_MODEL;
+  const model = opts.model || getModelForTask(opts.task);
   const system = opts.guardrails === false ? opts.system : withGuardrails(opts.system);
   try {
     const res = await client.chat.completions.create({
@@ -469,7 +434,7 @@ export async function chatVisionJson(opts: {
 }): Promise<ChatResult> {
   const t0 = Date.now();
   const client = await getClient();
-  const model = opts.model || "meta/llama-3.2-11b-vision-instruct";
+  const model = opts.model || "nvidia/nemotron-3-nano-30b-a3b";
   const system = opts.guardrails === false ? opts.system : withGuardrails(opts.system);
   try {
     const res = await client.chat.completions.create({
@@ -525,10 +490,12 @@ export async function chatJsonRaw(opts: {
   user: string;
   temperature?: number;
   model?: string;
+  task?: "generation" | "validation" | "scoring";
+  guardrails?: boolean;
 }): Promise<ChatResult> {
   const t0 = Date.now();
-  const client = await getClient();
-  const resolvedModel = opts.model || DEFAULT_AI_MODEL;
+  const client = await getClientRaw();
+  const model = opts.model || getModelForTask(opts.task);
   try {
     const res = await client.chat.completions.create({
       messages: [
@@ -536,8 +503,9 @@ export async function chatJsonRaw(opts: {
         { role: "user", content: opts.user },
       ],
       temperature: opts.temperature ?? 0.4,
-      model: resolvedModel,
-      max_tokens: 4096,
+      model,
+      max_tokens: 8192,
+      response_format: { type: "json_object" },
     } as never);
     const content = res?.choices?.[0]?.message?.content
       ?? res?.choices?.[0]?.message?.reasoning_content

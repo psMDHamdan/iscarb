@@ -12,7 +12,7 @@
 import { db } from "@/lib/db";
 import { chatJson } from "@/lib/ai-engine";
 
-const MODEL = "openai/gpt-oss-20b";
+const MODEL = "nvidia/nemotron-3-nano-30b-a3b";
 
 export interface NcaaaRequirementClause {
   /** e.g. "Standard 4.1" or "4.1" */

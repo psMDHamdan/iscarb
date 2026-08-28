@@ -9,7 +9,7 @@
 import { NextResponse } from "next/server";
 import { guard } from "@/lib/api-guard";
 import { db } from "@/lib/db";
-import { redis } from "@/config/redis";
+import { safeHgetall } from "@/config/redis";
 import { jobKey } from "@/lib/lecture/ingestion/parse-worker";
 
 export const GET = guard(
@@ -22,7 +22,7 @@ export const GET = guard(
     const { jobId } = await params;
     const tenantId = ctx.session.universityId || "default";
 
-    const generateRaw = await redis.hgetall(`lecture:generate:${jobId}`);
+    const generateRaw = await safeHgetall(`lecture:generate:${jobId}`);
     if (generateRaw && Object.keys(generateRaw).length > 0) {
       return NextResponse.json({
         jobId,
@@ -35,7 +35,7 @@ export const GET = guard(
       });
     }
 
-    const planRaw = await redis.hgetall(`lecture:plan:${jobId}`);
+    const planRaw = await safeHgetall(`lecture:plan:${jobId}`);
     if (planRaw && Object.keys(planRaw).length > 0) {
       return NextResponse.json({
         jobId,
@@ -66,7 +66,7 @@ export const GET = guard(
       return NextResponse.json({ error: "Unauthorized tenant access" }, { status: 403 });
     }
 
-    const raw = await redis.hgetall(jobKey(jobId));
+    const raw = await safeHgetall(jobKey(jobId));
     const progress = raw && Object.keys(raw).length > 0
       ? {
           status: raw.status ?? "pending",

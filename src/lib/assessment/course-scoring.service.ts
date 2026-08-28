@@ -85,7 +85,7 @@ export class CourseScoringService {
 
     let scored: CourseScoredResponse;
     let source: 'ai' | 'fallback' = 'ai';
-    let model = 'openai/gpt-oss-20b';
+    let model = 'nvidia/nemotron-3-nano-30b-a3b';
 
     try {
       // Call AI engine with timeout

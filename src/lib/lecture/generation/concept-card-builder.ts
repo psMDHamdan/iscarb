@@ -235,7 +235,7 @@ Build ConceptCards for ALL clusters above. Return STRICT JSON with a "cards" arr
       system: batchSystem,
       user: batchUser,
       temperature: 0.2,
-      model: DEFAULT_AI_MODEL,
+      task: "generation",
     });
 
     const json = (result.json ?? {}) as Record<string, unknown>;
@@ -376,7 +376,7 @@ async function buildCardForCluster(
       system: CARD_SYSTEM + "\n\nReturn STRICT JSON matching this schema:\n" + CARD_SCHEMA,
       user: buildUserPrompt(cluster, blocks, clos, courseTitle),
       temperature: 0.2,
-      model: DEFAULT_AI_MODEL,
+      task: "generation",
     });
 
     const json = (result.json ?? {}) as Record<string, unknown>;

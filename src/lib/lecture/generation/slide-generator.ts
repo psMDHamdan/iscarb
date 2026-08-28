@@ -1012,7 +1012,7 @@ export async function generateSlideArtifact(
           system: systemPrompt(languagePolicy),
           user: userPrompt(plan, selectedClos, blocks, project.nationalAlignmentMode, languagePolicy, blueprintSlot, lessonHook, conceptCard),
           temperature: 0.4,
-          model: MODEL,
+          task: "generation",
         }),
         new Promise<{ json: null }>((_, reject) =>
           setTimeout(() => reject(new Error(`Slide LLM timeout (${SLIDE_LLM_TIMEOUT_MS / 1000}s max)`)), SLIDE_LLM_TIMEOUT_MS)

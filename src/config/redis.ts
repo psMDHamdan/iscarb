@@ -107,3 +107,76 @@ export async function redisHealthCheck(): Promise<boolean> {
 export async function redisDisconnect(): Promise<void> {
   await redis.quit();
 }
+
+// ---------------------------------------------------------------------------
+// In-memory fallback for when Redis is unavailable.
+// Stores progress data so generation tracking works without Redis.
+// ---------------------------------------------------------------------------
+const inMemoryStore = new Map<string, Record<string, string>>();
+let _redisAvailable: boolean | null = null;
+let _lastRedisCheck = 0;
+const REDIS_CHECK_INTERVAL_MS = 10_000; // Re-check every 10s
+
+async function isRedisAvailable(): Promise<boolean> {
+  const now = Date.now();
+  if (_redisAvailable !== null && now - _lastRedisCheck < REDIS_CHECK_INTERVAL_MS) {
+    return _redisAvailable;
+  }
+  _lastRedisCheck = now;
+  try {
+    await redis.ping();
+    if (!_redisAvailable) {
+      logger.info("[redis] connection restored — switching from in-memory fallback");
+    }
+    _redisAvailable = true;
+  } catch {
+    if (_redisAvailable !== false) {
+      logger.warn("[redis] unavailable — using in-memory progress store fallback");
+    }
+    _redisAvailable = false;
+  }
+  return _redisAvailable;
+}
+
+/**
+ * Safe hset — tries Redis, falls back to in-memory Map.
+ * Used by generation progress tracking so progress bars work without Redis.
+ */
+export async function safeHset(
+  key: string,
+  data: Record<string, string | number>
+): Promise<void> {
+  const strData: Record<string, string> = {};
+  for (const [k, v] of Object.entries(data)) {
+    strData[k] = String(v);
+  }
+
+  if (await isRedisAvailable()) {
+    try {
+      await redis.hset(key, strData);
+      return;
+    } catch {
+      // Fall through to in-memory
+    }
+  }
+  // In-memory fallback
+  const existing = inMemoryStore.get(key) || {};
+  inMemoryStore.set(key, { ...existing, ...strData });
+}
+
+/**
+ * Safe hgetall — tries Redis, falls back to in-memory Map.
+ */
+export async function safeHgetall(
+  key: string
+): Promise<Record<string, string> | null> {
+  if (await isRedisAvailable()) {
+    try {
+      const result = await redis.hgetall(key);
+      if (result && Object.keys(result).length > 0) return result;
+    } catch {
+      // Fall through to in-memory
+    }
+  }
+  return inMemoryStore.get(key) || null;
+}

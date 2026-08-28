@@ -58,6 +58,93 @@ export async function computePercentile(
 }
 
 /**
+ * Batch-compute percentiles for multiple module codes at once.
+ * Uses a single SQL query with GROUP BY to get total counts per module,
+ * then a second query for "below" counts — reducing 2N queries to 2 total.
+ *
+ * Returns a Map<moduleCode, percentile | null>.
+ */
+export async function computePercentilesBatch(
+  modules: Array<{ code: string; score: number }>,
+): Promise<Map<string, number | null>> {
+  const result = new Map<string, number | null>();
+  const minSample = resolvePercentileMinSample();
+
+  if (modules.length === 0) return result;
+
+  // Initialize all to null (below threshold or no data)
+  for (const m of modules) {
+    result.set(m.code, null);
+  }
+
+  const moduleCodes = modules.map((m) => m.code);
+
+  // Single query: get total count per moduleCode
+  const totals = await db.assessmentResponse.groupBy({
+    by: ["moduleCode"],
+    where: {
+      moduleCode: { in: moduleCodes },
+      isCurrent: true,
+      NOT: { source: { equals: "seed", mode: "insensitive" as const } },
+    },
+    _count: { id: true },
+  });
+
+  const totalMap = new Map<string, number>();
+  for (const t of totals) {
+    totalMap.set(t.moduleCode, t._count.id);
+  }
+
+  // Build the score lookup
+  const scoreMap = new Map<string, number>();
+  for (const m of modules) {
+    scoreMap.set(m.code, m.score);
+  }
+
+  // Filter to only modules with enough data
+  const eligibleCodes = moduleCodes.filter((code) => {
+    const total = totalMap.get(code) ?? 0;
+    return total >= minSample;
+  });
+
+  if (eligibleCodes.length === 0) return result;
+
+  // Single query: get count of rows with score < target per moduleCode.
+  // Each module has a different score threshold, so we build OR conditions.
+  const orClauses = eligibleCodes
+    .map((code) => {
+      const score = scoreMap.get(code)!;
+      return `("moduleCode" = '${code.replace(/'/g, "''")}' AND "score" < ${score})`;
+    })
+    .join(" OR ");
+
+  const belowCounts = await db.$queryRawUnsafe<Array<{ modulecode: string; cnt: bigint }>>(`
+    SELECT
+      "moduleCode" as modulecode,
+      COUNT(*)::bigint as cnt
+    FROM "AssessmentResponse"
+    WHERE "isCurrent" = true
+      AND LOWER("source") != 'seed'
+      AND (${orClauses})
+    GROUP BY "moduleCode"
+  `);
+
+  const belowMap = new Map<string, number>();
+  for (const row of belowCounts) {
+    belowMap.set(row.modulecode, Number(row.cnt));
+  }
+
+  // Compute final percentiles
+  for (const code of eligibleCodes) {
+    const total = totalMap.get(code) ?? 0;
+    const below = belowMap.get(code) ?? 0;
+    result.set(code, Math.round((below / total) * 100));
+  }
+
+  return result;
+}
+
+/**
  * Overall percentile of a candidate's composite score against the rest of the
  * cohort (one latest profile per student). The candidate's own row is excluded
  * so "better than X%" means strictly better than the OTHER candidates.

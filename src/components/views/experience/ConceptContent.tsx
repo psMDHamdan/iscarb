@@ -45,6 +45,11 @@ const STAGE_BADGE: Record<PedagogicalPhase, { labelEn: string; labelAr: string; 
 export function ConceptContent({ concept, ar }: ConceptContentProps) {
   const dir = ar ? "rtl" : "ltr";
   const badgeInfo = STAGE_BADGE[concept.stage] || STAGE_BADGE.DISCOVER;
+  const [imageError, setImageError] = React.useState(false);
+
+  React.useEffect(() => {
+    setImageError(false);
+  }, [concept.visual?.imageUrl]);
 
   // -- Derived Content --
   const explanation =
@@ -147,13 +152,14 @@ export function ConceptContent({ concept, ar }: ConceptContentProps) {
               transition={{ delay: 0.2 }}
               className="rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg relative group"
             >
-              {/* Image priority over SVG */}
-              {displayImage ? (
+              {/* Image priority over SVG, with fallback if it fails */}
+              {(displayImage && !imageError) ? (
                 <div className="relative aspect-video w-full overflow-hidden bg-slate-950 flex items-center justify-center">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={displayImage}
                     alt={displayTitle}
+                    onError={() => setImageError(true)}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-90"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent pointer-events-none" />

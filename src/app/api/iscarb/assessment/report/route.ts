@@ -73,7 +73,14 @@ export const GET = guard(
         /** Drop-in shape for EmployabilityDetailedReportView */
         attempt: snapshot,
       },
-      { headers: { "Cache-Control": "private, no-store" } },
+      {
+        headers: {
+          // Allow short browser cache (60s) to avoid hammering the report endpoint
+          // on rapid tab-switches / re-renders. Data is always recomputed server-side
+          // on cache miss, so staleness is bounded.
+          "Cache-Control": "private, max-age=60, stale-while-revalidate=120",
+        },
+      },
     );
   },
 );

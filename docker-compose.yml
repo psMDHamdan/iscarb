@@ -49,6 +49,18 @@ services:
     networks:
       - iscarb
 
+  ocr:
+    image: python:3.12-alpine
+    container_name: iscarb-ocr
+    command: sh -c "apk add --no-cache tesseract-ocr tesseract-ocr-data-ara tesseract-ocr-data-eng && pip install --no-cache-dir -r /app/requirements.txt && python3 /app/ocr_server.py"
+    volumes:
+      - ./ocr_server.py:/app/ocr_server.py
+      - ./requirements.txt:/app/requirements.txt
+    ports:
+      - "8765:8765"
+    networks:
+      - iscarb
+
   app:
     build:
       context: .

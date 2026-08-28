@@ -125,7 +125,7 @@ export async function studentToJSONLD(studentIdentifier: string, baseUrl: string
         rawResponse: (r as { rawResponse?: string | null }).rawResponse || "",
         feedback: r.feedback,
         scoringSource: `iscarb:${scoringSource}`,
-        model: r.model || "openai/gpt-oss-20b",
+        model: r.model || "nvidia/nemotron-3-nano-30b-a3b",
         latencyMs: r.latencyMs || 0,
         submittedAt: r.createdAt.toISOString(),
         hasCriterionScore: critScores,

@@ -13,7 +13,7 @@ export const KEY_VERIFY_MODEL =
   process.env.EXAM_KEY_VERIFY_MODEL ||
   process.env.EXAM_SCORING_MODEL ||
   process.env.OPENAI_CHAT_MODEL ||
-  "openai/gpt-oss-20b";
+  "nvidia/nemotron-3-nano-30b-a3b";
 
 export const KEY_VERIFY_TIMEOUT_MS = 45_000;
 
@@ -41,15 +41,44 @@ function norm(s: string): string {
   return s.replace(/\s+/g, " ").trim();
 }
 
-/** Exactly one in-range key, 4 distinct non-empty options. */
+/**
+ * Foolish / absurd distractor patterns — matches options that exhibit
+ * obviously irrational, careless, rude, or absurd behavior.
+ */
+const FOOLISH_PATTERNS = /\b(ignore the|do nothing|blame (others|another|the|a)|resign immediately|let it slide|refuse to|say (you|i) (cannot|can't) remember|use deep jargon|skip (the|all) (qc|quality|checks)|hide the|pass the buck|side with .* and refuse|postpone .* indefinitely|ask (the )?manager to (handle|deal|take care)|work harder|just (ask|tell|say)|don't (worry|bother)|pretend (it|everything|nothing)|sweep (it|this) under|avoid (the|all|any)|give up|panic|shout|yell|ignore|dismiss|belittle|ridicule)\b/i;
+
+/**
+ * Words that make the correct answer identifiable by tone/detail.
+ */
+const CORRECT_IDENTIFIERS = /\b(best|robust|strategic|measurable|comprehensive|structured|optimal|ideal|superior|exceptional|exemplary|gold[- ]standard)\b/;
+
+/**
+ * Giveaway language that reveals the correct answer.
+ */
+const GIVEAWAY_PATTERNS = /\b(the|a) (safest|best|most (correct|appropriate|professional|effective)) (approach|option|solution|strategy|action)\b|\bobviously (correct|best|right)\b|\bguaranteed to\b|\bthe correct (answer|approach|option)\b|\balways the (best|right|correct)\b/i;
+
+/**
+ * Exactly one in-range key, 4 distinct non-empty options.
+ * Plus new quality checks for option balance and distractor quality.
+ */
 export function validateStructuralKey(draft: KeyedMcqDraft): StructuralKeyResult {
   const reasons: string[] = [];
+  const scenario = norm(String(draft.scenario ?? ""));
+  const instructions = norm(String(draft.instructions ?? ""));
+
+  if (!scenario || scenario === "..." || scenario.includes("...") || scenario.length < 15) {
+    reasons.push(`invalid_scenario_${scenario.length < 15 ? 'too_short' : 'placeholder'}`);
+  }
+  if (!instructions || instructions === "..." || instructions.includes("...") || instructions.length < 10) {
+    reasons.push(`invalid_instructions_${instructions.length < 10 ? 'too_short' : 'placeholder'}`);
+  }
+
   const choices = (draft.choices ?? []).map((c) => norm(String(c ?? "")));
   if (choices.length !== 4) {
     reasons.push(`expected_4_choices_got_${choices.length}`);
   }
-  if (choices.some((c) => !c)) {
-    reasons.push("empty_choice");
+  if (choices.some((c) => !c || c === "..." || c.includes("...") || c.length < 3 || /^Option\s+[A-D](\s+text)?$/i.test(c))) {
+    reasons.push("empty_or_placeholder_choice");
   }
   const unique = new Set(choices.map((c) => c.toLowerCase()));
   if (choices.length === 4 && unique.size !== 4) {
@@ -59,6 +88,7 @@ export function validateStructuralKey(draft: KeyedMcqDraft): StructuralKeyResult
   if (!Number.isInteger(idx) || idx < 0 || idx > 3) {
     reasons.push(`correctIndex_out_of_range_${String(idx)}`);
   }
+
   return { ok: reasons.length === 0, reasons };
 }
 
@@ -114,6 +144,9 @@ export async function independentVerifyKey(
       "Analyze the scenario, task, and 4 options carefully.",
       "Select the single most accurate, defensible, and optimal answer.",
       "Do not assume any pre-marked answer.",
+      "CRITICAL: All four options should sound like plausible professional choices.",
+      "The correct answer must be better for a specific, explainable reason rooted in the competency — not because it is longer, more detailed, or uses 'best/robust/strategic' language.",
+      "If a distractor is obviously absurd, foolish, or unprofessional (e.g. 'Do nothing', 'Blame others', 'Ignore the problem'), flag it as a quality issue.",
       "Return STRICT JSON only.",
     ].join(" "),
     user: [
@@ -124,7 +157,7 @@ export async function independentVerifyKey(
       `OPTIONS:\n${labeled}`,
       ``,
       `Return JSON:`,
-      `{ "chosenIndex": <0|1|2|3>, "exactlyOneDefensible": <true|false>, "rationale": "<one sentence>" }`,
+      `{ "chosenIndex": <0|1|2|3>, "exactlyOneDefensible": <true|false>, "rationale": "<one sentence>", "qualityIssues": ["<any quality concerns about the options>"] }`,
       `chosenIndex is the index of the option (0 for A, 1 for B, 2 for C, 3 for D) you determine is the single correct answer.`,
       `exactlyOneDefensible is true if there is exactly one defensible best answer, false if multiple options are equally valid or all are flawed.`,
     ].join("\n"),

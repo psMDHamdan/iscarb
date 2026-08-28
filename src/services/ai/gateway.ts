@@ -171,10 +171,10 @@ function createNvidiaProvider(): NvidiaProvider {
       process.env.OPENAI_BASE_URL ||
       "https://integrate.api.nvidia.com/v1",
     apiKeys,
-    defaultModel: process.env.OPENAI_CHAT_MODEL || "meta/llama-3.1-8b-instruct",
+    defaultModel: process.env.OPENAI_CHAT_MODEL || "nvidia/nemotron-3-nano-30b-a3b",
     timeoutMs: 30_000,
     maxRetries: 3,
-    maxConcurrency: parseInt(process.env.AI_CONCURRENCY_MAX || "20", 10),
+    maxConcurrency: parseInt(process.env.AI_CONCURRENCY_MAX || "40", 10),
   });
 }
 
@@ -208,7 +208,7 @@ export class AIGateway {
   constructor(config: GatewayConfig) {
     this.config = config;
     this.defaultModel =
-      process.env.OPENAI_CHAT_MODEL || "meta/llama-3.1-8b-instruct";
+      process.env.OPENAI_CHAT_MODEL || "nvidia/nemotron-3-nano-30b-a3b";
   }
 
   /**
@@ -804,7 +804,7 @@ export async function generateImage(opts: {
  * Get the default AI model.
  */
 export const DEFAULT_AI_MODEL =
-  process.env.OPENAI_CHAT_MODEL || "meta/llama-3.1-8b-instruct";
+  process.env.OPENAI_CHAT_MODEL || "nvidia/nemotron-3-nano-30b-a3b";
 
 /**
  * Clear the AI queue (for testing/manual intervention).

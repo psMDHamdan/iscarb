@@ -32,42 +32,46 @@ export async function loadPdfjs(): Promise<any> {
 export async function parsePdf(buffer: Buffer): Promise<RawBlock[]> {
   const pdfjs = await loadPdfjs();
   const pdf = await pdfjs.getDocument({ data: new Uint8Array(buffer) }).promise;
+  const pageNumbers = Array.from({ length: pdf.numPages }, (_, i) => i + 1);
   const blocks: RawBlock[] = [];
+  
+  const CONCURRENCY = 4;
+  for (let i = 0; i < pageNumbers.length; i += CONCURRENCY) {
+    const chunk = pageNumbers.slice(i, i + CONCURRENCY);
+    const chunkBlocks = await Promise.all(chunk.map(async (pageNo) => {
+      const page = await pdf.getPage(pageNo);
+      const textContent = await page.getTextContent();
+      let text = textContent.items
+        .map((item: any) => (typeof item.str === "string" ? item.str : ""))
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim();
 
-  for (let pageNo = 1; pageNo <= pdf.numPages; pageNo++) {
-    const page = await pdf.getPage(pageNo);
-    const textContent = await page.getTextContent();
-    let text = textContent.items
-      .map((item: any) => (typeof item.str === "string" ? item.str : ""))
-      .join(" ")
-      .replace(/\s+/g, " ")
-      .trim();
+      const locator = `page:${pageNo}`;
+      if (text.length >= OCR_TEXT_MIN_CHARS) {
+        return { locator, type: "text" as const, text };
+      }
 
-    const locator = `page:${pageNo}`;
-    if (text.length >= OCR_TEXT_MIN_CHARS) {
-      blocks.push({ locator, type: "text", text });
-      continue;
-    }
+      // Thin text → likely image-heavy; render page and try OCR.
+      let image: Buffer | undefined;
+      try {
+        const viewport = page.getViewport({ scale: 2 });
+        const canvas = createCanvas(viewport.width, viewport.height);
+        const ctx = canvas.getContext("2d") as unknown as CanvasRenderingContext2D;
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        image = canvas.toBuffer("image/png");
+      } catch (err) {
+        // Rendering failed (e.g. canvas unavailable in this runtime) — keep text as-is.
+        image = undefined;
+      }
 
-    // Thin text → likely image-heavy; render page and try OCR.
-    let image: Buffer | undefined;
-    try {
-      const viewport = page.getViewport({ scale: 2 });
-      const canvas = createCanvas(viewport.width, viewport.height);
-      const ctx = canvas.getContext("2d") as unknown as CanvasRenderingContext2D;
-      await page.render({ canvasContext: ctx, viewport }).promise;
-      image = canvas.toBuffer("image/png");
-    } catch (err) {
-      // Rendering failed (e.g. canvas unavailable in this runtime) — keep text as-is.
-      image = undefined;
-    }
-
-    let block: RawBlock = { locator, type: "text", text, image };
-    if (image) {
-      block = await applyOcrFallback(block);
-    }
-    blocks.push(block);
+      let block: RawBlock = { locator, type: "text", text, image };
+      if (image) {
+        block = await applyOcrFallback(block);
+      }
+      return block;
+    }));
+    blocks.push(...chunkBlocks);
   }
-
   return blocks;
 }

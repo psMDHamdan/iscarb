@@ -165,7 +165,7 @@ function mod(
     passThreshold: 60,
     validationEnabled: false,
     systemId: "ai-eval-001",
-    modelTag: process.env.OPENAI_CHAT_MODEL || "openai/gpt-oss-20b",
+    modelTag: process.env.OPENAI_CHAT_MODEL || "nvidia/nemotron-3-nano-30b-a3b",
     version: "2.1.0",
     temperature: 0.2,
     specialization: null,
@@ -2819,6 +2819,257 @@ const CS_JOBFIT_REPLACEMENTS: Record<string, Partial<AssessmentModuleSpec>> = {
   },
 };
 
+// ── Non-Tech Job-Fit replacements for technical universal slots ────────────
+export function getNonTechModuleReplacements(specialization: string): Record<string, Partial<AssessmentModuleSpec>> {
+  const norm = normalizeSpec(specialization);
+
+  // 1. HR / Human Resources / Talent Management
+  if (norm.includes("hr") || norm.includes("human-resource") || norm.includes("recruitment") || norm.includes("talent")) {
+    return {
+      M30: {
+        title: "HR Analytics & Workforce Metrics",
+        titleAr: "تحليلات الموارد البشرية ومؤشرات القوى العاملة",
+        framework: "Workforce Turnover & Recruitment Efficiency Metrics",
+        focus: "Analyzing employee retention, Saudization ratios, and recruitment funnels.",
+        saudiContext: "Aligned to Nitaqat Saudization policies and Ministry of Human Resources regulations.",
+        scenario: "You notice a 22% annualized turnover rate in key technical positions over the last two quarters. Exit interviews cite salary competitiveness and limited career progression.",
+        instructions: "Diagnose root causes, analyze retention data, and recommend targeted workforce strategies.",
+        rubric: [
+          { criterion: "workforce_analysis", weight: 40, descriptor: "Accurately interprets HR metrics and turnover drivers." },
+          { criterion: "policy_formulation", weight: 40, descriptor: "Proposes compliant Saudization retention policies." },
+          { criterion: "strategic_hr", weight: 20, descriptor: "Balances budget against talent retention goals." },
+        ],
+      },
+      M33: {
+        title: "Human Resource Information Systems (HRIS)",
+        titleAr: "أنظمة معلومات الموارد البشرية HRIS",
+        framework: "HRIS Governance & Employee Self-Service",
+        focus: "Managing HR software platforms, employee data privacy, and access controls.",
+        saudiContext: "Aligned to National Data Management Office (NDMO) privacy regulations and MHRSD requirements.",
+        scenario: "During an HR system migration, payroll access permissions were mistakenly assigned to general HR generalists.",
+        instructions: "Identify security gaps, establish role-based access control (RBAC), and outline data audit procedures.",
+        rubric: [
+          { criterion: "hris_security", weight: 40, descriptor: "Identifies privacy and data permission breaches." },
+          { criterion: "access_governance", weight: 40, descriptor: "Designs robust RBAC security tiers." },
+          { criterion: "audit_compliance", weight: 20, descriptor: "Ensures alignment with NDMO privacy rules." },
+        ],
+      },
+      M34: {
+        title: "Workforce Data Integrity & Payroll Audit",
+        titleAr: "سلامة بيانات القوى العاملة ومراجعة الرواتب",
+        framework: "Wage Protection System (WPS) & Payroll Reconciliation",
+        focus: "Auditing payroll records, allowance calculations, and employment contract data.",
+        saudiContext: "Aligned to the Saudi Wage Protection System (WPS) and Labor Law compliance.",
+        scenario: "A discrepancy of SAR 120,000 is detected between monthly bank transfer files and HRIS payroll calculations.",
+        instructions: "Outline a step-by-step WPS audit protocol, verify end-of-service benefits, and reconcile discrepancies.",
+        rubric: [
+          { criterion: "payroll_reconciliation", weight: 40, descriptor: "Executes systematic WPS payroll audit." },
+          { criterion: "compliance_verification", weight: 40, descriptor: "Applies Saudi Labor Law calculation rules." },
+          { criterion: "audit_documentation", weight: 20, descriptor: "Produces verifiable compliance documentation." },
+        ],
+      },
+      M35: {
+        title: "HR Governance & Labor Law Compliance",
+        titleAr: "حوكمة الموارد البشرية والامتثال لنظام العمل",
+        framework: "Saudi Labor Law & Organizational Policy Frameworks",
+        focus: "Enforcing labor regulations, grievance procedures, and workplace policies.",
+        saudiContext: "Aligned to Saudi Labor Law, MHRSD policies, and ETEC employment guidelines.",
+        scenario: "An employee files a formal grievance alleging unfair performance evaluation during probation.",
+        instructions: "Evaluate procedural compliance, apply Labor Law dispute protocols, and formulate resolution options.",
+        rubric: [
+          { criterion: "labor_law_application", weight: 40, descriptor: "Applies Saudi Labor Law provisions accurately." },
+          { criterion: "grievance_governance", weight: 40, descriptor: "Follows objective investigation standards." },
+          { criterion: "policy_remediation", weight: 20, descriptor: "Recommends fair organizational policy updates." },
+        ],
+      },
+    };
+  }
+
+  // 2. Biotech / Biology / Healthcare / Medicine / Pharmacy / Nursing
+  if (norm.includes("bio") || norm.includes("health") || norm.includes("medic") || norm.includes("pharm") || norm.includes("nurs") || norm.includes("lab")) {
+    return {
+      M30: {
+        title: "Biostatistical Analysis & Clinical Data",
+        titleAr: "التحليل الإحصائي الحيوي والبيانات السريرية",
+        framework: "Biostatistics & Clinical Trial Variance Analysis",
+        focus: "Analyzing biological data, clinical trial outcomes, and statistical significance.",
+        saudiContext: "Aligned to Saudi FDA regulations and National Committee of BioEthics (NCBE) guidelines.",
+        scenario: "In a clinical trial evaluation, drug efficacy results show statistical significance (p < 0.05) in group A but high variance in group B due to sample size constraints.",
+        instructions: "Analyze the statistical validity, identify confounding variables, and determine next trial phase protocols.",
+        rubric: [
+          { criterion: "statistical_rigor", weight: 40, descriptor: "Interprets p-values, confidence intervals, and sample variance." },
+          { criterion: "clinical_interpretation", weight: 40, descriptor: "Evaluates clinical safety vs efficacy trade-offs." },
+          { criterion: "regulatory_compliance", weight: 20, descriptor: "Aligns recommendations with SFDA clinical trial standards." },
+        ],
+      },
+      M33: {
+        title: "Laboratory Information Systems (LIMS) & Health IT",
+        titleAr: "أنظمة معلومات المختبرات (LIMS) والتكنولوجيا الصحية",
+        framework: "LIMS Architecture & Electronic Health Records (EHR)",
+        focus: "Managing lab data workflows, sample tracking systems, and clinical data privacy.",
+        saudiContext: "Aligned to Saudi Health Information Exchange (NPHIES) and Ministry of Health standards.",
+        scenario: "A diagnostic lab discovers unvalidated manual data entry steps between analyzer devices and the LIMS database.",
+        instructions: "Redesign the automated LIMS data workflow, eliminate manual entry risks, and ensure audit logging.",
+        rubric: [
+          { criterion: "lims_workflow", weight: 40, descriptor: "Eliminates manual entry points with automated device interfaces." },
+          { criterion: "data_integrity", weight: 40, descriptor: "Ensures chain-of-custody and specimen tracking integrity." },
+          { criterion: "health_compliance", weight: 20, descriptor: "Meets MoH and SFDA electronic health record guidelines." },
+        ],
+      },
+      M34: {
+        title: "Clinical Data Quality & Specimen Audit",
+        titleAr: "جودة البيانات السريرية ومراجعة العينات",
+        framework: "Good Laboratory Practice (GLP) & Specimen Chain of Custody",
+        focus: "Auditing lab data, specimen handling protocols, and quality control metrics.",
+        saudiContext: "Aligned to SFDA GLP guidelines and Central Board for Accreditation of Healthcare Institutions (CBAHI).",
+        scenario: "A quality audit reveals temperature log gaps in refrigerated reagent storage over a holiday weekend.",
+        instructions: "Formulate a non-conformance protocol, evaluate batch validity, and establish preventive CAPA actions.",
+        rubric: [
+          { criterion: "quality_audit", weight: 40, descriptor: "Identifies GLP non-conformance and specimen impact." },
+          { criterion: "capa_formulation", weight: 40, descriptor: "Designs robust Corrective and Preventive Action plan." },
+          { criterion: "accreditation_compliance", weight: 20, descriptor: "Aligns documentation with CBAHI standards." },
+        ],
+      },
+      M35: {
+        title: "Biomedical Regulation & Bioethics Governance",
+        titleAr: "الأنظمة الحيوية الطبية وحوكمة الأخلاقيات الحيوية",
+        framework: "NCBE Bioethics Standards & SFDA Medical Device Regulations",
+        focus: "Navigating medical regulations, patient consent ethics, and bio-safety protocols.",
+        saudiContext: "Grounded in National Committee of BioEthics (NCBE) regulations and SFDA medical approvals.",
+        scenario: "A research project proposes analyzing anonymized patient genomic samples without explicit re-consent for secondary research.",
+        instructions: "Evaluate ethical compliance, apply NCBE consent frameworks, and formulate an IRB submission strategy.",
+        rubric: [
+          { criterion: "bioethics_evaluation", weight: 40, descriptor: "Applies NCBE secondary sample consent rules accurately." },
+          { criterion: "regulatory_risk", weight: 40, descriptor: "Identifies SFDA compliance boundaries." },
+          { criterion: "governance_protocol", weight: 20, descriptor: "Establishes clear IRB governance procedures." },
+        ],
+      },
+    };
+  }
+
+  // 3. Marketing / Media / PR / Communications
+  if (norm.includes("market") || norm.includes("media") || norm.includes("comm") || norm.includes("pr") || norm.includes("brand")) {
+    return {
+      M30: {
+        title: "Marketing Analytics & Consumer Performance Data",
+        titleAr: "تحليلات التسويق وبيانات أداء المستهلك",
+        framework: "Customer Acquisition Cost (CAC) & Lifetime Value (LTV) Modeling",
+        focus: "Analyzing campaign performance metrics, conversion funnels, and marketing ROI.",
+        saudiContext: "Aligned to Saudi General Media Authority (GCAM) advertising regulations.",
+        scenario: "A digital marketing campaign's Customer Acquisition Cost (CAC) doubled while conversion rates dropped 30% across key target demographics.",
+        instructions: "Analyze funnel drop-offs, optimize channel allocation, and propose data-backed campaign adjustments.",
+        rubric: [
+          { criterion: "funnel_analysis", weight: 40, descriptor: "Pinpoints campaign channel inefficiencies." },
+          { criterion: "cac_ltv_modeling", weight: 40, descriptor: "Optimizes budget allocation based on unit economics." },
+          { criterion: "strategic_marketing", weight: 20, descriptor: "Proposes actionable growth marketing initiatives." },
+        ],
+      },
+      M33: {
+        title: "Marketing Automation & Enterprise CRM",
+        titleAr: "أتمتة التسويق وأنظمة إدارة علاقات العملاء CRM",
+        framework: "CRM Data Architecture & Automated Customer Journeys",
+        focus: "Managing customer data platforms (Salesforce/HubSpot), lead scoring, and campaign automation.",
+        saudiContext: "Aligned to NDMO customer data privacy laws and Saudi e-commerce regulations.",
+        scenario: "An e-commerce brand's CRM triggers automated promotional SMS messages to customers who opted out of marketing communications.",
+        instructions: "Identify consent management failures, fix CRM automation rules, and ensure privacy compliance.",
+        rubric: [
+          { criterion: "crm_architecture", weight: 40, descriptor: "Fixes customer journey automation workflows." },
+          { criterion: "privacy_governance", weight: 40, descriptor: "Enforces explicit opt-in/opt-out consent filters." },
+          { criterion: "customer_experience", weight: 20, descriptor: "Restores brand trust and compliance." },
+        ],
+      },
+      M34: {
+        title: "Campaign Data Quality & Customer Analytics Audit",
+        titleAr: "جودة بيانات الحملات ومراجعة تحليلات العملاء",
+        framework: "Multi-Touch Attribution & Customer Data Hygiene",
+        focus: "Auditing marketing data quality, tracking tags, and attribution modeling.",
+        saudiContext: "Aligned to Saudi Consumer Protection Association and digital privacy standards.",
+        scenario: "An analytics audit reveals that 40% of web traffic is misattributed to direct traffic due to broken UTM parameter tags.",
+        instructions: "Formulate a tracking audit protocol, fix attribution tags, and establish data governance guidelines.",
+        rubric: [
+          { criterion: "data_hygiene_audit", weight: 40, descriptor: "Diagnoses tracking tag and attribution failures." },
+          { criterion: "attribution_modeling", weight: 40, descriptor: "Establishes accurate multi-touch attribution." },
+          { criterion: "analytics_governance", weight: 20, descriptor: "Implements standardized campaign taxonomy." },
+        ],
+      },
+      M35: {
+        title: "Brand Governance & Media Compliance",
+        titleAr: "حوكمة العلامة التجارية والامتثال الإعلامي",
+        framework: "GCAM Advertising Regulations & Saudi Brand Guidelines",
+        focus: "Ensuring regulatory compliance in advertising, influencer marketing, and brand messaging.",
+        saudiContext: "Grounded in General Authority for Media Regulation (GCAM) and MOWAI guidelines.",
+        scenario: "A promotional campaign features influencer endorsements without displaying mandatory GCAM license disclaimers.",
+        instructions: "Evaluate legal compliance risks, rectify campaign assets, and design influencer compliance protocols.",
+        rubric: [
+          { criterion: "gcam_compliance", weight: 40, descriptor: "Identifies GCAM license disclaimer omissions." },
+          { criterion: "brand_risk", weight: 40, descriptor: "Protects organization against regulatory fines and brand damage." },
+          { criterion: "governance_policy", weight: 20, descriptor: "Establishes mandatory pre-release legal check." },
+        ],
+      },
+    };
+  }
+
+  // 4. Default Financial / Business / Accounting / Law / General Non-Tech
+  return {
+    M30: {
+      title: "Quantitative Analysis & Financial Data",
+      titleAr: "التحليل الكمي والبيانات المالية",
+      framework: "Financial Ratio Analysis & Trend Forecasting",
+      focus: "Analyzing financial trends, variance metrics, and quantitative indicators.",
+      saudiContext: "Aligned to SOCPA standards and Saudi financial reporting guidelines.",
+      scenario: "You are reviewing quarter-over-quarter financial metrics. Revenue increased 15% but net operating margin decreased by 8% due to unexpected overhead costs.",
+      instructions: "Identify the root cause of the margin squeeze, analyze cost variance, and recommend corrective financial controls.",
+      rubric: [
+        { criterion: "quantitative_analysis", weight: 40, descriptor: "Accurately interprets financial variance metrics." },
+        { criterion: "root_cause_diagnosis", weight: 40, descriptor: "Pinpoints overhead cost drivers accurately." },
+        { criterion: "financial_controls", weight: 20, descriptor: "Proposes actionable corrective controls." },
+      ],
+    },
+    M33: {
+      title: "Enterprise Systems & Financial ERP",
+      titleAr: "أنظمة المؤسسات والأنظمة المالية ERP",
+      framework: "Enterprise Resource Planning (ERP) & Audit Trail Governance",
+      focus: "Managing enterprise financial systems, audit trails, and segregation of duties.",
+      saudiContext: "Aligned to SAMA financial security and SOCPA audit compliance.",
+      scenario: "An organization is upgrading its ERP financial module (SAP/Oracle). A review finds that a single user role has permission to both create vendor accounts and approve payment disbursements.",
+      instructions: "Identify the internal control gap, explain the risk of segregation of duties failure, and design an authorized workflow.",
+      rubric: [
+        { criterion: "control_gap_identification", weight: 40, descriptor: "Identifies segregation of duties vulnerability." },
+        { criterion: "risk_explanation", weight: 40, descriptor: "Explains fraud and compliance risk clearly." },
+        { criterion: "workflow_design", weight: 20, descriptor: "Establishes dual-authorization control workflow." },
+      ],
+    },
+    M34: {
+      title: "Financial Reconciliation & Materiality",
+      titleAr: "التسوية المالية والأهمية النسبية",
+      framework: "General Ledger Reconciliation & Materiality Thresholds",
+      focus: "Reconciling accounts, identifying discrepancies, and applying materiality thresholds.",
+      saudiContext: "Aligned to SOCPA audit standards and ZATCA tax reconciliation rules.",
+      scenario: "During end-of-year audit preparation, a SAR 450,000 variance is identified between the general ledger accounts payable and vendor statement balances.",
+      instructions: "Outline a step-by-step reconciliation protocol, determine materiality, and specify required audit documentation.",
+      rubric: [
+        { criterion: "reconciliation_protocol", weight: 40, descriptor: "Structures clear step-by-step reconciliation." },
+        { criterion: "materiality_assessment", weight: 40, descriptor: "Evaluates variance against materiality threshold." },
+        { criterion: "audit_documentation", weight: 20, descriptor: "Specifies complete audit trail evidence." },
+      ],
+    },
+    M35: {
+      title: "Internal Controls & Corporate Governance",
+      titleAr: "الرقابة الداخلية والحوكمة المؤسسية",
+      framework: "COSO Internal Control Framework & SOCPA Governance",
+      focus: "Structuring internal controls, risk management, and governance policies.",
+      saudiContext: "Aligned to Saudi CMA Corporate Governance Regulations and SOCPA standards.",
+      scenario: "A mid-sized company's expense authorization policy allows department heads to approve purchases up to SAR 100,000 without procurement review or invoice matching.",
+      instructions: "Evaluate the control weaknesses, apply the COSO framework to strengthen authorization limits, and design a 3-way matching policy.",
+      rubric: [
+        { criterion: "control_evaluation", weight: 40, descriptor: "Identifies weak authorization boundaries." },
+        { criterion: "framework_application", weight: 40, descriptor: "Applies COSO framework to establish control activities." },
+        { criterion: "policy_formulation", weight: 20, descriptor: "Designs robust 3-way matching procurement policy." },
+      ],
+    },
+  };
+}
+
 function isComputerScienceSpecialization(spec: string): boolean {
   const norm = normalizeSpec(spec);
   return (
@@ -2862,6 +3113,19 @@ export function modulesForSpecialization(specialization: string): {
           ...m,
           ...repl,
           specialization: "Computer Science / IT",
+        };
+      }
+      return m;
+    });
+  } else {
+    const nonTechReplacements = getNonTechModuleReplacements(specialization);
+    baseModules = UNIVERSAL_MODULES.map((m) => {
+      const repl = nonTechReplacements[m.code];
+      if (repl) {
+        return {
+          ...m,
+          ...repl,
+          specialization,
         };
       }
       return m;

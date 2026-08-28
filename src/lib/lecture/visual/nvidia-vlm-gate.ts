@@ -30,7 +30,7 @@ export const NVIDIA_VLM_THRESHOLDS = {
 } as const;
 
 export const DEFAULT_NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1";
-export const DEFAULT_NVIDIA_MODEL = "meta/llama-3.2-11b-vision-instruct";
+export const DEFAULT_NVIDIA_MODEL = "nvidia/nemotron-3-nano-30b-a3b";
 
 // ---------------------------------------------------------------------------
 // Normalization Helper

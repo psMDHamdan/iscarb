@@ -177,7 +177,7 @@ export class AIQuestionGenerationService {
       rubric,
       coverage,
       generationMetadata: {
-        model: 'meta/llama-3.3-70b-instruct',
+        model: process.env.EXAM_LIVE_GENERATION_MODEL || process.env.OPENAI_CHAT_MODEL || 'nvidia/nemotron-3-nano-30b-a3b',
         tokensUsed: 0,
         latencyMs,
         generatedAt: new Date(),
@@ -260,7 +260,7 @@ OUTPUT SCHEMA:
         system: systemPrompt,
         user: userPrompt,
         temperature: 0.3,
-        model: 'meta/llama-3.3-70b-instruct',
+        model: process.env.EXAM_LIVE_GENERATION_MODEL || process.env.OPENAI_CHAT_MODEL || 'nvidia/nemotron-3-nano-30b-a3b',
       });
 
       const parsed = result.json ?? JSON.parse(result.content);

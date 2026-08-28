@@ -30,11 +30,15 @@ export async function parsePptx(buffer: Buffer): Promise<RawBlock[]> {
     .sort((a, b) => slideNo(a) - slideNo(b));
 
   const blocks: RawBlock[] = [];
-  for (const entry of slideEntries) {
-    const no = slideNo(entry);
-    const xml = await zip.file(entry)!.async("string");
-    const blocksForSlide = await parseSlide(xml, no, zip);
-    blocks.push(...blocksForSlide);
+  const CONCURRENCY = 4;
+  for (let i = 0; i < slideEntries.length; i += CONCURRENCY) {
+    const chunk = slideEntries.slice(i, i + CONCURRENCY);
+    const chunkBlocks = await Promise.all(chunk.map(async (entry) => {
+      const no = slideNo(entry);
+      const xml = await zip.file(entry)!.async("string");
+      return parseSlide(xml, no, zip);
+    }));
+    blocks.push(...chunkBlocks.flat());
   }
 
   // Fall back to slide layout ordering via notes/images if no slides found.

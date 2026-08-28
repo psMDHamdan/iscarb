@@ -35,7 +35,7 @@ const log = moduleLogger("jobfit-signup-generator");
 
 /** Strong model — Phase 5 explicitly forbids the 8B exam-era rewriter. */
 export const SIGNUP_JOBFIT_MODEL =
-  process.env.SIGNUP_JOBFIT_MODEL?.trim() || "meta/llama-3.1-70b-instruct";
+  process.env.SIGNUP_JOBFIT_MODEL?.trim() || "nvidia/nemotron-3-nano-30b-a3b";
 
 export type SignupJobFitSlotResult = {
   moduleCode: string;

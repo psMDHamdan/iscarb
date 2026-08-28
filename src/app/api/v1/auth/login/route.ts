@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { SESSION_COOKIE, type Role, signSessionJwt } from "@/lib/auth";
 import { AuthService } from "@/services/identity/AuthService";
 import { db } from "@/lib/db";
+import { enqueueSignupExamGeneration } from "@/lib/assessment/attempt-exam-generator";
 
 const LANDING: Partial<Record<Role, string>> = {
   student: "/assessment/employability",
@@ -77,6 +78,37 @@ export async function POST(req: NextRequest) {
       partner: "/coming-soon",
       auditor: "/coming-soon",
     };
+
+    // ── Pre-generate assessment questions in background for students ──────
+    // Fire-and-forget: the 47-question exam set is generated asynchronously
+    // so the login response returns instantly. By the time the student reaches
+    // /assessment/employability the questions are (partially) ready.
+    //
+    // NOTE: enqueueSignupExamGeneration expects the Student table ID (not User
+    // ID). We look up the student record via the User→Student relation, exactly
+    // as the signup route does (see signup/route.ts line 59-63).
+    if (role === "student") {
+      void (async () => {
+        try {
+          const userWithStudent = await db.user.findUnique({
+            where: { id: user.id },
+            select: {
+              student: {
+                select: { id: true, program: true, college: true },
+              },
+            },
+          });
+          const studentId = userWithStudent?.student?.id;
+          const specialization = userWithStudent?.student?.program || userWithStudent?.student?.college || null;
+          if (studentId && specialization) {
+            await enqueueSignupExamGeneration(studentId, specialization);
+          }
+        } catch (err) {
+          // Non-blocking — exam generation is best-effort at login time.
+          console.warn("[login] pre-generation enqueue failed:", err);
+        }
+      })();
+    }
 
     const res = NextResponse.json({ role, token, landing: landingMap[role] ?? "/" });
     res.cookies.set(SESSION_COOKIE, token, {

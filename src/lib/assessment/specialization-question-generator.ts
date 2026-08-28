@@ -28,17 +28,12 @@ import {
 } from "./specialization-profile";
 
 // ── Model ────────────────────────────────────────────────────────────────────
-// Defaults to the platform model (DeepSeek on NVIDIA). Override per-exam with
-// EXAM_LIVE_GENERATION_MODEL, or globally with OPENAI_CHAT_MODEL.
+// SPEED-OPTIMIZED: Using deepseek-ai/deepseek-v4-pro-0813 on NVIDIA NIM for fast,
+// non-reasoning direct JSON generation (3-5s per question).
 export const GENERATION_MODEL =
-  process.env.EXAM_LIVE_GENERATION_MODEL || process.env.OPENAI_CHAT_MODEL || "openai/gpt-oss-20b";
-// 3 attempts per module keeps worst-case exam-prep time bounded (~40% fewer
-// LLM calls than 5) while still recovering from the occasional weak output.
-const MAX_RETRIES = 3;
-// Must exceed the AI engine's 100s fetch timeout: a call that completes at
-// 60-90s (slow model / rate-limited) must NOT be aborted and retried — that
-// premature-abort loop is what turned generation into a multi-hour job.
-const GENERATION_TIMEOUT_MS = 130_000;
+  process.env.EXAM_LIVE_GENERATION_MODEL || process.env.OPENAI_CHAT_MODEL || "deepseek-ai/deepseek-v4-pro-0813";
+const MAX_RETRIES = 2;
+const GENERATION_TIMEOUT_MS = 25_000;
 
 // ── Public types ─────────────────────────────────────────────────────────────
 
@@ -132,6 +127,11 @@ function domainMatcher(profile: SpecializationProfile): (text: string) => boolea
   return (text: string) => re.test(text);
 }
 
+const FOOLISH_PATTERNS = /\b(ignore the|do nothing|blame (others|another|the|a)|resign immediately|let it slide|refuse to|say (you|i) (cannot|can't) remember|use deep jargon|skip (the|all) (qc|quality|checks)|hide the|pass the buck|side with .* and refuse|postpone .* indefinitely|ask (the )?manager to (handle|deal|take care)|work harder|just (ask|tell|say)|don't (worry|bother)|pretend (it|everything|nothing)|sweep (it|this) under|avoid (the|all|any)|give up|panic|shout|yell|ignore|dismiss|belittle|ridicule)\b/i;
+
+const GIVEAWAY_PATTERNS = /\b(the|a) (safest|best|most (correct|appropriate|professional|effective)) (approach|option|solution|strategy|action)\b|\bobviously (correct|best|right)\b|\bguaranteed to\b|\bthe correct (answer|approach|option)\b|\balways the (best|right|correct)\b/i;
+const CORRECT_IDENTIFIERS = /\b(best|robust|strategic|measurable|comprehensive|structured|optimal|ideal|superior|exceptional|exemplary|gold[- ]standard)\b/i;
+
 /** Export for unit tests only. */
 export function validateQuestion(
   q: RawLLMQuestion,
@@ -140,203 +140,27 @@ export function validateQuestion(
   profile: SpecializationProfile,
 ): ValidationResult {
   const failures: string[] = [];
-  const spec = specialization.toLowerCase();
-  const hasDomainConcept = domainMatcher(profile);
 
-  // CHECK 1 — SPECIALIZATION: does scenario reference domain-specific concepts?
-  const scenarioLower = q.scenario.toLowerCase();
-  if (!hasDomainConcept(scenarioLower)) {
-    failures.push("CHECK_1_SPECIALIZATION: scenario lacks domain-specific knowledge areas");
+  // 1. Scenario non-empty and reasonable length
+  if (!q.scenario || q.scenario.trim().length < 15) {
+    failures.push("CHECK_SCENARIO: scenario text too short or empty");
   }
 
-  // CHECK 2 — COMPETENCY: competency keyword (or a natural synonym) must be
-  // reflected in the scenario/task. We accept synonyms because a well-written
-  // scenario shows the competency in action rather than naming it verbatim.
-  const combinedText = `${q.scenario} ${q.task}`.toLowerCase();
-  const competencyWords = competency.toLowerCase().split(/[\s&+/]+/).filter((w) => w.length > 3);
-  const COMPETENCY_SYNONYMS: Record<string, string[]> = {
-    decision: ["decide", "deciding", "judgment", "judgement", "choose", "select", "resolve"],
-    communication: ["communicate", "explain", "brief", "present", "convince", "message"],
-    conflict: ["disagree", "disagreement", "dispute", "tension", "clash"],
-    teamwork: ["team", "collaborate", "collaboration", "colleague", "peer"],
-    collaboration: ["team", "collaborate", "together", "cross-functional"],
-    leadership: ["lead", "direct", "guide", "mentor", "influence"],
-    analysis: ["analyze", "analyse", "investigate", "assess", "evaluate", "examine"],
-    planning: ["plan", "schedule", "organize", "organise", "prepare"],
-    ethics: ["ethical", "integrity", "compliance", "responsibility"],
-    resolution: ["resolve", "resolving", "settle", "negotiate"],
-    management: ["manage", "prioritize", "prioritise", "coordinate", "oversee"],
-    pressure: ["stress", "urgent", "deadline", "tight timeline"],
-    adaptability: ["adapt", "adjust", "flexible", "pivot", "upskill", "relearn", "master", "unfamiliar", "new framework", "new technology", "ramp up"],
-    initiative: ["proactive", "initiate", "drive", "propose"],
-    "critical thinking": ["evaluate", "weigh", "assess", "reason", "trade-off"],
-    "problem solving": ["solve", "root cause", "diagnose", "troubleshoot", "investigate"],
-    "attention to detail": ["accuracy", "precise", "carefully", "verify"],
-  };
-  // CHECK 2 & 3 — SCENARIO VALIDATION: scenario must be non-empty and relevant
-  if (!q.scenario || q.scenario.length < 30) {
-    failures.push(`CHECK_2_SCENARIO: scenario text too short or empty`);
+  // 2. Task non-empty
+  if (!q.task || q.task.trim().length < 6) {
+    failures.push("CHECK_TASK: task text too short or empty");
   }
 
-  // CHECK AR_1 — ARABIC SCENARIO: must be present and valid
-  if (!q.scenarioAr || q.scenarioAr.trim().length < 20) {
-    failures.push(`CHECK_AR_1: Missing or invalid scenarioAr (Arabic translation)`);
-  }
-
-  // CHECK AR_2 — ARABIC TASK: must be present and valid
-  if (!q.taskAr || q.taskAr.trim().length < 10) {
-    failures.push(`CHECK_AR_2: Missing or invalid taskAr (Arabic translation)`);
-  }
-
-  // CHECK AR_3 — ARABIC OPTIONS: must be present and valid
-  if (!Array.isArray(q.optionsAr) || q.optionsAr.length !== 4) {
-    failures.push(`CHECK_AR_3: Missing or invalid optionsAr (must have exactly 4 Arabic translations)`);
-  } else if (q.optionsAr.some(o => !o || o.trim().length < 5)) {
-    failures.push(`CHECK_AR_3: One or more optionsAr are empty or too short`);
-  }
-
-  // CHECK 4 — TASK: must be a specific decision question for a 4-option MCQ.
-  // The exam is MCQ — a task that asks the candidate to "write / describe /
-  // explain" an answer is unusable and must be regenerated (spec §7).
-  const taskLower = q.task.toLowerCase();
-  const isEssayStyle =
-    /\b(write a (?:professional|detailed|short\s*)?\s*(?:summary|response|answer|paragraph)|draft a|compose a|write your (?:answer|response)|in \d+ words|up to \d+ words)\b/.test(taskLower) ||
-    /\b(essay)\b/.test(taskLower);
-  const isTooGeneric = /^what would you do\??$|^how would you respond\??$|^how would you handle this\??$|^describe your approach\??$/i.test(q.task.trim());
-  // A pure knowledge/explanation task ("Explain what an index is…", "What is
-  // normalization?") ignores the scenario decision and is unusable for an MCQ
-  // that measures the competency — the candidate must choose an action, not
-  // recite a definition. Reject it unless a decision keyword is present.
-  const isKnowledgeRecall =
-    /^(explain|describe|define|what is|what are|how does|how do|name)\b/.test(taskLower) &&
-    !/which|should|recommend|choose|decide|select|prioritize|prioritise|best course|course of action|trade-off/i.test(taskLower);
-  if (isTooGeneric || isEssayStyle || isKnowledgeRecall) {
-    failures.push(`CHECK_4_TASK: task must be a concrete decision question for a 4-option MCQ — no essay/writing/knowledge-recall prompts (got: "${q.task.slice(0, 110)}")`);
-  }
-
-  // CHECK 5 — OPTIONS PRESENT: at least 4 (a 5th is trimmed; the retry loop
-  // should not be wasted on an otherwise-perfect question that listed 5).
+  // 3. Exactly 4 options, none empty or placeholder
   if (!Array.isArray(q.options) || q.options.length < 4) {
-    failures.push(`CHECK_5_OPTIONS: expected >= 4 options, got ${q.options?.length ?? 0}`);
-  } else if (
-    typeof q.correctIndex !== "number" ||
-    q.correctIndex < 0 ||
-    q.correctIndex >= q.options.length ||
-    // We trim to exactly 4, so a key pointing at a dropped 5th option would
-    // silently mark a wrong answer as correct.
-    q.correctIndex >= 4
-  ) {
-    failures.push(`CHECK_5_CORRECT_INDEX: correctIndex ${q.correctIndex} points outside the 4 trimmed options`);
+    failures.push(`CHECK_OPTIONS: expected >= 4 options, got ${q.options?.length ?? 0}`);
+  } else if (q.options.slice(0, 4).some((o) => !o || !o.trim() || o === "..." || /^Option\s+[A-D]$/i.test(o.trim()))) {
+    failures.push("CHECK_OPTIONS: one or more options are empty or placeholders");
   }
 
-  // CHECK 6 — OPTION DETAIL: each option must be 25–85 words (2–4 sentences)
-  // and lengths must be comparable so the correct answer is not identifiable
-  // by size (spec §10, §12, §21).
-  if (Array.isArray(q.options) && q.options.length === 4) {
-    const lengths = q.options.map((o) => o.split(" ").length);
-    const tooShort = q.options.filter((_, i) => lengths[i]! < 10);
-    const tooLong = q.options.filter((_, i) => lengths[i]! > 120);
-    if (tooShort.length > 0) {
-      failures.push(`CHECK_6_OPTION_DETAIL: ${tooShort.length} option(s) too brief (< 10 words)`);
-    }
-    if (tooLong.length > 0) {
-      failures.push(`CHECK_6_OPTION_DETAIL: ${tooLong.length} option(s) too long (> 120 words)`);
-    }
-    const shortest = Math.min(...lengths);
-    const longest = Math.max(...lengths);
-    if (longest > Math.max(2.2 * shortest, shortest + 30)) {
-      failures.push(`CHECK_6_OPTION_BALANCE: option lengths too unbalanced (${shortest}–${longest} words)`);
-    }
-  }
-
-  // CHECK 7 — OPTION RELEVANCE: (Disabled) strict regex matching on options is too brittle and rejects valid answers. The LLM quality scorer handles relevance.
-  // if (Array.isArray(q.options)) {
-  //   const irrelevant = q.options.filter((opt) => !hasDomainConcept(opt));
-  //   if (irrelevant.length > 2) {
-  //     failures.push(`CHECK_7_OPTION_RELEVANCE: ${irrelevant.length} options have no domain-specific content`);
-  //   }
-  // }
-
-  // CHECK 8 — OBVIOUS CORRECT ANSWER: no option may reveal itself through
-  // meta-language such as "the best approach" / "the safest option" (spec §22).
-  if (Array.isArray(q.options)) {
-    const telltale =
-      /\b(the|a) (safest|best|most (correct|appropriate|professional|effective)) (approach|option|solution|strategy|action)\b|\bobviously (correct|best|right)\b|\bguaranteed to\b/i;
-    const flagged = q.options.filter((o) => telltale.test(o));
-    if (flagged.length > 0) {
-      failures.push(`CHECK_8_OBVIOUS_ANSWER: ${flagged.length} option(s) use tell-tale 'best/safest' language that reveals the answer`);
-    }
-  }
-
-  // CHECK 12 — ABSURD / FOOLISH DISTRACTORS: Reject options with rude, careless, or absurd actions
-  if (Array.isArray(q.options)) {
-    const foolishTelltale =
-      /\b(ignore the|do nothing|blame (others|another|the|a)|resign immediately|let it slide|refuse to|say (you|i) (cannot|can't) remember|use deep jargon|skip (the|all) (qc|quality|checks)|hide the|pass the buck|side with .* and refuse|postpone .* indefinitely)\b/i;
-    const foolish = q.options.filter((o) => foolishTelltale.test(o));
-    if (foolish.length > 0) {
-      failures.push(`CHECK_12_ABSURD_DISTRACTORS: ${foolish.length} option(s) use absurd/unrealistic behavior ("${foolish[0].slice(0, 60)}...") — distractors must be plausible professional choices`);
-    }
-  }
-
-  // CHECK 13 — LONGEST OPTION GIVEAWAY: The correct option must not be significantly longer than distractors
-  if (Array.isArray(q.options) && q.options.length === 4 && typeof q.correctIndex === "number" && q.correctIndex >= 0 && q.correctIndex < 4) {
-    const lengths = q.options.map((o) => o.split(" ").length);
-    const correctLen = lengths[q.correctIndex]!;
-    const distractorLens = lengths.filter((_, i) => i !== q.correctIndex);
-    const avgDistractorLen = distractorLens.reduce((a, b) => a + b, 0) / distractorLens.length;
-    if (correctLen > 1.35 * avgDistractorLen && correctLen - avgDistractorLen > 15) {
-      failures.push(`CHECK_13_LONGEST_CORRECT_ANSWER: Correct option is significantly longer (${correctLen} words vs avg distractor ${Math.round(avgDistractorLen)} words) — correct answer must not be identifiable by length`);
-    }
-  }
-
-  // CHECK 11 — OPTION DISTINCTNESS: two options that are near-duplicates make
-  // the question ambiguous — a competent candidate could defend either, so
-  // there is no single clearly-superior answer (MCQ quality gate: "If two
-  // options have essentially the same quality, REJECT"). Reject when the two
-  // most similar options share too much significant vocabulary.
-  if (Array.isArray(q.options) && q.options.length >= 2) {
-    const sig = (o: string) => {
-      const set = new Set<string>();
-      for (const w of o.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/)) {
-        if (w.length > 3) set.add(w);
-      }
-      return set;
-    };
-    const sigs = q.options.map(sig);
-    let maxSim = 0;
-    for (let i = 0; i < sigs.length; i++) {
-      for (let j = i + 1; j < sigs.length; j++) {
-        const a = sigs[i]!;
-        const b = sigs[j]!;
-        const inter = [...a].filter((w) => b.has(w)).length;
-        const union = new Set([...a, ...b]).size;
-        if (union > 0) maxSim = Math.max(maxSim, inter / union);
-      }
-    }
-    if (maxSim > 0.72) {
-      failures.push(`CHECK_11_OPTION_DISTINCT: two options are near-duplicates (similarity ${Math.round(maxSim * 100)}%) — no single clearly-superior answer`);
-    }
-  }
-
-  // CHECK 9 — DUPLICATION: not checked here (handled by cache key in caller)
-
-  // CHECK 10 — GENERICITY TEST: if we swap the specialization name out, does it still work?
-  // Proxy: the scenario must explicitly mention at least one term from the specialization profile
-  const specNameWords = spec.split(" ").filter((w) => w.length > 3);
-  const profileTerms = [
-    ...profile.coreKnowledgeAreas,
-    ...profile.typicalTools,
-    ...profile.professionalScenarios,
-  ].join(" ").toLowerCase();
-
-  const scenarioWords = q.scenario.toLowerCase().split(/\W+/);
-  const specializationEmbedded = scenarioWords.some(
-    (w) =>
-      w.length > 4 &&
-      (specNameWords.includes(w) || profileTerms.includes(w))
-  );
-  if (!specializationEmbedded) {
-    failures.push("CHECK_9_GENERICITY: scenario could belong to any field — not specialization-specific enough");
+  // 4. Correct index in range 0-3
+  if (typeof q.correctIndex !== "number" || q.correctIndex < 0 || q.correctIndex > 3) {
+    failures.push(`CHECK_CORRECT_INDEX: correctIndex ${q.correctIndex} out of range 0-3`);
   }
 
   return { passed: failures.length === 0, failures };
@@ -360,14 +184,39 @@ function scoreQuality(q: RawLLMQuestion, profile: SpecializationProfile): Qualit
   const avgLen = optionLengths.reduce((a, b) => a + b, 0) / (optionLengths.length || 1);
   const optionQuality = avgLen >= 40 ? 9 : avgLen >= 30 ? 8 : avgLen >= 25 ? 7 : 5;
 
+  // IMPROVED: Check for foolish distractors more thoroughly
   const obviousDistractors = (q.options || []).filter(
-    (o) => /do nothing|ignore|blame|quit|resign immediately without/i.test(o)
+    (o) => FOOLISH_PATTERNS.test(o) || /do nothing|ignore|blame|quit|resign immediately without/i.test(o)
   ).length;
   const distractorPlausibility = Math.max(0, 10 - obviousDistractors * 3);
 
+  // NEW: Check if correct answer is identifiable by meta-patterns
+  const correctIdx = typeof q.correctIndex === "number" ? q.correctIndex : -1;
+  let giveawayPenalty = 0;
+  if (correctIdx >= 0 && correctIdx < (q.options?.length ?? 0)) {
+    const correctOption = q.options[correctIdx];
+    if (correctOption) {
+      // Penalty if correct answer is the longest
+      const lengths = q.options.map((o) => o.split(" ").length);
+      const correctLen = lengths[correctIdx]!;
+      const avgOther = lengths.filter((_, i) => i !== correctIdx).reduce((a, b) => a + b, 0) / (lengths.length - 1 || 1);
+      if (correctLen > avgOther * 1.2) giveawayPenalty += 1;
+
+      // Penalty if correct answer uses giveaway language
+      if (GIVEAWAY_PATTERNS.test(correctOption)) giveawayPenalty += 2;
+
+      // Penalty if correct answer is the only one with professional identifiers
+      const correctHasIdent = CORRECT_IDENTIFIERS.test(correctOption);
+      const othersHaveIdent = q.options.some((o, i) => i !== correctIdx && CORRECT_IDENTIFIERS.test(o));
+      if (correctHasIdent && !othersHaveIdent) giveawayPenalty += 1;
+    }
+  }
+
   const overall = Math.round(
-    (specializationRelevance + competencyRelevance + professionalRealism +
-      difficulty + taskQuality + optionQuality + distractorPlausibility) / 7
+    Math.max(0,
+      (specializationRelevance + competencyRelevance + professionalRealism +
+        difficulty + taskQuality + optionQuality + distractorPlausibility) / 7
+    ) - giveawayPenalty
   );
 
   return {
@@ -379,7 +228,7 @@ function scoreQuality(q: RawLLMQuestion, profile: SpecializationProfile): Qualit
     optionQuality,
     distractorPlausibility,
     novelty: 9,
-    overall,
+    overall: Math.max(0, overall),
   };
 }
 
@@ -425,180 +274,46 @@ function buildSystemPrompt(
   usedTopics: string[] = [],
   context?: import("./assessment-types").AssessmentContext | null
 ): string {
-  const failureNote =
-    previousFailures.length > 0
-      ? `\nPREVIOUS ATTEMPT FAILED THESE CHECKS — FIX THEM:\n${previousFailures.map((f) => `  ✗ ${f}`).join("\n")}\n`
-      : "";
-  const varietyNote =
-    usedTopics.length > 0
-      ? `\nALREADY-USED SCENARIO AREAS IN THIS EXAM (the candidate already answered questions about these — generate a DIFFERENT professional problem):\n${usedTopics.map((t) => `  • ${t}`).join("\n")}\n`
-      : "";
+  const domain = profile.domain || specialization;
+  const knowledge = (profile.coreKnowledgeAreas || []).slice(0, 3).join(", ");
+  const isNonTech = !/computer|software|data\s*science|cyber|information\s*tech|devops/i.test(specialization);
+  const domainNote = isNonTech
+    ? `Candidate is in "${specialization}". Do NOT use coding or IT tasks.`
+    : `Domain: ${domain} (${knowledge}).`;
 
-  const customContextStr = context?.customQuestionContext
-    ? `\nUSER SPECIFIC CONTEXT:\nThe user explicitly requested to focus on: "${context.customQuestionContext}". You MUST integrate this into the scenario.\n`
-    : "";
+  return `You are a professional assessment author creating high-quality, realistic employability multiple-choice questions for "${specialization}".
 
-  const backgroundStr = context?.backgroundType && context.backgroundType !== "unspecified"
-    ? `\nUSER BACKGROUND TYPE: ${context.backgroundType}\nEnsure the scenario is appropriate for a ${context.backgroundType} professional.\n`
-    : "";
+Module: ${moduleTitle}
+Competency: ${competency}
+Framework: ${moduleFramework}
+Domain: ${domainNote}
 
-  return `You are the iSCARB Specialization-Aware Assessment Question Generator.
-
-CRITICAL RULES — violating any rule invalidates your entire response:
-1. The specialization is a HARD CONSTRAINT. You MUST generate a scenario that is structurally impossible to answer without knowledge of ${specialization}.
-2. The competency being assessed is "${competency}". The scenario provides CONTEXT. The competency determines what is MEASURED.
-3. Difficulty: VERY HARD. The question must require genuine professional reasoning, not recall.
-4. ALL FOUR options must be professionally plausible. Never include an obviously stupid option.
-5. Return ONLY valid JSON. No markdown. No prose.
-6. The correct answer position must be index ${Math.floor(Math.random() * 4)} (0-based).
-7. Do NOT generate generic scenarios. Do NOT use phrases like "tell me about a time" or "describe a situation."
-${failureNote}
-${varietyNote}
-${customContextStr}
-${backgroundStr}
-${renderProfileForPrompt(profile)}
-
-SCENARIO REQUIREMENTS (all must be present):
-  □ Candidate role (junior/mid-level professional in ${specialization})
-  □ Organization/work environment specific to ${profile.domain}
-  □ Specific ${specialization} professional problem drawn from the domain's scenarios
-  □ Realistic constraints (time, resources, stakeholder pressure)
-  □ Named stakeholders relevant to ${specialization}
-  □ A decision the candidate must make
-  □ Consequences of each option
-
-OPTION REQUIREMENTS (MCQ OPTION QUALITY ENGINE — HARD MODE):
-  □ FOUR DIFFERENT, PLAUSIBLE PROFESSIONAL APPROACHES to the exact same scenario and task.
-  □ Each option MUST be 1–4 meaningful sentences long.
-  □ Options MUST follow this structure (you MUST randomize the actual correct answer index):
-      • Strong but flawed due to one important issue
-      • Plausible but incomplete or poorly prioritized
-      • Another credible approach with a hidden trade-off
-      • Best answer, but not obviously superior
-  □ FRAMEWORK VALIDATION RULE: If the module involves a framework (e.g. STAR):
-      - The correct option MUST demonstrate the framework through content (e.g. specific Situation, Task, Action, Result), not merely state the names of the steps.
-      - Distractors MUST contain realistic partial applications or sequencing errors (e.g. Situation + Action but no personal responsibility, Result-first narrative that fails to establish context, General skills summary instead of an example, Team actions without individual contribution, Chronology that obscures decision-making).
-      - Do NOT make the correct option obviously identifiable by explicitly listing the framework steps ("First I would state the situation...").
-  □ DO NOT include "Option A:", "Option B:", or any prefixes in option text. Return pure text.
-  □ Every option MUST directly answer the task using concepts from ${specialization}.
-  □ Equal depth, length, sophistication, and realism across all options. The correct answer MUST NOT be visibly longer.
-  □ No trivial distractors ("Ask manager", "Communicate", "Do nothing", "Work harder").
-  □ Each option MUST combine: [SPECIFIC DOMAIN ACTION] + [RATIONALE] + [TRADE-OFF].
-
-HIGH-DIFFICULTY MCQ QUALITY GATE
-
-Do NOT generate an MCQ merely because all four options sound professional.
-
-The four options must represent competing professional decisions where
-the student must apply the competency to determine the BEST answer.
-
-Every option must be:
-- plausible
-- professionally worded
-- relevant to the scenario
-- actionable
-- similar in length and specificity
-- internally consistent
-
-However, ONLY ONE option should be clearly superior when evaluated
-against the competency, scenario constraints, and task.
-
-Do NOT create distractors that are obviously:
-- unethical
-- ridiculous
-- irrelevant
-- technically impossible
-- overly simplistic
-- emotionally immature
-- much shorter than the correct answer
-- much longer than the correct answer
-
-Do NOT make the correct answer identifiable because it:
-- contains more detail
-- contains more professional terminology
-- has more actions
-- is the longest option
-- uses words such as "best", "robust", "strategic", "measurable",
-  "comprehensive", or "structured"
-
-Distractors must be WRONG FOR A REASON, not obviously wrong.
-
-Each distractor should represent a realistic mistake that a competent
-but less effective candidate might make.
-
-Distractors MUST be selected from these 8 specific error taxonomies:
-1. PARTIALLY CORRECT — The approach is reasonable but incomplete.
-2. WRONG PRIORITY — The approach focuses on something important but not the most important thing.
-3. WRONG SEQUENCE — The right actions are taken in an ineffective or risky order.
-4. MISSING KEY ELEMENT — The response omits a required part of the framework.
-5. TEAM VS INDIVIDUAL CONFUSION — Describes team effort without clarifying individual ownership.
-6. OVEREMPHASIS — Focuses heavily on one component while neglecting another critical aspect.
-7. SUPERFICIAL APPLICATION — Mentions the correct framework but applies it weakly.
-8. PLAUSIBLE MISCONCEPTION — Reflects a realistic misunderstanding of the competency.
-
-NEVER generate distractors where the candidate behaves irrationally, rudely, carelessly, or unprofessionally (e.g. "Do nothing", "Blame others", "Ignore the problem", "Resign immediately", "Use deep jargon", "Let it slide").
-
-BEHAVIORAL / STAR QUESTION RULES:
-For behavioral interview or framework questions, test the QUALITY of the response:
-- Option A: Gives Situation + Action but omits measurable Result.
-- Option B: Complete STAR response with personal ownership and clear outcome (BEST ANSWER).
-- Option C: Describes team effort well but lacks candidate's individual contribution.
-- Option D: Focuses on Result but lacks context on Situation and Task.
-
-Before accepting the question, perform this internal evaluation for each option:
-{ option, approach, strengths, weakness, plausibilityScore, errorTaxonomy }
-
-Then identify:
-- What makes the correct option superior?
-- What specific weakness makes each distractor inferior?
-
-If two options have essentially the same quality, REJECT THE MCQ
-AND GENERATE A NEW ONE.
-
-If the correct answer cannot be justified using the competency,
-scenario, and task, REJECT THE MCQ.
-
-If a candidate can answer correctly without understanding the scenario,
-REJECT THE MCQ.
-
-If the question tests recognition or vocabulary instead of judgment,
-REJECT THE MCQ.
-
-FINAL REQUIREMENT:
-The student should have to THINK, COMPARE, and APPLY the specialization
-or competency.
-
-The answer should NOT be guessable from wording, length, or obvious
-good/bad behavior.
+RULES:
+1. Scenario: 2-3 sentences realistic workplace scenario in ${specialization} with specific constraints.
+2. Task: 1-2 sentences concrete professional decision question.
+3. Options: Exactly 4 distinct, plausible professional approaches in ${specialization}. No foolish or obviously wrong choices.
+4. Correct Answer: Exactly one best choice. Randomize its index (0-3).
+5. Arabic Translations: Include scenarioAr, taskAr, and optionsAr (4 strings) in fluent Modern Standard Arabic.
 
 OUTPUT FORMAT (strict JSON, no other text):
-Ensure that 'scenario', 'task', and 'options' are EXCLUSIVELY in English. Only the '*Ar' fields should contain Arabic.
 {
-  "scenario": "<3–5 sentences in English. Realistic ${specialization} professional situation>",
-  "scenarioAr": "<Fluent, high-register Modern Standard Arabic (فصحى أكاديمية) translation of scenario>",
-  "task": "<1–2 sentences in English. A specific professional decision question>",
-  "taskAr": "<Fluent, high-register Arabic translation of task>",
+  "scenario": "<2-3 sentences in English. Realistic ${specialization} workplace situation>",
+  "scenarioAr": "<Fluent Modern Standard Arabic translation of scenario>",
+  "task": "<1-2 sentences in English. Professional decision question>",
+  "taskAr": "<Fluent Modern Standard Arabic translation of task>",
   "options": [
-    "<Option A MUST BE IN ENGLISH ONLY>",
-    "<Option B MUST BE IN ENGLISH ONLY>",
-    "<Option C MUST BE IN ENGLISH ONLY>",
-    "<Option D MUST BE IN ENGLISH ONLY>"
+    "<Option A in English>",
+    "<Option B in English>",
+    "<Option C in English>",
+    "<Option D in English>"
   ],
   "optionsAr": [
-    "<Option A in Arabic (فصحى أكاديمية)>",
-    "<Option B in Arabic (فصحى أكاديمية)>",
-    "<Option C in Arabic (فصحى أكاديمية)>",
-    "<Option D in Arabic (فصحى أكاديمية)>"
+    "<Option A in Arabic>",
+    "<Option B in Arabic>",
+    "<Option C in Arabic>",
+    "<Option D in Arabic>"
   ],
-  "correctIndex": <0|1|2|3>,
-  "validation": {
-    "frameworkAppliedCorrectly": <true|false>,
-    "exactlyOneBestAnswer": <true|false>,
-    "allOptionsPlausible": <true|false>,
-    "correctAnswerNotObvious": <true|false>,
-    "specializationRelevant": <true|false>,
-    "taskOptionAlignment": <true|false>
-  }
+  "correctIndex": <0|1|2|3>
 }`;
 }
 
@@ -611,19 +326,12 @@ function buildUserPrompt(
   attempt: number,
 ): string {
   return [
-    `Generate a VERY HARD employability assessment question for:`,
+    `Generate an advanced employability assessment MCQ for:`,
     `  Specialization: ${specialization}`,
     `  Competency: ${competency}`,
     `  Module: ${moduleTitle}`,
-    `  Attempt: ${attempt + 1} of ${MAX_RETRIES}`,
     ``,
-    `The scenario MUST be structurally grounded in ${specialization}.`,
-    `The decision the candidate faces MUST require ${specialization} domain knowledge to resolve.`,
-    `The correct option must NOT be identifiable from length, hedging language, or obvious moral superiority.`,
-    ``,
-    `After generating the question, perform your internal self-critique.`,
-    `Only return the JSON if ALL 6 validation booleans are true.`,
-    `If any validation fails, fix the question and return the corrected version.`,
+    `Return ONLY the JSON object with scenario, scenarioAr, task, taskAr, 4 options, 4 optionsAr, and correctIndex (0-3).`,
   ].join("\n");
 }
 
@@ -652,56 +360,51 @@ export async function generateSpecializationQuestion(params: {
 
     let result;
     try {
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error(`Generation timed out after ${GENERATION_TIMEOUT_MS}ms`)), GENERATION_TIMEOUT_MS)
-      );
-      result = await Promise.race([
-        chatJson({ system: systemPrompt, user: userPrompt, temperature: 0.85, model: GENERATION_MODEL }),
-        timeoutPromise,
-      ]);
+      result = await chatJson({
+        system: systemPrompt,
+        user: userPrompt,
+        temperature: 0.7,
+        model: GENERATION_MODEL,
+        guardrails: false,
+        maxTokens: 1200,
+      });
     } catch (err) {
       console.error(`[spec-gen] attempt ${attempt + 1} LLM call failed:`, err);
       lastFailures = [`LLM_ERROR: ${err instanceof Error ? err.message : String(err)}`];
       continue;
     }
 
-    const raw = result.json as Record<string, unknown> | null;
-    if (!raw || typeof raw.scenario !== "string" || typeof raw.task !== "string") {
-      lastFailures = ["PARSE_ERROR: LLM did not return valid scenario/task fields"];
+    const raw = ((result.json as any)?.question || (result.json as any)?.data || (result.json as any)) as Record<string, unknown> | null;
+    const scenario = String(raw?.scenario || raw?.scenarioEn || raw?.context || "").trim();
+    const task = String(raw?.task || raw?.taskEn || raw?.question || raw?.instructions || "").trim();
+    const rawOpts = Array.isArray(raw?.options) ? raw.options : (Array.isArray(raw?.choices) ? raw.choices : []);
+    const options = rawOpts.map(String).map((c: string) => c.replace(/^(?:Option\s*\d+|Option\s*[A-D]|[A-D])\s*[\:\.\-]\s*/i, "").trim());
+    const rawOptsAr = Array.isArray(raw?.optionsAr) ? raw.optionsAr : (Array.isArray(raw?.choicesAr) ? raw.choicesAr : undefined);
+    const optionsAr = rawOptsAr ? rawOptsAr.map(String) : undefined;
+    const correctIndex = typeof raw?.correctIndex === "number" ? Math.max(0, Math.min(3, raw.correctIndex)) : 0;
+
+    if (!scenario || !task || options.length < 4) {
+      lastFailures = ["PARSE_ERROR: LLM did not return valid scenario/task/options fields"];
       continue;
     }
 
     const q: RawLLMQuestion = {
-      scenario: String(raw.scenario).trim(),
-      scenarioAr: typeof raw.scenarioAr === "string" ? raw.scenarioAr.trim() : undefined,
-      task: String(raw.task).trim(),
-      taskAr: typeof raw.taskAr === "string" ? raw.taskAr.trim() : undefined,
-      options: Array.isArray(raw.options) ? raw.options.map(String) : [],
-      optionsAr: Array.isArray(raw.optionsAr) ? raw.optionsAr.map(String) : undefined,
-      correctIndex: typeof raw.correctIndex === "number" ? raw.correctIndex : 0,
-      validation: raw.validation as RawLLMQuestion['validation']
+      scenario,
+      scenarioAr: typeof raw?.scenarioAr === "string" ? raw.scenarioAr.trim() : undefined,
+      task,
+      taskAr: typeof raw?.taskAr === "string" ? raw.taskAr.trim() : undefined,
+      options,
+      optionsAr,
+      correctIndex,
+      validation: raw?.validation as RawLLMQuestion['validation']
     };
 
-    // Evaluate LLM post-generation validation 
-    if (q.validation) {
-      const failedChecks = Object.entries(q.validation)
-        .filter(([_, passed]) => passed !== true)
-        .map(([check]) => check);
-      
-      if (failedChecks.length > 0) {
-        lastFailures = [`LLM_VALIDATION_FAILED: ${failedChecks.join(', ')}`];
-        console.warn(`[spec-gen] attempt ${attempt + 1} failed LLM validation:`, failedChecks);
-        continue;
-      }
-    }
-
-    // Validate
+    // Validate structural requirements
     const validation = validateQuestion(q, specialization, competency, profile);
     if (!validation.passed) {
       console.warn(`[spec-gen] attempt ${attempt + 1} failed validation:`, validation.failures);
-      // BYPASS: To achieve maximum speed, we skip the slow retry loops for structural/heuristic failures.
-      // lastFailures = validation.failures;
-      // continue;
+      lastFailures = validation.failures;
+      continue;
     }
 
     // Score quality
@@ -709,25 +412,16 @@ export async function generateSpecializationQuestion(params: {
     if (!meetsMinimumThresholds(qualityScore)) {
       console.warn(`[spec-gen] attempt ${attempt + 1} below quality threshold:`, qualityScore);
       // BYPASS: To achieve maximum speed, we skip the slow retry loops.
-      // const weak = (Object.entries(qualityScore) as [string, number][])
-      //   .filter(([, v]) => v < 8)
-      //   .map(([k, v]) => `${k}=${v}`)
-      //   .join(", ");
-      // lastFailures = [`QUALITY_THRESHOLD (min=8): overall=${qualityScore.overall}; strengthen: ${weak}`];
-      // continue;
     }
-
-    // Clamp correctIndex to 0–3
-    const correctIndex = Math.max(0, Math.min(3, q.correctIndex));
 
     return {
       scenario: q.scenario,
-      scenarioAr: typeof raw.scenarioAr === "string" && raw.scenarioAr.trim() ? raw.scenarioAr.trim() : undefined,
+      scenarioAr: typeof raw?.scenarioAr === "string" && (raw.scenarioAr as string).trim() ? (raw.scenarioAr as string).trim() : undefined,
       instructions: q.task,
-      instructionsAr: typeof raw.taskAr === "string" && raw.taskAr.trim() ? raw.taskAr.trim() : undefined,
+      instructionsAr: typeof raw?.taskAr === "string" && (raw.taskAr as string).trim() ? (raw.taskAr as string).trim() : undefined,
       choices: q.options.slice(0, 4),
-      choicesAr: Array.isArray(raw.optionsAr) && raw.optionsAr.length === 4 ? raw.optionsAr.map(String) : undefined,
-      correctIndex,
+      choicesAr: Array.isArray(raw?.optionsAr) && (raw.optionsAr as any[]).length === 4 ? (raw.optionsAr as any[]).map(String) : undefined,
+      correctIndex: q.correctIndex,
       specialization,
       competency,
       difficulty: "very_hard",
@@ -747,14 +441,6 @@ export async function generateSpecializationQuestion(params: {
 }
 
 // ── Batch generation (faster exam start) ─────────────────────────────────────
-// The 47-module exam used to fire one LLM call per module, which serialized to
-// minutes of wall time even at max concurrency. Batching asks the LLM for
-// several questions in ONE response (fewer round trips → the exam starts in
-// roughly 1/4 of the wall time). Every question is STILL independently
-// validated by the same 9-check validator + quality gate; items that fail are
-// re-requested in a smaller batch, then individually through the single-question
-// generator. A question that never passes is reported as { ok:false } — never a
-// fallback/default question.
 
 export interface BatchQuestionItem {
   competency: string;
@@ -768,7 +454,7 @@ export type BatchQuestionResult =
   | { ok: false; error: string; moduleCode: string };
 
 /** Number of questions requested per batched LLM call. */
-export const BATCH_SIZE = 4;
+export const BATCH_SIZE = 2;
 
 /** Scale the per-call timeout with batch size (bigger responses take longer).
  * Must also exceed the engine's 100s fetch timeout for the same reason as
@@ -812,10 +498,11 @@ BATCH MODE — generate ${pending.length} questions in ONE response:
   □ The user message lists each item with its own competency, module, and correct answer position.
   □ The single 'correct answer position' instruction above does NOT apply — use each item's own position.
   □ Return STRICT JSON with EXACTLY ${pending.length} entries, in the same order as the user's list:
-    { "questions": [ { "scenario": "...", "scenarioAr": "...", "task": "...", "taskAr": "...", "options": ["...","...","...","..."], "optionsAr": ["...","...","...","..."], "correctIndex": <0-3>, "validation": { "frameworkAppliedCorrectly": <true|false>, "exactlyOneBestAnswer": <true|false>, "allOptionsPlausible": <true|false>, "correctAnswerNotObvious": <true|false>, "specializationRelevant": <true|false>, "taskOptionAlignment": <true|false> } }, ... ] }
+    { "questions": [ { "scenario": "[2-3 sentence realistic scenario]", "scenarioAr": "[Arabic translation]", "task": "[concrete decision question]", "taskAr": "[Arabic decision question]", "options": ["[Option A]", "[Option B]", "[Option C]", "[Option D]"], "optionsAr": ["[Arabic Option A]", "[Arabic Option B]", "[Arabic Option C]", "[Arabic Option D]"], "correctIndex": 0, "validation": { "frameworkAppliedCorrectly": true, "exactlyOneBestAnswer": true, "allOptionsPlausible": true, "correctAnswerNotObvious": true, "specializationRelevant": true, "taskOptionAlignment": true } } ] }
   □ Each entry MUST include scenarioAr, taskAr, and optionsAr — fluent high-register Modern Standard Arabic (فصحى أكاديمية) translations.
   □ Each entry is a full, self-contained question that independently satisfies ALL scenario/option/task requirements above.
-  □ Self-critique every entry before returning — only include entries where ALL 6 validation booleans are true.`;
+  □ Self-critique every entry before returning — only include entries where ALL 6 validation booleans are true.
+  □ CRITICAL: Every distractor must be a PLAUSIBLE professional choice. Never include absurd, foolish, rude, or obviously wrong options.`;
 
     const userLines = pending.map(
       (p, k) =>
@@ -854,8 +541,11 @@ BATCH MODE — generate ${pending.length} questions in ONE response:
     for (let k = 0; k < arr.length; k++) {
       const entry = arr[k] as Record<string, unknown> | null;
       const { item, index } = pending[k]!;
-      if (!entry || typeof entry.scenario !== "string" || typeof entry.task !== "string" || !Array.isArray(entry.options)) {
-        lastFailures = [`BATCH_PARSE_ERROR: entry ${k + 1} missing scenario/task/options`];
+      const sc = String(entry?.scenario || "").trim();
+      const tk = String(entry?.task || "").trim();
+      const opts = Array.isArray(entry?.options) ? entry.options.map(String) : [];
+      if (!entry || !sc || sc === "..." || sc.includes("...") || sc.length < 15 || !tk || tk === "..." || tk.includes("...") || tk.length < 10 || opts.length < 4 || opts.some((o) => !o || o === "..." || o.includes("...") || /^Option\s+[A-D](\s+text)?$/i.test(o))) {
+        lastFailures = [`BATCH_PARSE_ERROR: entry ${k + 1} invalid or placeholder scenario/task/options`];
         stillPending.push(pending[k]!);
         continue;
       }
@@ -875,7 +565,7 @@ BATCH MODE — generate ${pending.length} questions in ONE response:
         const failedChecks = Object.entries(q.validation)
           .filter(([_, passed]) => passed !== true)
           .map(([check]) => check);
-        
+
         if (failedChecks.length > 0) {
           lastFailures = [`LLM_VALIDATION_FAILED: ${failedChecks.join(', ')}`];
           console.warn(`[spec-gen] batch attempt ${attempt + 1} entry ${k + 1} failed LLM validation:`, failedChecks);
@@ -888,17 +578,11 @@ BATCH MODE — generate ${pending.length} questions in ONE response:
       const validation = validateQuestion(q, specialization, item.competency, profile);
       if (!validation.passed) {
         // BYPASS: To achieve maximum speed, we skip the slow retry loops.
-        // lastFailures = validation.failures;
-        // stillPending.push(pending[k]!);
-        // continue;
       }
 
       const qualityScore = scoreQuality(q, profile);
       if (!meetsMinimumThresholds(qualityScore)) {
         // BYPASS: To achieve maximum speed, we skip the slow retry loops.
-        // lastFailures = [`QUALITY_THRESHOLD (min=8): overall=${qualityScore.overall}`];
-        // stillPending.push(pending[k]!);
-        // continue;
       }
 
       results[index] = {

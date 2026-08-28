@@ -51,35 +51,8 @@ export function UploadDropzone({ onFile, busy, className }: Props) {
   );
 
   const processFile = async (file: File) => {
-    const ext = "." + (file.name.split(".").pop() ?? "").toLowerCase();
-    
-    // Perform Client-side OCR if it's an image
-    if (IMAGE_TYPES.includes(ext)) {
-      setIsOcring(true);
-      setOcrProgress(0);
-      setOcrStatus(ar ? "جاري التعرف على النصوص..." : "Recognizing text...");
-      try {
-        const worker = await Tesseract.createWorker(['eng', 'ara'], 1, {
-          logger: (m) => {
-            if (m.status === "recognizing text") {
-              setOcrProgress(Math.round(m.progress * 100));
-            }
-          }
-        });
-        
-        const { data: { text } } = await worker.recognize(file);
-        await worker.terminate();
-        
-        onFile(file, text);
-      } catch (err) {
-        console.error("OCR failed:", err);
-        setError(ar ? "فشل التعرف الضوئي على الحروف" : "OCR processing failed");
-      } finally {
-        setIsOcring(false);
-      }
-    } else {
-      onFile(file);
-    }
+    // Client-side OCR is too slow; send file directly to backend for OCR
+    onFile(file);
   };
 
   const handleDrop = (e: React.DragEvent) => {

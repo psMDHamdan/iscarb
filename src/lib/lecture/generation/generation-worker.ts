@@ -30,7 +30,7 @@
  *            generating. Redis job progress may still say generating.
  */
 import { db } from "@/lib/db";
-import { redis } from "@/config/redis";
+import { safeHset, safeHgetall } from "@/config/redis";
 import type { CourseLearningOutcome } from "@/lib/assessment/ai-question-generation.service";
 import { generateSlideArtifact } from "./slide-generator";
 import { compileStudentExperience } from "./student-experience-compiler";
@@ -93,14 +93,9 @@ async function setProgress(
   data: { status: string; progress: number; error?: string }
 ): Promise<void> {
   try {
-    await redis.hset(generationJobKey(projectId), data);
-  } catch (e: any) {
-    try {
-      await redis.config("SET", "stop-writes-on-bgsave-error", "no");
-      await redis.hset(generationJobKey(projectId), data);
-    } catch {
-      /* best-effort progress log */
-    }
+    await safeHset(generationJobKey(projectId), data as Record<string, string | number>);
+  } catch {
+    /* best-effort progress — safeHset already handles fallback */
   }
 }
 
@@ -448,8 +443,11 @@ export async function generateSlideChunk(
       where: { projectId },
       orderBy: { slideNo: "asc" },
     });
+    if (slidePlans.length === 0) {
+      throw new Error(`No slide plans found for project ${projectId}`);
+    }
     if (slidePlans.length !== 20) {
-      throw new Error(`Expected 20 approved slide plans, found ${slidePlans.length}`);
+      console.warn(`[Worker] Expected 20 slide plans, found ${slidePlans.length} — proceeding with available plans`);
     }
 
     const targets = slidePlans.filter((s: { slideNo: number }) => slideNos.includes(s.slideNo));

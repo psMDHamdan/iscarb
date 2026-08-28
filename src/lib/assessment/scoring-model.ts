@@ -9,7 +9,7 @@
 import "server-only";
 
 /** Fast small Llama on the NVIDIA API. Override via EXAM_SCORING_MODEL. */
-export const SCORING_MODEL = process.env.EXAM_SCORING_MODEL || "meta/llama-3.1-8b-instruct";
+export const SCORING_MODEL = process.env.EXAM_SCORING_MODEL || "nvidia/nemotron-3-nano-30b-a3b";
 
 /** Resolve the model for a scoring call, preferring the fast scoring model. */
 export function scoringModel(_moduleModelTag: string): string {

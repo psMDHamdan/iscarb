@@ -552,10 +552,12 @@ export async function projectLegacyStudentExperience({
     let rawImg: string | undefined;
     if (visualSpec?.facultyUploadedUrl) {
       rawImg = visualSpec.facultyUploadedUrl;
-    } else if (storedIsLocalUpload) {
+    } else if (visualSpec?.fetchedImageUrl) {
+      rawImg = visualSpec.fetchedImageUrl;
+    } else if (visualSpec?.imageUrl) {
+      rawImg = visualSpec.imageUrl;
+    } else if (storedIsLocalUpload && storedRaw) {
       rawImg = storedRaw;
-    } else if (isStrongMatch) {
-      rawImg = matchedVisual.imageUrl;
     } else if (storedRaw && !storedIsBad) {
       rawImg = storedRaw;
     } else {

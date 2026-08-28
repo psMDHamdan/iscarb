@@ -83,7 +83,7 @@ export const POST = guard({ tier: "ai", roles: ["student", "faculty", "admin"] }
       feedback: scored.feedback,
       strengths: scored.strengths,
       improvements: scored.improvements,
-      model: scored.model || "openai/gpt-oss-20b",
+      model: scored.model || "nvidia/nemotron-3-nano-30b-a3b",
       source: scored.source,
       latencyMs: scored.latencyMs,
     },

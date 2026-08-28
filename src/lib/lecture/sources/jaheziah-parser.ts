@@ -11,7 +11,7 @@ import { chatJson } from "@/lib/ai-engine";
 import { NATIONAL_STANDARD_SCHEMA_HINT } from "./jaheziah-schema";
 import type { NationalStandard } from "./types";
 
-const MODEL = "openai/gpt-oss-20b";
+const MODEL = "nvidia/nemotron-3-nano-30b-a3b";
 
 export class JaheziahParseError extends Error {
   constructor(message: string) {

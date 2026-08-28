@@ -277,88 +277,62 @@ export async function resolveExamModulesFromLiveGeneration(
     const failures: { code: string; error: string }[] = [];
     let liveGenerated = 0;
 
-    // Shared accumulator of already-generated scenario topics (best-effort —
-    // workers complete concurrently, so later batches see the topics finished
-    // so far; sibling questions within a batch are differentiated by their own
-    // module/competency in the batch prompt).
     const usedTopics: string[] = [];
 
-    // One batched LLM call per BATCH_SIZE modules → ~12 calls instead of 47.
-    const chunks: AssessmentModuleSpec[][] = [];
-    for (let i = 0; i < skeleton.modules.length; i += BATCH_SIZE) {
-      chunks.push(skeleton.modules.slice(i, i + BATCH_SIZE));
-    }
-
     const generated = await mapWithConcurrency(
-      chunks,
+      skeleton.modules,
       GENERATION_CONCURRENCY,
-      async (chunk) => {
-        const results = await withTimeout(
-          generateSpecializationQuestionBatch(
+      async (module) => {
+        try {
+          const gen = await generateSpecializationQuestion({
             specialization,
-            chunk.map((m) => ({
-              competency: m.focus || m.title,
-              moduleCode: m.code,
-              moduleTitle: m.title,
-              moduleFramework: m.framework,
-            })),
-            usedTopics.slice(),
-          ),
-          CHUNK_BUDGET_MS,
-          `live-gen:${chunk[0]!.code}`,
-        );
-        const out: LiveExamModule[] = [];
-        for (let i = 0; i < chunk.length; i++) {
-          const module = chunk[i]!;
-          const r = results[i];
-          if (r?.ok) {
-            liveGenerated += 1;
-            usedTopics.push(fingerprintScenario(r.mcq.scenario));
-            out.push({ ...overlayFromGenerated(module, r.mcq), contentSource: "live_ai" });
-          } else {
-            const msg = r?.error ?? "batch generation failed";
-            failures.push({ code: module.code, error: msg.slice(0, 300) });
-            log.warn(
-              { specialization, code: module.code, error: msg.slice(0, 300) },
-              "live exam generation failed for module — flagged, retryable, no default content served",
-            );
-            // NO default/catalog content: scenario/instructions/choices are all
-            // blanked — the module only carries its identity + a clear error flag.
-            // The UI shows a retry state; it is never answered.
-            out.push({
-              ...module,
-              scenario: "",
-              instructions: "",
-              choices: [] as string[],
-              questionType: "mcq",
-              contentSource: "generation_failed",
-              generationError: msg.slice(0, 300),
-            });
-          }
-        }
-        return out;
-      },
-    );
-
-    // The callback never rejects (all errors are caught above); this mapping is
-    // a defensive allSettled-shape guard only — if a chunk worker somehow still
-    // rejects, its modules are blanked (never default content).
-    const modules: LiveExamModule[] = [];
-    generated.forEach((g, ci) => {
-      if (g.status === "fulfilled") {
-        modules.push(...g.value);
-      } else {
-        for (const module of chunks[ci] ?? []) {
-          modules.push({
+            competency: module.focus || module.title,
+            moduleCode: module.code,
+            moduleTitle: module.title,
+            moduleFramework: module.framework,
+            usedTopics: usedTopics.slice(),
+          });
+          liveGenerated += 1;
+          usedTopics.push(fingerprintScenario(gen.scenario));
+          return {
+            ...overlayFromGenerated(module, gen),
+            contentSource: "live_ai" as const,
+          };
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : "generation failed";
+          failures.push({ code: module.code, error: msg.slice(0, 300) });
+          log.warn(
+            { specialization, code: module.code, error: msg.slice(0, 300) },
+            "live exam generation failed for module — flagged, retryable",
+          );
+          return {
             ...module,
             scenario: "",
             instructions: "",
             choices: [] as string[],
-            questionType: "mcq",
-            contentSource: "generation_failed",
-            generationError: "generation worker failed",
-          });
+            questionType: "mcq" as const,
+            contentSource: "generation_failed" as const,
+            generationError: msg.slice(0, 300),
+          };
         }
+      },
+    );
+
+    const modules: LiveExamModule[] = [];
+    generated.forEach((g, i) => {
+      if (g.status === "fulfilled") {
+        modules.push(g.value);
+      } else {
+        const module = skeleton.modules[i]!;
+        modules.push({
+          ...module,
+          scenario: "",
+          instructions: "",
+          choices: [] as string[],
+          questionType: "mcq",
+          contentSource: "generation_failed",
+          generationError: "generation worker failed",
+        });
       }
     });
 

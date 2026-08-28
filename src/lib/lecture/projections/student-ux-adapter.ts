@@ -161,7 +161,7 @@ export class StudentUxAdapter extends BaseProjectionAdapter<LearningExperience, 
               title: cleanJargon(visual.title),
               caption: cleanJargon(visual.learningMessage || visual.purpose),
               svgCode: visual.vectorSvgCode,
-              imageUrl: visual.primaryAssetUrl,
+              imageUrl: visual.facultyUploadedUrl || visual.fetchedImageUrl || visual.primaryAssetUrl || visual.imageUrl,
               attribution: visual.attributionText || visual.attribution?.license,
             }
           : (() => {
